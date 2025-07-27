@@ -143,22 +143,11 @@ class BTMUtility {
 
     // Initialize core modules
     async initializeModules() {
-        // For now, skip loading external modules until they're created
+        // Skip loading external modules for now to avoid import issues
         logger.info('Skipping external module loading for now');
         
-        // Initialize the core feature modules we've created
-        try {
-            // Initialize money collection
-            const moneyCollectionModule = await import('./money-collection.js');
-            if (moneyCollectionModule.default) {
-                this.modules.set('moneyCollection', moneyCollectionModule.default);
-            }
-            
-            // Initialize other modules as needed
-            logger.info('Core modules initialized successfully');
-        } catch (error) {
-            logger.warn('Failed to load some modules', null, error);
-        }
+        // We'll initialize modules later when the basic app is working
+        logger.info('Core modules initialization skipped');
     }
 
     // Load module dynamically
