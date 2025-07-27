@@ -181,13 +181,21 @@ try {
 - **README Files**: Project overview, setup instructions, usage examples
 - **API Documentation**: Endpoint descriptions, request/response formats
 
-### 2. User Documentation
+### 2. Task List Formatting
+- **Checkmark Placement**: Always place checkmarks `[x]` at the front of completed tasks
+- **Incomplete Tasks**: Use `[ ]` for incomplete tasks
+- **Format Consistency**: Maintain format: `[x] Task Number - Task Description`
+- **Prohibition**: Never place checkmarks at the end of task descriptions
+- **Example**: `[x] 1.4 - Implement responsive CSS framework` (correct)
+- **Example**: `[ ] 1.4 - Implement responsive CSS framework [x]` (incorrect)
+
+### 3. User Documentation
 - **User Manual**: Step-by-step instructions for all features
 - **Training Materials**: Screenshots and video tutorials
 - **FAQ**: Common questions and troubleshooting
 - **Release Notes**: Changes and new features for each version
 
-### 3. Technical Documentation
+### 4. Technical Documentation
 - **Architecture Diagrams**: System components and data flow
 - **Database Schema**: Data models and relationships
 - **Deployment Guide**: Server setup and configuration
