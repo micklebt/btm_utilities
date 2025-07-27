@@ -3,10 +3,10 @@
  * Comprehensive error handling with user-friendly messages and recovery
  */
 
-import { config } from './config.js';
-import { logger } from './logger.js';
-import { storageUtils } from './storage.js';
-import { generateId, formatDate, playErrorBeep } from './utils.js';
+import { config } from './config.js?v=1.0.2';
+import { logger } from './logger.js?v=1.0.2';
+import { storageUtils } from './storage.js?v=1.0.2';
+import { generateId, formatDate, playErrorBeep } from './utils.js?v=1.0.2';
 
 // Error types
 export const ErrorType = {

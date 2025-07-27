@@ -3,8 +3,8 @@
  * Local storage management with encryption and fallback support
  */
 
-import { config } from './config.js';
-import { generateId, deepClone, isEmpty } from './utils.js';
+import { config } from './config.js?v=1.0.2';
+import { generateId, deepClone, isEmpty } from './utils.js?v=1.0.2';
 
 // Simple encryption/decryption (for production, use a proper encryption library)
 class SimpleCrypto {

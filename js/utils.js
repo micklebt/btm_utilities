@@ -3,7 +3,7 @@
  * Common helper functions for BTM Utility
  */
 
-import { config } from './config.js';
+import { config } from './config.js?v=1.0.2';
 
 // Debounce function for performance optimization
 export function debounce(func, delay = config.performance.debounceDelay) {

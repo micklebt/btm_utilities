@@ -3,9 +3,9 @@
  * Comprehensive logging system with error tracking and monitoring
  */
 
-import { config } from './config.js';
-import { storageUtils } from './storage.js';
-import { formatDate, generateId } from './utils.js';
+import { config } from './config.js?v=1.0.2';
+import { storageUtils } from './storage.js?v=1.0.2';
+import { formatDate, generateId } from './utils.js?v=1.0.2';
 
 // Log levels
 export const LogLevel = {

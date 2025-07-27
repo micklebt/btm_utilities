@@ -3,11 +3,11 @@
  * BTM Utility application initialization and lifecycle management
  */
 
-import { config, validateConfig } from './config.js';
-import { storageUtils } from './storage.js';
-import { generateId, formatDate, isMobile, supportsFeature, playSuccessBeep, playNotificationBeep } from './utils.js';
-import { logger } from './logger.js';
-import { errorHandler } from './error-handler.js';
+import { config, validateConfig } from './config.js?v=1.0.2';
+import { storageUtils } from './storage.js?v=1.0.2';
+import { generateId, formatDate, isMobile, supportsFeature, playSuccessBeep, playNotificationBeep } from './utils.js?v=1.0.2';
+import { logger } from './logger.js?v=1.0.2';
+import { errorHandler } from './error-handler.js?v=1.0.2';
 
 // Application state management
 class AppState {
