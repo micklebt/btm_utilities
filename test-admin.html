@@ -1,12 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Interface Test</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
         .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
         button { padding: 10px 15px; margin: 5px; }
         .admin-section { background: #f0f0f0; padding: 15px; margin: 10px 0; }
+        .result { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
     </style>
 </head>
 <body>
@@ -30,6 +36,13 @@
         <div id="admin-toggle-status"></div>
     </div>
 
+    <div class="test-section">
+        <h2>Test 4: Open Settings Modal and Check Admin Section</h2>
+        <button onclick="testSettingsModal()">Open Settings Modal</button>
+        <button onclick="closeSettingsModal()">Close Settings Modal</button>
+        <div id="settings-modal-status"></div>
+    </div>
+
     <script type="module">
         // Import the modules
         import { configManager } from './js/config-manager.js?v=1.0.2';
@@ -39,12 +52,14 @@
             const status = document.getElementById('config-manager-status');
             try {
                 status.innerHTML = `
-                    <p>✅ ConfigManager loaded successfully</p>
-                    <p>Admin mode: ${configManager.isAdminMode}</p>
-                    <p>Has credentials: ${secureStorageUtils.hasCredentials()}</p>
+                    <div class="result success">
+                        <p>✅ ConfigManager loaded successfully</p>
+                        <p>Admin mode: ${configManager.isAdminMode}</p>
+                        <p>Has credentials: ${secureStorageUtils.hasCredentials()}</p>
+                    </div>
                 `;
             } catch (error) {
-                status.innerHTML = `<p>❌ Error: ${error.message}</p>`;
+                status.innerHTML = `<div class="result error"><p>❌ Error: ${error.message}</p></div>`;
             }
         };
         
@@ -53,12 +68,15 @@
             const adminSection = document.querySelector('.admin-section');
             if (adminSection) {
                 status.innerHTML = `
-                    <p>✅ Admin section found in DOM</p>
-                    <p>Visible: ${adminSection.offsetParent !== null}</p>
-                    <p>Display: ${getComputedStyle(adminSection).display}</p>
+                    <div class="result success">
+                        <p>✅ Admin section found in DOM</p>
+                        <p>Visible: ${adminSection.offsetParent !== null}</p>
+                        <p>Display: ${getComputedStyle(adminSection).display}</p>
+                        <p>Classes: ${adminSection.className}</p>
+                    </div>
                 `;
             } else {
-                status.innerHTML = '<p>❌ Admin section not found in DOM</p>';
+                status.innerHTML = '<div class="result error"><p>❌ Admin section not found in DOM</p></div>';
             }
         };
         
@@ -67,11 +85,69 @@
             try {
                 configManager.toggleAdminMode();
                 status.innerHTML = `
-                    <p>✅ Admin toggle executed</p>
-                    <p>Admin mode: ${configManager.isAdminMode}</p>
+                    <div class="result success">
+                        <p>✅ Admin toggle executed</p>
+                        <p>Admin mode: ${configManager.isAdminMode}</p>
+                    </div>
                 `;
             } catch (error) {
-                status.innerHTML = `<p>❌ Error: ${error.message}</p>`;
+                status.innerHTML = `<div class="result error"><p>❌ Error: ${error.message}</p></div>`;
+            }
+        };
+
+        window.testSettingsModal = function() {
+            const status = document.getElementById('settings-modal-status');
+            
+            // First, check if we're on the main app page
+            const settingsModal = document.getElementById('settings-modal');
+            if (!settingsModal) {
+                status.innerHTML = `
+                    <div class="result error">
+                        <p>❌ Settings modal not found. Make sure you're on the main app page.</p>
+                        <p>Try opening the main app first: <a href="index.html" target="_blank">Open Main App</a></p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Show the settings modal
+            settingsModal.classList.add('show');
+            
+            // Wait a moment for the modal to be visible, then check for admin section
+            setTimeout(() => {
+                const adminSection = settingsModal.querySelector('.admin-section');
+                if (adminSection) {
+                    status.innerHTML = `
+                        <div class="result success">
+                            <p>✅ Settings modal opened successfully</p>
+                            <p>✅ Admin section found in settings modal</p>
+                            <p>Admin section visible: ${adminSection.offsetParent !== null}</p>
+                            <p>Admin section display: ${getComputedStyle(adminSection).display}</p>
+                            <p>Admin section classes: ${adminSection.className}</p>
+                            <p>Admin toggle button: ${adminSection.querySelector('#admin-toggle') ? 'Found' : 'Not found'}</p>
+                        </div>
+                    `;
+                } else {
+                    status.innerHTML = `
+                        <div class="result error">
+                            <p>✅ Settings modal opened successfully</p>
+                            <p>❌ Admin section not found in settings modal</p>
+                            <p>Available sections: ${Array.from(settingsModal.querySelectorAll('.settings-section')).map(s => s.querySelector('h3')?.textContent || 'Unknown').join(', ')}</p>
+                        </div>
+                    `;
+                }
+            }, 100);
+        };
+
+        window.closeSettingsModal = function() {
+            const settingsModal = document.getElementById('settings-modal');
+            if (settingsModal) {
+                settingsModal.classList.remove('show');
+                document.getElementById('settings-modal-status').innerHTML = `
+                    <div class="result info">
+                        <p>Settings modal closed</p>
+                    </div>
+                `;
             }
         };
     </script>
