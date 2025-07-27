@@ -380,7 +380,7 @@ class Logger {
 const logger = new Logger();
 
 // Export logger instance and utilities
-export { logger, LogLevel };
+export { logger };
 
 // Export default logger
 export default logger; 
