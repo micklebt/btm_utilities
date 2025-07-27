@@ -58,12 +58,13 @@
     <link rel="stylesheet" href="css/utilities.css">
     
     <!-- Security Headers -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.twilio.com https://www.googleapis.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.twilio.com https://www.googleapis.com http://24.140.108.180:855/; frame-src 'self' http://24.140.108.180:855/;">
     
     <!-- Performance Optimizations -->
     <link rel="dns-prefetch" href="//api.twilio.com">
     <link rel="dns-prefetch" href="//www.googleapis.com">
     <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//24.140.108.180">
     
     <!-- Structured Data -->
     <script type="application/ld+json">
@@ -204,9 +205,7 @@
                 </div>
                 <div class="todo-list">
                     <div class="todo-filters">
-                        <button class="filter-button active" data-filter="all">All</button>
-                        <button class="filter-button" data-filter="pending">Pending</button>
-                        <button class="filter-button" data-filter="completed">Completed</button>
+                        <!-- Enhanced filters will be added by JavaScript -->
                     </div>
                     <div id="todo-items" class="todo-items">
                         <!-- Todo items will be dynamically added here -->
@@ -261,11 +260,28 @@
                     </button>
                 </div>
                 <div class="camera-grid">
-                    <div class="camera-feed">
-                        <h3>Peacock - Camera 1</h3>
-                        <div class="camera-placeholder">
-                            <span class="camera-icon">📹</span>
-                            <p>Camera feed loading...</p>
+                    <div class="camera-feed" id="camera-1">
+                        <h3>Massillon - Changer Room</h3>
+                        <div class="camera-container">
+                            <div class="camera-placeholder" id="camera-1-placeholder">
+                                <span class="camera-icon">📹</span>
+                                <p>Camera feed loading...</p>
+                                <button class="load-stream-btn" data-camera="camera-1">Load Live Stream</button>
+                                <button class="test-stream-btn" data-camera="camera-1" style="margin-top: 8px; font-size: 12px; padding: 4px 8px;">Test Stream URL</button>
+                            </div>
+                            <div id="camera-1-stream" class="camera-stream" 
+                                 data-src="http://24.140.108.180:855/livestream.htm?cam=mass_changer">
+                                <div class="stream-placeholder">
+                                    <p>📹 Live Stream</p>
+                                    <p>Click to open in new tab</p>
+                                </div>
+                            </div>
+                            <div id="camera-1-fallback" class="camera-fallback" style="display: none;">
+                                <p>⚠️ Stream not available</p>
+                                <a href="http://24.140.108.180:855/livestream.htm?cam=mass_changer" target="_blank" rel="noopener noreferrer" class="fallback-link">
+                                    Open Stream in New Tab
+                                </a>
+                            </div>
                         </div>
                     </div>
                     <div class="camera-feed">
@@ -460,13 +476,10 @@
     </script>
 
             <!-- Application Scripts -->
-        <script type="module" src="js/app.js?v=1.0.3"></script>
+        <script type="module" src="js/app.js?v=1.0.5"></script>
     
     <!-- QR Code Detection Library -->
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
-    
-    <!-- Fallback QR Library -->
-    <script src="https://cdn.jsdelivr.net/npm/qrcode-reader@1.0.4/dist/qrcode-reader.min.js"></script>
     
     <!-- Fallback for browsers without ES6 module support -->
     <script>

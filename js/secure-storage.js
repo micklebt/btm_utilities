@@ -316,6 +316,30 @@ export const secureStorageUtils = {
         return true;
     },
 
+    // Generic get method for secure storage
+    async get(key, defaultValue = null) {
+        try {
+            const credentials = await secureStorage.getCredentials();
+            return credentials[key] || defaultValue;
+        } catch (error) {
+            console.warn(`Failed to get secure storage key '${key}':`, error);
+            return defaultValue;
+        }
+    },
+
+    // Generic set method for secure storage
+    async set(key, value) {
+        try {
+            const credentials = await secureStorage.getCredentials();
+            credentials[key] = value;
+            await secureStorage.storeCredentials(credentials);
+            return true;
+        } catch (error) {
+            console.error(`Failed to set secure storage key '${key}':`, error);
+            return false;
+        }
+    },
+
     // Store API credentials
     async storeCredentials(credentials) {
         secureStorage.validateCredentials(credentials);

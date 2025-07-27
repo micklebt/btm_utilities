@@ -97,6 +97,29 @@ export function validatePhone(phone) {
     return phoneRegex.test(cleanPhone);
 }
 
+// Format phone number for display
+export function formatPhoneNumber(phone) {
+    if (!phone) return '';
+    
+    // Remove all non-digit characters
+    const cleaned = phone.replace(/\D/g, '');
+    
+    // Format based on length
+    if (cleaned.length === 10) {
+        // US format: (XXX) XXX-XXXX
+        return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+    } else if (cleaned.length === 11 && cleaned.startsWith('1')) {
+        // US format with country code: 1 (XXX) XXX-XXXX
+        return `1 (${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7)}`;
+    } else if (cleaned.length === 7) {
+        // Local format: XXX-XXXX
+        return `${cleaned.slice(0, 3)}-${cleaned.slice(3)}`;
+    } else {
+        // Return as-is if no standard format matches
+        return phone;
+    }
+}
+
 // Sanitize HTML input
 export function sanitizeHtml(input) {
     const div = document.createElement('div');

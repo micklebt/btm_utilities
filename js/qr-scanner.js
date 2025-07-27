@@ -79,6 +79,7 @@ export class QRScanner {
             logger.info('QrCodeReader library loaded (fallback)');
         } else {
             logger.warn('No QR code library detected - QR scanning may not work');
+            logger.warn('Consider adding jsQR or qrcode-reader CDN links');
         }
 
         logger.info('QR Scanner API support verified');

@@ -29,6 +29,15 @@ export class TodoManager {
             { id: 'urgent', name: 'Urgent', icon: '🔴', color: '#dc3545' }
         ];
         
+        this.assignees = [
+            { id: 'john', name: 'John Smith', role: 'Manager' },
+            { id: 'sarah', name: 'Sarah Johnson', role: 'Technician' },
+            { id: 'mike', name: 'Mike Davis', role: 'Maintenance' },
+            { id: 'lisa', name: 'Lisa Wilson', role: 'Customer Service' },
+            { id: 'david', name: 'David Brown', role: 'Inventory' },
+            { id: 'emma', name: 'Emma Taylor', role: 'Admin' }
+        ];
+        
         this.filters = {
             status: 'all', // all, pending, completed
             category: 'all',
@@ -67,7 +76,7 @@ export class TodoManager {
 
     async loadTasks() {
         try {
-            const savedTasks = await storageUtils.tasksManager.load();
+            const savedTasks = await storageUtils.todos.load();
             this.tasks = savedTasks || [];
             logger.info(`Loaded ${this.tasks.length} tasks`);
         } catch (error) {
@@ -77,214 +86,186 @@ export class TodoManager {
     }
 
     initializeUI() {
-        const container = document.getElementById('todo-container');
-        if (!container) return;
+        // The HTML already has the basic structure, so we'll enhance it
+        const todoSection = document.getElementById('todo');
+        if (!todoSection) {
+            logger.warn('Todo section not found in DOM');
+            return;
+        }
 
-        container.innerHTML = `
-            <div class="todo-header">
-                <h2>📋 To-Do List</h2>
-                <button type="button" id="add-task-btn" class="btn btn-primary">
-                    ➕ Add Task
-                </button>
-            </div>
-
-            <div class="todo-filters">
+        // Add enhanced filters to the existing structure
+        const existingFilters = todoSection.querySelector('.todo-filters');
+        if (existingFilters) {
+            // Add enhanced filters with better styling
+            existingFilters.innerHTML = `
                 <div class="filter-group">
-                    <label>Status:</label>
-                    <select id="status-filter" class="filter-select">
-                        <option value="all">All Tasks</option>
-                        <option value="pending">Pending</option>
-                        <option value="completed">Completed</option>
-                    </select>
+                    <button class="filter-button active" data-filter="all">📋 All</button>
+                    <button class="filter-button" data-filter="pending">⏳ Pending</button>
+                    <button class="filter-button" data-filter="completed">✅ Completed</button>
                 </div>
-                
                 <div class="filter-group">
-                    <label>Category:</label>
                     <select id="category-filter" class="filter-select">
-                        <option value="all">All Categories</option>
-                        ${this.categories.map(cat => `
-                            <option value="${cat.id}">${cat.icon} ${cat.name}</option>
-                        `).join('')}
+                        <option value="all">🏷️ All Categories</option>
+                        ${this.categories.map(cat => `<option value="${cat.id}">${cat.icon} ${cat.name}</option>`).join('')}
                     </select>
                 </div>
-                
                 <div class="filter-group">
-                    <label>Priority:</label>
                     <select id="priority-filter" class="filter-select">
-                        <option value="all">All Priorities</option>
-                        ${this.priorities.map(pri => `
-                            <option value="${pri.id}">${pri.icon} ${pri.name}</option>
-                        `).join('')}
+                        <option value="all">⚡ All Priorities</option>
+                        ${this.priorities.map(pri => `<option value="${pri.id}">${pri.icon} ${pri.name}</option>`).join('')}
                     </select>
                 </div>
-                
                 <div class="filter-group">
-                    <label>Search:</label>
-                    <input type="text" id="search-filter" class="search-input" 
-                           placeholder="Search tasks...">
+                    <input type="text" id="search-tasks" class="search-input" placeholder="🔍 Search tasks...">
                 </div>
-            </div>
+            `;
+        }
 
-            <div class="todo-stats">
-                <div class="stat-item">
-                    <span class="stat-label">Total Tasks</span>
-                    <span class="stat-value" id="total-tasks">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Pending</span>
-                    <span class="stat-value" id="pending-tasks">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Completed</span>
-                    <span class="stat-value" id="completed-tasks">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Urgent</span>
-                    <span class="stat-value urgent" id="urgent-tasks">0</span>
-                </div>
-            </div>
+        // Stats display removed - no longer showing metrics in the middle of the todo list
 
-            <div class="tasks-container">
-                <div class="tasks-list" id="tasks-list">
-                    <!-- Tasks will be populated here -->
-                </div>
-            </div>
-
-            <!-- Add Task Modal -->
-            <div id="task-modal" class="modal" style="display: none;">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h3 id="modal-title">Add New Task</h3>
-                        <button type="button" class="modal-close">&times;</button>
+        // Create task modal if it doesn't exist
+        if (!document.getElementById('task-modal')) {
+            const modalHTML = `
+                <div id="task-modal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 id="task-modal-title">➕ Add New Task</h3>
+                            <button type="button" class="close-button" id="close-task-modal" title="Close">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="task-form" class="task-form">
+                                <div class="form-group">
+                                    <label for="task-title">📝 Task Title</label>
+                                    <input type="text" id="task-title" class="form-input" placeholder="Enter task title...">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="task-description">📄 Description</label>
+                                    <textarea id="task-description" class="form-textarea" rows="3" placeholder="Describe the task..."></textarea>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="task-category">🏷️ Category</label>
+                                        <select id="task-category" class="form-select">
+                                            ${this.categories.map(cat => `<option value="${cat.id}">${cat.icon} ${cat.name}</option>`).join('')}
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="task-priority">⚡ Priority</label>
+                                        <select id="task-priority" class="form-select">
+                                            ${this.priorities.map(pri => `<option value="${pri.id}">${pri.icon} ${pri.name}</option>`).join('')}
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="task-due-date">📅 Due Date</label>
+                                        <input type="date" id="task-due-date" class="form-input">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="task-assignee">👤 Assignee</label>
+                                        <select id="task-assignee" class="form-select">
+                                            <option value="">Select assignee...</option>
+                                            ${this.assignees.map(assignee => `<option value="${assignee.name}">${assignee.name} (${assignee.role})</option>`).join('')}
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="task-reminder">
+                                        <span class="checkmark"></span>
+                                        🔔 Set reminder
+                                    </label>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button type="button" class="btn btn-secondary" id="cancel-task">
+                                        ❌ Cancel
+                                    </button>
+                                    <button type="submit" class="btn btn-primary" id="save-task">
+                                        ✅ Save Task
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                    
-                    <form id="task-form" class="task-form">
-                        <div class="form-section">
-                            <label for="task-title">Task Title *</label>
-                            <input type="text" id="task-title" required 
-                                   placeholder="Enter task title...">
-                        </div>
-                        
-                        <div class="form-section">
-                            <label for="task-description">Description</label>
-                            <textarea id="task-description" rows="3" 
-                                      placeholder="Enter task description..."></textarea>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-section">
-                                <label for="task-category">Category</label>
-                                <select id="task-category" required>
-                                    ${this.categories.map(cat => `
-                                        <option value="${cat.id}">${cat.icon} ${cat.name}</option>
-                                    `).join('')}
-                                </select>
-                            </div>
-                            
-                            <div class="form-section">
-                                <label for="task-priority">Priority</label>
-                                <select id="task-priority" required>
-                                    ${this.priorities.map(pri => `
-                                        <option value="${pri.id}">${pri.icon} ${pri.name}</option>
-                                    `).join('')}
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-section">
-                                <label for="task-due-date">Due Date</label>
-                                <input type="datetime-local" id="task-due-date">
-                            </div>
-                            
-                            <div class="form-section">
-                                <label for="task-assignee">Assignee</label>
-                                <input type="text" id="task-assignee" 
-                                       placeholder="Who should do this?">
-                            </div>
-                        </div>
-                        
-                        <div class="form-section">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="task-reminder">
-                                Set reminder notification
-                            </label>
-                        </div>
-                        
-                        <div class="form-actions">
-                            <button type="submit" class="btn btn-primary">
-                                💾 Save Task
-                            </button>
-                            <button type="button" class="btn btn-secondary" id="cancel-task-btn">
-                                ❌ Cancel
-                            </button>
-                        </div>
-                    </form>
                 </div>
-            </div>
-        `;
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+
+        logger.info('Todo UI initialized successfully');
     }
 
     setupEventListeners() {
-        // Add task button
-        const addTaskBtn = document.getElementById('add-task-btn');
+        // Add task button (existing in HTML)
+        const addTaskBtn = document.getElementById('add-task');
         if (addTaskBtn) {
-            addTaskBtn.addEventListener('click', () => this.showAddTaskModal());
+            addTaskBtn.addEventListener('click', () => {
+                this.showAddTaskModal();
+            });
         }
 
-        // Filter controls
-        const statusFilter = document.getElementById('status-filter');
+        // Filter buttons (existing in HTML)
+        const filterButtons = document.querySelectorAll('.filter-button');
+        filterButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                // Remove active class from all buttons
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                // Add active class to clicked button
+                e.target.classList.add('active');
+                
+                const filter = e.target.dataset.filter;
+                this.filters.status = filter;
+                this.updateTasksDisplay();
+            });
+        });
+
+        // Category filter
         const categoryFilter = document.getElementById('category-filter');
-        const priorityFilter = document.getElementById('priority-filter');
-        const searchFilter = document.getElementById('search-filter');
-
-        if (statusFilter) {
-            statusFilter.addEventListener('change', () => {
-                this.filters.status = statusFilter.value;
-                this.updateTasksDisplay();
-            });
-        }
-
         if (categoryFilter) {
-            categoryFilter.addEventListener('change', () => {
-                this.filters.category = categoryFilter.value;
+            categoryFilter.addEventListener('change', (e) => {
+                this.filters.category = e.target.value;
                 this.updateTasksDisplay();
             });
         }
 
+        // Priority filter
+        const priorityFilter = document.getElementById('priority-filter');
         if (priorityFilter) {
-            priorityFilter.addEventListener('change', () => {
-                this.filters.priority = priorityFilter.value;
+            priorityFilter.addEventListener('change', (e) => {
+                this.filters.priority = e.target.value;
                 this.updateTasksDisplay();
             });
         }
 
-        if (searchFilter) {
-            searchFilter.addEventListener('input', debounce((e) => {
+        // Search input
+        const searchInput = document.getElementById('search-tasks');
+        if (searchInput) {
+            searchInput.addEventListener('input', debounce((e) => {
                 this.filters.search = e.target.value.toLowerCase();
                 this.updateTasksDisplay();
             }, 300));
         }
 
-        // Modal controls
-        const modal = document.getElementById('task-modal');
-        const modalClose = document.querySelector('.modal-close');
-        const cancelBtn = document.getElementById('cancel-task-btn');
+        // Task modal events
+        const taskModal = document.getElementById('task-modal');
+        const closeModalBtn = document.getElementById('close-task-modal');
+        const cancelBtn = document.getElementById('cancel-task');
         const taskForm = document.getElementById('task-form');
 
-        if (modalClose) {
-            modalClose.addEventListener('click', () => this.hideTaskModal());
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', () => {
+                this.hideTaskModal();
+            });
         }
 
         if (cancelBtn) {
-            cancelBtn.addEventListener('click', () => this.hideTaskModal());
-        }
-
-        if (modal) {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    this.hideTaskModal();
-                }
+            cancelBtn.addEventListener('click', () => {
+                this.hideTaskModal();
             });
         }
 
@@ -294,35 +275,51 @@ export class TodoManager {
                 this.saveTask();
             });
         }
+
+        // Close modal when clicking outside
+        if (taskModal) {
+            taskModal.addEventListener('click', (e) => {
+                if (e.target === taskModal) {
+                    this.hideTaskModal();
+                }
+            });
+        }
+
+        logger.info('Todo event listeners set up successfully');
     }
 
     showAddTaskModal(taskId = null) {
         const modal = document.getElementById('task-modal');
-        const modalTitle = document.getElementById('modal-title');
-        const taskForm = document.getElementById('task-form');
+        const modalTitle = document.getElementById('task-modal-title');
+        
+        if (!modal) {
+            logger.error('Task modal not found');
+            return;
+        }
 
         if (taskId) {
             // Edit existing task
             const task = this.tasks.find(t => t.id === taskId);
             if (task) {
-                this.populateTaskForm(task);
                 modalTitle.textContent = 'Edit Task';
-                taskForm.dataset.taskId = taskId;
+                this.populateTaskForm(task);
             }
         } else {
             // Add new task
-            this.clearTaskForm();
             modalTitle.textContent = 'Add New Task';
-            delete taskForm.dataset.taskId;
+            this.clearTaskForm();
         }
 
-        modal.style.display = 'block';
+        modal.classList.add('show');
+        document.getElementById('task-title').focus();
     }
 
     hideTaskModal() {
         const modal = document.getElementById('task-modal');
-        modal.style.display = 'none';
-        this.clearTaskForm();
+        if (modal) {
+            modal.classList.remove('show');
+            this.clearTaskForm();
+        }
     }
 
     clearTaskForm() {
@@ -347,7 +344,17 @@ export class TodoManager {
         if (categorySelect) categorySelect.value = task.category;
         if (prioritySelect) prioritySelect.value = task.priority;
         if (dueDateInput) dueDateInput.value = task.dueDate || '';
-        if (assigneeInput) assigneeInput.value = task.assignee || '';
+        if (assigneeInput) {
+            // For select elements, we need to find the option that matches the assignee name
+            if (assigneeInput.tagName === 'SELECT') {
+                const assigneeOption = Array.from(assigneeInput.options).find(option => 
+                    option.value === task.assignee
+                );
+                assigneeInput.value = assigneeOption ? assigneeOption.value : '';
+            } else {
+                assigneeInput.value = task.assignee || '';
+            }
+        }
         if (reminderCheckbox) reminderCheckbox.checked = task.reminder || false;
     }
 
@@ -369,9 +376,9 @@ export class TodoManager {
                 updatedAt: new Date().toISOString()
             };
 
-            // Validate required fields
-            if (!taskData.title) {
-                this.showNotification('Task title is required', 'error');
+            // All fields are optional - allow empty tasks
+            if (!taskData.title && !taskData.description) {
+                this.showNotification('Please provide at least a title or description', 'warning');
                 return;
             }
 
@@ -393,7 +400,7 @@ export class TodoManager {
             }
 
             // Save to storage
-            await storageUtils.tasksManager.save(this.tasks);
+            await storageUtils.todos.save(this.tasks);
 
             // Update display
             this.updateTasksDisplay();
@@ -426,7 +433,7 @@ export class TodoManager {
             task.updatedAt = new Date().toISOString();
 
             // Save to storage
-            await storageUtils.tasksManager.save(this.tasks);
+            await storageUtils.todos.save(this.tasks);
 
             // Update display
             this.updateTasksDisplay();
@@ -451,7 +458,7 @@ export class TodoManager {
             this.tasks = this.tasks.filter(t => t.id !== taskId);
 
             // Save to storage
-            await storageUtils.tasksManager.save(this.tasks);
+            await storageUtils.todos.save(this.tasks);
 
             // Update display
             this.updateTasksDisplay();
@@ -467,131 +474,130 @@ export class TodoManager {
     }
 
     updateTasksDisplay() {
+        const todoItems = document.getElementById('todo-items');
+        if (!todoItems) {
+            logger.warn('Todo items container not found');
+            return;
+        }
+
         // Apply filters
-        let filteredTasks = this.tasks;
+        let filteredTasks = this.tasks.filter(task => {
+            // Status filter
+            if (this.filters.status !== 'all') {
+                if (this.filters.status === 'pending' && task.completed) return false;
+                if (this.filters.status === 'completed' && !task.completed) return false;
+            }
 
-        if (this.filters.status !== 'all') {
-            filteredTasks = filteredTasks.filter(t => t.status === this.filters.status);
-        }
+            // Category filter
+            if (this.filters.category !== 'all' && task.category !== this.filters.category) {
+                return false;
+            }
 
-        if (this.filters.category !== 'all') {
-            filteredTasks = filteredTasks.filter(t => t.category === this.filters.category);
-        }
+            // Priority filter
+            if (this.filters.priority !== 'all' && task.priority !== this.filters.priority) {
+                return false;
+            }
 
-        if (this.filters.priority !== 'all') {
-            filteredTasks = filteredTasks.filter(t => t.priority === this.filters.priority);
-        }
+            // Search filter
+            if (this.filters.search) {
+                const searchTerm = this.filters.search.toLowerCase();
+                const matchesTitle = task.title.toLowerCase().includes(searchTerm);
+                const matchesDescription = task.description?.toLowerCase().includes(searchTerm) || false;
+                const matchesAssignee = task.assignee?.toLowerCase().includes(searchTerm) || false;
+                
+                if (!matchesTitle && !matchesDescription && !matchesAssignee) {
+                    return false;
+                }
+            }
 
-        if (this.filters.search) {
-            filteredTasks = filteredTasks.filter(t => 
-                t.title.toLowerCase().includes(this.filters.search) ||
-                t.description.toLowerCase().includes(this.filters.search) ||
-                (t.assignee && t.assignee.toLowerCase().includes(this.filters.search))
-            );
-        }
+            return true;
+        });
 
-        // Sort tasks (urgent first, then by due date, then by creation date)
+        // Sort tasks: urgent first, then by due date, then by creation date
         filteredTasks.sort((a, b) => {
             // Urgent tasks first
             if (a.priority === 'urgent' && b.priority !== 'urgent') return -1;
             if (b.priority === 'urgent' && a.priority !== 'urgent') return 1;
-
+            
             // Then by due date
             if (a.dueDate && b.dueDate) {
                 return new Date(a.dueDate) - new Date(b.dueDate);
             }
             if (a.dueDate) return -1;
             if (b.dueDate) return 1;
-
-            // Then by creation date (newest first)
+            
+            // Finally by creation date (newest first)
             return new Date(b.createdAt) - new Date(a.createdAt);
         });
 
-        // Update stats
-        this.updateStats();
+        // Render tasks
+        todoItems.innerHTML = filteredTasks.length > 0 
+            ? filteredTasks.map(task => this.renderTask(task)).join('')
+            : '<div class="no-tasks">No tasks found. Click "Add Task" to create your first task!</div>';
 
-        // Update tasks list
-        const tasksList = document.getElementById('tasks-list');
-        if (tasksList) {
-            if (filteredTasks.length === 0) {
-                tasksList.innerHTML = `
-                    <div class="no-tasks">
-                        <p>No tasks found matching your filters.</p>
-                        <button type="button" class="btn btn-primary" onclick="window.todoManager.showAddTaskModal()">
-                            ➕ Add Your First Task
-                        </button>
-                    </div>
-                `;
-            } else {
-                tasksList.innerHTML = filteredTasks.map(task => this.renderTask(task)).join('');
-            }
-        }
-
-        // Set up task event listeners
+        // Set up event listeners for the new task elements
         this.setupTaskEventListeners();
     }
 
     renderTask(task) {
-        const category = this.categories.find(c => c.id === task.category);
-        const priority = this.priorities.find(p => p.id === task.priority);
-        const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'completed';
+        const category = this.categories.find(c => c.id === task.category) || this.categories[0];
+        const priority = this.priorities.find(p => p.id === task.priority) || this.priorities[1];
+        const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && !task.completed;
 
         return `
-            <div class="task-item ${task.status} ${isOverdue ? 'overdue' : ''}" data-task-id="${task.id}">
-                <div class="task-header">
-                    <div class="task-checkbox">
-                        <input type="checkbox" ${task.status === 'completed' ? 'checked' : ''} 
-                               data-task-id="${task.id}">
+            <div class="todo-item ${task.completed ? 'completed' : ''}" data-task-id="${task.id}">
+                <div class="todo-checkbox">
+                    <input type="checkbox" ${task.completed ? 'checked' : ''} 
+                           data-task-id="${task.id}">
+                </div>
+                
+                <div class="task-info">
+                    <div class="task-title ${task.completed ? 'completed' : ''}">
+                        ${task.title}
                     </div>
                     
-                    <div class="task-info">
-                        <div class="task-title ${task.status === 'completed' ? 'completed' : ''}">
-                            ${task.title}
-                        </div>
+                    ${task.description ? `
+                        <div class="task-description">${task.description}</div>
+                    ` : ''}
+                    
+                    <div class="task-meta">
+                        <span class="task-category" style="color: ${category.color}">
+                            ${category.icon} ${category.name}
+                        </span>
                         
-                        ${task.description ? `
-                            <div class="task-description">${task.description}</div>
+                        <span class="task-priority" style="color: ${priority.color}">
+                            ${priority.icon} ${priority.name}
+                        </span>
+                        
+                        ${task.assignee ? `
+                            <span class="task-assignee">👤 ${task.assignee}</span>
                         ` : ''}
                         
-                        <div class="task-meta">
-                            <span class="task-category" style="color: ${category.color}">
-                                ${category.icon} ${category.name}
+                        ${task.dueDate ? `
+                            <span class="task-due-date ${isOverdue ? 'overdue' : ''}">
+                                📅 ${formatDate(task.dueDate)}
                             </span>
-                            
-                            <span class="task-priority" style="color: ${priority.color}">
-                                ${priority.icon} ${priority.name}
-                            </span>
-                            
-                            ${task.assignee ? `
-                                <span class="task-assignee">👤 ${task.assignee}</span>
-                            ` : ''}
-                            
-                            ${task.dueDate ? `
-                                <span class="task-due-date ${isOverdue ? 'overdue' : ''}">
-                                    📅 ${formatDate(task.dueDate)}
-                                </span>
-                            ` : ''}
-                        </div>
-                    </div>
-                    
-                    <div class="task-actions">
-                        <button type="button" class="btn btn-icon edit-task-btn" 
-                                data-task-id="${task.id}" title="Edit Task">
-                            ✏️
-                        </button>
-                        <button type="button" class="btn btn-icon delete-task-btn" 
-                                data-task-id="${task.id}" title="Delete Task">
-                            🗑️
-                        </button>
+                        ` : ''}
                     </div>
                 </div>
                 
-                ${task.status === 'completed' && task.completedAt ? `
-                    <div class="task-completion">
-                        ✅ Completed on ${formatDate(task.completedAt)}
-                    </div>
-                ` : ''}
+                <div class="task-actions">
+                    <button type="button" class="btn btn-icon edit-task-btn" 
+                            data-task-id="${task.id}" title="Edit Task">
+                        ✏️
+                    </button>
+                    <button type="button" class="btn btn-icon delete-task-btn" 
+                            data-task-id="${task.id}" title="Delete Task">
+                        🗑️
+                    </button>
+                </div>
             </div>
+            
+            ${task.completed && task.completedAt ? `
+                <div class="task-completion">
+                    ✅ Completed on ${formatDate(task.completedAt)}
+                </div>
+            ` : ''}
         `;
     }
 
@@ -623,10 +629,11 @@ export class TodoManager {
 
     updateStats() {
         const totalTasks = this.tasks.length;
-        const pendingTasks = this.tasks.filter(t => t.status === 'pending').length;
-        const completedTasks = this.tasks.filter(t => t.status === 'completed').length;
-        const urgentTasks = this.tasks.filter(t => t.priority === 'urgent' && t.status === 'pending').length;
+        const pendingTasks = this.tasks.filter(t => !t.completed).length;
+        const completedTasks = this.tasks.filter(t => t.completed).length;
+        const urgentTasks = this.tasks.filter(t => t.priority === 'urgent' && !t.completed).length;
 
+        // Update stats display
         const totalElement = document.getElementById('total-tasks');
         const pendingElement = document.getElementById('pending-tasks');
         const completedElement = document.getElementById('completed-tasks');
@@ -636,6 +643,13 @@ export class TodoManager {
         if (pendingElement) pendingElement.textContent = pendingTasks;
         if (completedElement) completedElement.textContent = completedTasks;
         if (urgentElement) urgentElement.textContent = urgentTasks;
+
+        // Update urgent tasks styling
+        if (urgentElement) {
+            urgentElement.classList.toggle('urgent', urgentTasks > 0);
+        }
+
+        logger.info(`Stats updated: ${totalTasks} total, ${pendingTasks} pending, ${completedTasks} completed, ${urgentTasks} urgent`);
     }
 
     showNotification(message, type = 'info') {

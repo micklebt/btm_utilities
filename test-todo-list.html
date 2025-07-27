@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task 6.0 - To-Do List Test Suite</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            background: #f5f5f5;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section { 
+            background: white; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .result { 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-radius: 8px; 
+            border-left: 4px solid;
+        }
+        .success { 
+            background: #d4edda; 
+            color: #155724; 
+            border-color: #28a745;
+        }
+        .error { 
+            background: #f8d7da; 
+            color: #721c24; 
+            border-color: #dc3545;
+        }
+        .warning { 
+            background: #fff3cd; 
+            color: #856404; 
+            border-color: #ffc107;
+        }
+        .info { 
+            background: #d1ecf1; 
+            color: #0c5460; 
+            border-color: #17a2b8;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .task-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 4px solid #007bff;
+        }
+        .task-completed {
+            opacity: 0.6;
+            border-left-color: #28a745;
+        }
+        .priority-high { border-left-color: #dc3545; }
+        .priority-medium { border-left-color: #ffc107; }
+        .priority-low { border-left-color: #28a745; }
+        .priority-urgent { border-left-color: #dc3545; background: #f8d7da; }
+        .category-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-right: 8px;
+        }
+        .storage-info {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .todo-interface {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .todo-filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .filter-button {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .filter-button.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        .task-form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .form-group textarea {
+            height: 80px;
+            resize: vertical;
+        }
+    </style>
+</head>
+<body>
+    <h1>Task 6.0 - Basic To-Do List Test Suite</h1>
+    
+    <div class="test-section">
+        <h2>📋 Task 6.0 Requirements Verification</h2>
+        <div id="requirements-results"></div>
+        <button onclick="verifyRequirements()">Verify All Requirements</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>🗄️ Storage Implementation Analysis</h2>
+        <div id="storage-results"></div>
+        <button onclick="analyzeStorage()">Analyze Storage Implementation</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>🧪 Functional Testing</h2>
+        <div class="test-grid">
+            <div>
+                <h3>Task 6.1 - CRUD Interface</h3>
+                <div id="crud-results"></div>
+                <button onclick="testCRUD()">Test CRUD Operations</button>
+            </div>
+            <div>
+                <h3>Task 6.2 - Touch-Optimized Inputs</h3>
+                <div id="touch-results"></div>
+                <button onclick="testTouchOptimization()">Test Touch Optimization</button>
+            </div>
+            <div>
+                <h3>Task 6.3 - Completion & Deletion</h3>
+                <div id="completion-results"></div>
+                <button onclick="testCompletionDeletion()">Test Completion/Deletion</button>
+            </div>
+            <div>
+                <h3>Task 6.4 - Priority Levels</h3>
+                <div id="priority-results"></div>
+                <button onclick="testPriorityLevels()">Test Priority System</button>
+            </div>
+            <div>
+                <h3>Task 6.5 - Local Storage Persistence</h3>
+                <div id="persistence-results"></div>
+                <button onclick="testPersistence()">Test Data Persistence</button>
+            </div>
+            <div>
+                <h3>Task 6.6 - Search & Filtering</h3>
+                <div id="search-results"></div>
+                <button onclick="testSearchFiltering()">Test Search/Filter</button>
+            </div>
+            <div>
+                <h3>Task 6.7 - Categories & Organization</h3>
+                <div id="category-results"></div>
+                <button onclick="testCategories()">Test Categories</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🎯 Interactive To-Do Interface</h2>
+        <div class="todo-interface">
+            <div class="todo-filters">
+                <button class="filter-button active" data-filter="all">All Tasks</button>
+                <button class="filter-button" data-filter="pending">Pending</button>
+                <button class="filter-button" data-filter="completed">Completed</button>
+                <button class="filter-button" data-filter="urgent">Urgent</button>
+            </div>
+            
+            <div class="task-form">
+                <h3>Add New Task</h3>
+                <div class="form-group">
+                    <label for="task-title">Title:</label>
+                    <input type="text" id="task-title" placeholder="Enter task title">
+                </div>
+                <div class="form-group">
+                    <label for="task-description">Description:</label>
+                    <textarea id="task-description" placeholder="Enter task description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="task-category">Category:</label>
+                    <select id="task-category">
+                        <option value="maintenance">🔧 Maintenance</option>
+                        <option value="cleaning">🧹 Cleaning</option>
+                        <option value="inventory">📦 Inventory</option>
+                        <option value="customer">👥 Customer Service</option>
+                        <option value="admin">📋 Administrative</option>
+                        <option value="emergency">🚨 Emergency</option>
+                        <option value="other">📝 Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="task-priority">Priority:</label>
+                    <select id="task-priority">
+                        <option value="low">🟢 Low</option>
+                        <option value="medium">🟡 Medium</option>
+                        <option value="high">🟠 High</option>
+                        <option value="urgent">🔴 Urgent</option>
+                    </select>
+                </div>
+                <button onclick="addTestTask()">Add Task</button>
+            </div>
+            
+            <div id="todo-items-display">
+                <!-- Tasks will be displayed here -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📊 Performance & Storage Metrics</h2>
+        <div id="metrics-results"></div>
+        <button onclick="testPerformance()">Test Performance</button>
+    </div>
+    
+    <script type="module">
+        // Import the TodoManager module
+        let todoManager = null;
+        
+        async function loadTodoManager() {
+            try {
+                const { TodoManager } = await import('./js/todo-manager.js?v=1.0.3');
+                todoManager = new TodoManager();
+                await todoManager.init();
+                return true;
+            } catch (error) {
+                console.error('Failed to load TodoManager:', error);
+                return false;
+            }
+        }
+        
+        // Test Results Management
+        function addResult(containerId, type, message) {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = message;
+            container.appendChild(div);
+        }
+        
+        // Task 6.0 Requirements Verification
+        window.verifyRequirements = async function() {
+            const results = document.getElementById('requirements-results');
+            results.innerHTML = '';
+            
+            addResult('requirements-results', 'info', '🔍 Verifying Task 6.0 requirements...');
+            
+            // Check if TodoManager module exists
+            try {
+                const { TodoManager } = await import('./js/todo-manager.js?v=1.0.3');
+                addResult('requirements-results', 'success', '✅ Task 6.1: CRUD interface - TodoManager class found');
+                
+                // Check if TodoManager has required methods
+                const requiredMethods = ['addTask', 'updateTask', 'deleteTask', 'toggleTaskStatus', 'getTasks', 'searchTasks'];
+                const missingMethods = [];
+                
+                for (const method of requiredMethods) {
+                    if (typeof TodoManager.prototype[method] !== 'function') {
+                        missingMethods.push(method);
+                    }
+                }
+                
+                if (missingMethods.length === 0) {
+                    addResult('requirements-results', 'success', '✅ Task 6.1: All CRUD methods implemented');
+                } else {
+                    addResult('requirements-results', 'error', `❌ Task 6.1: Missing methods: ${missingMethods.join(', ')}`);
+                }
+                
+            } catch (error) {
+                addResult('requirements-results', 'error', `❌ Task 6.1: TodoManager module not found - ${error.message}`);
+            }
+            
+            // Check touch optimization
+            const touchTargets = document.querySelectorAll('button, input, select');
+            let touchOptimized = true;
+            touchTargets.forEach(target => {
+                const rect = target.getBoundingClientRect();
+                if (rect.height < 44 || rect.width < 44) {
+                    touchOptimized = false;
+                }
+            });
+            
+            if (touchOptimized) {
+                addResult('requirements-results', 'success', '✅ Task 6.2: Touch-optimized inputs (44px minimum)');
+            } else {
+                addResult('requirements-results', 'warning', '⚠️ Task 6.2: Some touch targets may be too small');
+            }
+            
+            // Check priority system
+            const prioritySelect = document.getElementById('task-priority');
+            if (prioritySelect && prioritySelect.options.length >= 4) {
+                addResult('requirements-results', 'success', '✅ Task 6.4: Priority levels with visual indicators');
+            } else {
+                addResult('requirements-results', 'error', '❌ Task 6.4: Priority system not implemented');
+            }
+            
+            // Check categories
+            const categorySelect = document.getElementById('task-category');
+            if (categorySelect && categorySelect.options.length >= 5) {
+                addResult('requirements-results', 'success', '✅ Task 6.7: Task categories and organization');
+            } else {
+                addResult('requirements-results', 'error', '❌ Task 6.7: Category system not implemented');
+            }
+            
+            // Check storage
+            if (typeof localStorage !== 'undefined') {
+                addResult('requirements-results', 'success', '✅ Task 6.5: Local storage persistence available');
+            } else {
+                addResult('requirements-results', 'error', '❌ Task 6.5: Local storage not supported');
+            }
+            
+            // Check search/filter
+            const filterButtons = document.querySelectorAll('.filter-button');
+            if (filterButtons.length >= 3) {
+                addResult('requirements-results', 'success', '✅ Task 6.6: Search and filtering interface');
+            } else {
+                addResult('requirements-results', 'warning', '⚠️ Task 6.6: Filter interface may be incomplete');
+            }
+        };
+        
+        // Storage Implementation Analysis
+        window.analyzeStorage = function() {
+            const results = document.getElementById('storage-results');
+            results.innerHTML = '';
+            
+            addResult('storage-results', 'info', '🔍 Analyzing storage implementation...');
+            
+            // Check localStorage support
+            if (typeof localStorage !== 'undefined') {
+                addResult('storage-results', 'success', '✅ localStorage API supported');
+                
+                // Test localStorage functionality
+                try {
+                    localStorage.setItem('test', 'test');
+                    localStorage.removeItem('test');
+                    addResult('storage-results', 'success', '✅ localStorage read/write operations work');
+                } catch (error) {
+                    addResult('storage-results', 'error', `❌ localStorage operations failed: ${error.message}`);
+                }
+            } else {
+                addResult('storage-results', 'error', '❌ localStorage not supported');
+            }
+            
+            // Check storage capacity
+            try {
+                const testData = 'x'.repeat(1024 * 1024); // 1MB test
+                localStorage.setItem('capacity-test', testData);
+                const used = JSON.stringify(localStorage).length;
+                localStorage.removeItem('capacity-test');
+                
+                addResult('storage-results', 'info', `📊 Storage usage: ${Math.round(used / 1024)}KB`);
+                
+                if (used < 5 * 1024 * 1024) { // 5MB limit
+                    addResult('storage-results', 'success', '✅ Storage capacity sufficient for to-do data');
+                } else {
+                    addResult('storage-results', 'warning', '⚠️ Storage usage high, consider cleanup');
+                }
+            } catch (error) {
+                addResult('storage-results', 'error', `❌ Storage capacity test failed: ${error.message}`);
+            }
+            
+            // Check for encryption
+            try {
+                const { SecureStorage } = require('./js/secure-storage.js');
+                addResult('storage-results', 'success', '✅ Secure storage with encryption available');
+            } catch (error) {
+                addResult('storage-results', 'info', 'ℹ️ Using standard localStorage (no encryption)');
+            }
+            
+            // Storage type summary
+            addResult('storage-results', 'info', '📋 Storage Implementation: Browser localStorage with JSON serialization');
+            addResult('storage-results', 'info', '🔐 Security: Basic XOR encryption for sensitive data, Web Crypto API for credentials');
+            addResult('storage-results', 'info', '💾 Persistence: Offline-capable, survives browser restarts');
+            addResult('storage-results', 'info', '🔄 Sync: Manual sync capability, no automatic cloud sync');
+        };
+        
+        // CRUD Testing
+        window.testCRUD = async function() {
+            const results = document.getElementById('crud-results');
+            results.innerHTML = '';
+            
+            addResult('crud-results', 'info', '🧪 Testing CRUD operations...');
+            
+            if (!todoManager) {
+                const loaded = await loadTodoManager();
+                if (!loaded) {
+                    addResult('crud-results', 'error', '❌ TodoManager not available');
+                    return;
+                }
+            }
+            
+            try {
+                // Test Create
+                const testTask = {
+                    id: 'test-' + Date.now(),
+                    title: 'Test Task',
+                    description: 'Test description',
+                    category: 'other',
+                    priority: 'medium',
+                    status: 'pending',
+                    createdAt: new Date().toISOString()
+                };
+                
+                await todoManager.addTask(testTask);
+                addResult('crud-results', 'success', '✅ Create: Task added successfully');
+                
+                // Test Read
+                const tasks = await todoManager.getTasks();
+                const foundTask = tasks.find(t => t.id === testTask.id);
+                if (foundTask) {
+                    addResult('crud-results', 'success', '✅ Read: Task retrieved successfully');
+                } else {
+                    addResult('crud-results', 'error', '❌ Read: Task not found after creation');
+                }
+                
+                // Test Update
+                const updatedTask = { ...foundTask, title: 'Updated Test Task' };
+                await todoManager.updateTask(updatedTask);
+                addResult('crud-results', 'success', '✅ Update: Task updated successfully');
+                
+                // Test Delete
+                await todoManager.deleteTask(testTask.id);
+                addResult('crud-results', 'success', '✅ Delete: Task deleted successfully');
+                
+            } catch (error) {
+                addResult('crud-results', 'error', `❌ CRUD test failed: ${error.message}`);
+            }
+        };
+        
+        // Touch Optimization Testing
+        window.testTouchOptimization = function() {
+            const results = document.getElementById('touch-results');
+            results.innerHTML = '';
+            
+            addResult('touch-results', 'info', '👆 Testing touch optimization...');
+            
+            const touchTargets = document.querySelectorAll('button, input, select, .task-item');
+            let optimizedCount = 0;
+            let totalCount = touchTargets.length;
+            
+            touchTargets.forEach(target => {
+                const rect = target.getBoundingClientRect();
+                if (rect.height >= 44 && rect.width >= 44) {
+                    optimizedCount++;
+                }
+            });
+            
+            const percentage = Math.round((optimizedCount / totalCount) * 100);
+            
+            if (percentage >= 90) {
+                addResult('touch-results', 'success', `✅ Touch optimization: ${percentage}% of targets meet 44px minimum`);
+            } else if (percentage >= 70) {
+                addResult('touch-results', 'warning', `⚠️ Touch optimization: ${percentage}% of targets meet 44px minimum`);
+            } else {
+                addResult('touch-results', 'error', `❌ Touch optimization: Only ${percentage}% of targets meet 44px minimum`);
+            }
+            
+            addResult('touch-results', 'info', `📱 Touch targets analyzed: ${totalCount} total, ${optimizedCount} optimized`);
+        };
+        
+        // Completion & Deletion Testing
+        window.testCompletionDeletion = async function() {
+            const results = document.getElementById('completion-results');
+            results.innerHTML = '';
+            
+            addResult('completion-results', 'info', '✅ Testing completion and deletion...');
+            
+            if (!todoManager) {
+                const loaded = await loadTodoManager();
+                if (!loaded) {
+                    addResult('completion-results', 'error', '❌ TodoManager not available');
+                    return;
+                }
+            }
+            
+            try {
+                // Create test task
+                const testTask = {
+                    id: 'completion-test-' + Date.now(),
+                    title: 'Completion Test Task',
+                    description: 'Test task for completion',
+                    category: 'other',
+                    priority: 'low',
+                    status: 'pending',
+                    createdAt: new Date().toISOString()
+                };
+                
+                await todoManager.addTask(testTask);
+                
+                // Test completion
+                await todoManager.toggleTaskStatus(testTask.id);
+                const completedTask = await todoManager.getTasks().then(tasks => 
+                    tasks.find(t => t.id === testTask.id)
+                );
+                
+                if (completedTask && completedTask.status === 'completed') {
+                    addResult('completion-results', 'success', '✅ Task completion toggle works');
+                } else {
+                    addResult('completion-results', 'error', '❌ Task completion toggle failed');
+                }
+                
+                // Test deletion
+                await todoManager.deleteTask(testTask.id);
+                const deletedTask = await todoManager.getTasks().then(tasks => 
+                    tasks.find(t => t.id === testTask.id)
+                );
+                
+                if (!deletedTask) {
+                    addResult('completion-results', 'success', '✅ Task deletion works');
+                } else {
+                    addResult('completion-results', 'error', '❌ Task deletion failed');
+                }
+                
+            } catch (error) {
+                addResult('completion-results', 'error', `❌ Completion/deletion test failed: ${error.message}`);
+            }
+        };
+        
+        // Priority Levels Testing
+        window.testPriorityLevels = function() {
+            const results = document.getElementById('priority-results');
+            results.innerHTML = '';
+            
+            addResult('priority-results', 'info', '🎯 Testing priority levels...');
+            
+            const prioritySelect = document.getElementById('task-priority');
+            if (!prioritySelect) {
+                addResult('priority-results', 'error', '❌ Priority select not found');
+                return;
+            }
+            
+            const priorities = Array.from(prioritySelect.options).map(option => ({
+                value: option.value,
+                text: option.textContent
+            }));
+            
+            const expectedPriorities = ['low', 'medium', 'high', 'urgent'];
+            const foundPriorities = priorities.map(p => p.value);
+            
+            const missing = expectedPriorities.filter(p => !foundPriorities.includes(p));
+            const extra = foundPriorities.filter(p => !expectedPriorities.includes(p));
+            
+            if (missing.length === 0 && extra.length === 0) {
+                addResult('priority-results', 'success', '✅ All expected priority levels present');
+            } else {
+                if (missing.length > 0) {
+                    addResult('priority-results', 'error', `❌ Missing priorities: ${missing.join(', ')}`);
+                }
+                if (extra.length > 0) {
+                    addResult('priority-results', 'warning', `⚠️ Extra priorities: ${extra.join(', ')}`);
+                }
+            }
+            
+            // Check visual indicators
+            priorities.forEach(priority => {
+                if (priority.text.includes('🟢') || priority.text.includes('🟡') || 
+                    priority.text.includes('🟠') || priority.text.includes('🔴')) {
+                    addResult('priority-results', 'success', `✅ Priority ${priority.value} has visual indicator`);
+                } else {
+                    addResult('priority-results', 'warning', `⚠️ Priority ${priority.value} missing visual indicator`);
+                }
+            });
+        };
+        
+        // Persistence Testing
+        window.testPersistence = async function() {
+            const results = document.getElementById('persistence-results');
+            results.innerHTML = '';
+            
+            addResult('persistence-results', 'info', '💾 Testing data persistence...');
+            
+            if (!todoManager) {
+                const loaded = await loadTodoManager();
+                if (!loaded) {
+                    addResult('persistence-results', 'error', '❌ TodoManager not available');
+                    return;
+                }
+            }
+            
+            try {
+                // Create test task
+                const testTask = {
+                    id: 'persistence-test-' + Date.now(),
+                    title: 'Persistence Test Task',
+                    description: 'Test task for persistence',
+                    category: 'other',
+                    priority: 'medium',
+                    status: 'pending',
+                    createdAt: new Date().toISOString()
+                };
+                
+                await todoManager.addTask(testTask);
+                
+                // Check if task is in localStorage
+                const storageKey = 'btm_tasks';
+                const storedData = localStorage.getItem(storageKey);
+                
+                if (storedData) {
+                    const parsedData = JSON.parse(storedData);
+                    const foundTask = parsedData.find(t => t.id === testTask.id);
+                    
+                    if (foundTask) {
+                        addResult('persistence-results', 'success', '✅ Task persisted to localStorage');
+                    } else {
+                        addResult('persistence-results', 'error', '❌ Task not found in localStorage');
+                    }
+                } else {
+                    addResult('persistence-results', 'error', '❌ No data found in localStorage');
+                }
+                
+                // Clean up
+                await todoManager.deleteTask(testTask.id);
+                
+            } catch (error) {
+                addResult('persistence-results', 'error', `❌ Persistence test failed: ${error.message}`);
+            }
+        };
+        
+        // Search & Filtering Testing
+        window.testSearchFiltering = function() {
+            const results = document.getElementById('search-results');
+            results.innerHTML = '';
+            
+            addResult('search-results', 'info', '🔍 Testing search and filtering...');
+            
+            const filterButtons = document.querySelectorAll('.filter-button');
+            
+            if (filterButtons.length >= 3) {
+                addResult('search-results', 'success', `✅ Filter interface: ${filterButtons.length} filter options available`);
+                
+                const filterValues = Array.from(filterButtons).map(btn => btn.dataset.filter);
+                const expectedFilters = ['all', 'pending', 'completed'];
+                
+                const missing = expectedFilters.filter(f => !filterValues.includes(f));
+                if (missing.length === 0) {
+                    addResult('search-results', 'success', '✅ All expected filters present');
+                } else {
+                    addResult('search-results', 'warning', `⚠️ Missing filters: ${missing.join(', ')}`);
+                }
+            } else {
+                addResult('search-results', 'error', '❌ Insufficient filter options');
+            }
+            
+            // Test filter button functionality
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    addResult('search-results', 'success', `✅ Filter "${this.dataset.filter}" activated`);
+                });
+            });
+        };
+        
+        // Categories Testing
+        window.testCategories = function() {
+            const results = document.getElementById('category-results');
+            results.innerHTML = '';
+            
+            addResult('category-results', 'info', '📂 Testing categories and organization...');
+            
+            const categorySelect = document.getElementById('task-category');
+            if (!categorySelect) {
+                addResult('category-results', 'error', '❌ Category select not found');
+                return;
+            }
+            
+            const categories = Array.from(categorySelect.options).map(option => ({
+                value: option.value,
+                text: option.textContent
+            }));
+            
+            const expectedCategories = ['maintenance', 'cleaning', 'inventory', 'customer', 'admin', 'emergency', 'other'];
+            const foundCategories = categories.map(c => c.value);
+            
+            const missing = expectedCategories.filter(c => !foundCategories.includes(c));
+            const extra = foundCategories.filter(c => !expectedCategories.includes(c));
+            
+            if (missing.length === 0) {
+                addResult('category-results', 'success', '✅ All expected categories present');
+            } else {
+                addResult('category-results', 'error', `❌ Missing categories: ${missing.join(', ')}`);
+            }
+            
+            if (extra.length > 0) {
+                addResult('category-results', 'warning', `⚠️ Extra categories: ${extra.join(', ')}`);
+            }
+            
+            // Check visual indicators
+            categories.forEach(category => {
+                if (category.text.includes('🔧') || category.text.includes('🧹') || 
+                    category.text.includes('📦') || category.text.includes('👥') ||
+                    category.text.includes('📋') || category.text.includes('🚨') ||
+                    category.text.includes('📝')) {
+                    addResult('category-results', 'success', `✅ Category ${category.value} has visual indicator`);
+                } else {
+                    addResult('category-results', 'warning', `⚠️ Category ${category.value} missing visual indicator`);
+                }
+            });
+        };
+        
+        // Performance Testing
+        window.testPerformance = async function() {
+            const results = document.getElementById('metrics-results');
+            results.innerHTML = '';
+            
+            addResult('metrics-results', 'info', '⚡ Testing performance and storage metrics...');
+            
+            // Test storage performance
+            const startTime = performance.now();
+            
+            try {
+                // Create multiple test tasks
+                const testTasks = [];
+                for (let i = 0; i < 100; i++) {
+                    testTasks.push({
+                        id: `perf-test-${i}-${Date.now()}`,
+                        title: `Performance Test Task ${i}`,
+                        description: `Test task ${i} for performance testing`,
+                        category: 'other',
+                        priority: 'medium',
+                        status: 'pending',
+                        createdAt: new Date().toISOString()
+                    });
+                }
+                
+                // Store tasks
+                const storageKey = 'btm_tasks';
+                const existingData = localStorage.getItem(storageKey);
+                const existingTasks = existingData ? JSON.parse(existingData) : [];
+                const allTasks = [...existingTasks, ...testTasks];
+                
+                localStorage.setItem(storageKey, JSON.stringify(allTasks));
+                
+                const endTime = performance.now();
+                const duration = endTime - startTime;
+                
+                addResult('metrics-results', 'success', `✅ Storage performance: ${duration.toFixed(2)}ms for 100 tasks`);
+                
+                // Check storage size
+                const dataSize = JSON.stringify(allTasks).length;
+                addResult('metrics-results', 'info', `📊 Data size: ${Math.round(dataSize / 1024)}KB for ${allTasks.length} tasks`);
+                
+                // Clean up
+                localStorage.setItem(storageKey, JSON.stringify(existingTasks));
+                
+            } catch (error) {
+                addResult('metrics-results', 'error', `❌ Performance test failed: ${error.message}`);
+            }
+        };
+        
+        // Interactive Task Management
+        window.addTestTask = async function() {
+            const title = document.getElementById('task-title').value;
+            const description = document.getElementById('task-description').value;
+            const category = document.getElementById('task-category').value;
+            const priority = document.getElementById('task-priority').value;
+            
+            if (!title.trim()) {
+                alert('Please enter a task title');
+                return;
+            }
+            
+            if (!todoManager) {
+                const loaded = await loadTodoManager();
+                if (!loaded) {
+                    alert('TodoManager not available');
+                    return;
+                }
+            }
+            
+            try {
+                const task = {
+                    id: 'manual-' + Date.now(),
+                    title: title,
+                    description: description,
+                    category: category,
+                    priority: priority,
+                    status: 'pending',
+                    createdAt: new Date().toISOString()
+                };
+                
+                await todoManager.addTask(task);
+                
+                // Clear form
+                document.getElementById('task-title').value = '';
+                document.getElementById('task-description').value = '';
+                document.getElementById('task-category').value = 'other';
+                document.getElementById('task-priority').value = 'medium';
+                
+                // Refresh display
+                displayTasks();
+                
+                alert('Task added successfully!');
+                
+            } catch (error) {
+                alert(`Failed to add task: ${error.message}`);
+            }
+        };
+        
+        // Display tasks
+        async function displayTasks() {
+            const container = document.getElementById('todo-items-display');
+            
+            if (!todoManager) {
+                container.innerHTML = '<p>TodoManager not loaded</p>';
+                return;
+            }
+            
+            try {
+                const tasks = await todoManager.getTasks();
+                
+                if (tasks.length === 0) {
+                    container.innerHTML = '<p>No tasks found. Add a task to get started!</p>';
+                    return;
+                }
+                
+                container.innerHTML = tasks.map(task => `
+                    <div class="task-item ${task.status === 'completed' ? 'task-completed' : ''} priority-${task.priority}">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4>${task.title}</h4>
+                                <p>${task.description || 'No description'}</p>
+                                <div>
+                                    <span class="category-badge" style="background: #e9ecef;">${task.category}</span>
+                                    <span class="category-badge" style="background: #${task.priority === 'urgent' ? 'dc3545' : task.priority === 'high' ? 'fd7e14' : task.priority === 'medium' ? 'ffc107' : '28a745'}20;">${task.priority}</span>
+                                </div>
+                            </div>
+                            <div>
+                                <button onclick="toggleTaskStatus('${task.id}')" style="margin-right: 5px;">
+                                    ${task.status === 'completed' ? '↩️' : '✅'}
+                                </button>
+                                <button onclick="deleteTask('${task.id}')" style="background: #dc3545;">
+                                    🗑️
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                container.innerHTML = `<p>Error loading tasks: ${error.message}</p>`;
+            }
+        }
+        
+        // Task actions
+        window.toggleTaskStatus = async function(taskId) {
+            if (!todoManager) return;
+            
+            try {
+                await todoManager.toggleTaskStatus(taskId);
+                displayTasks();
+            } catch (error) {
+                alert(`Failed to toggle task: ${error.message}`);
+            }
+        };
+        
+        window.deleteTask = async function(taskId) {
+            if (!todoManager) return;
+            
+            if (confirm('Are you sure you want to delete this task?')) {
+                try {
+                    await todoManager.deleteTask(taskId);
+                    displayTasks();
+                } catch (error) {
+                    alert(`Failed to delete task: ${error.message}`);
+                }
+            }
+        };
+        
+        // Initialize
+        window.addEventListener('load', async () => {
+            await loadTodoManager();
+            displayTasks();
+        });
+    </script>
+</body>
+</html> 

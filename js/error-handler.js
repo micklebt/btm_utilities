@@ -83,6 +83,64 @@ class ErrorHandler {
         this.setupGlobalHandlers();
     }
 
+    // Initialize error handler
+    async init() {
+        try {
+            logger.info('Initializing Error Handler');
+            
+            // Load stored errors
+            await this.loadStoredErrors();
+            
+            // Setup global handlers
+            this.setupGlobalHandlers();
+            
+            // Setup recovery strategies
+            this.setupRecoveryStrategies();
+            
+            logger.info('Error Handler initialized successfully');
+            return true;
+        } catch (error) {
+            console.error('Error Handler initialization failed:', error);
+            return false;
+        }
+    }
+
+    // Load stored errors from storage
+    async loadStoredErrors() {
+        try {
+            const storedErrors = await storageUtils.get('btm_errors', false, []);
+            if (Array.isArray(storedErrors)) {
+                this.errors = storedErrors.slice(-this.maxErrors); // Keep only recent errors
+            }
+        } catch (error) {
+            console.warn('Failed to load stored errors:', error);
+        }
+    }
+
+    // Setup recovery strategies
+    setupRecoveryStrategies() {
+        // Network error recovery
+        this.registerRecoveryStrategy(ErrorType.NETWORK, async (errorObj) => {
+            // Wait and retry
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            return this.retryOperation(errorObj);
+        });
+
+        // Validation error recovery
+        this.registerRecoveryStrategy(ErrorType.VALIDATION, async (errorObj) => {
+            // Focus on input field
+            this.focusOnInput();
+            return false; // Don't retry automatically
+        });
+
+        // Authentication error recovery
+        this.registerRecoveryStrategy(ErrorType.AUTHENTICATION, async (errorObj) => {
+            // Redirect to login
+            this.redirectToLogin();
+            return false;
+        });
+    }
+
     // Setup global error handlers
     setupGlobalHandlers() {
         // Handle unhandled promise rejections

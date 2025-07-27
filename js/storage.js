@@ -367,6 +367,38 @@ export class StorageMigration {
 
 // Export storage utilities
 export const storageUtils = {
+    // Initialize storage system
+    async init() {
+        try {
+            // Initialize storage instance
+            if (!storage) {
+                throw new Error('Storage not initialized');
+            }
+            
+            // Check storage support
+            if (!storage.supported) {
+                console.warn('Storage not supported, using fallback');
+            }
+            
+            // Initialize data managers
+            await Promise.all([
+                collectionsManager.load(),
+                contactsManager.load(),
+                todosManager.load(),
+                settingsManager.load(),
+                credentialsManager.load(),
+                notificationsManager.load(),
+                sessionManager.load()
+            ]);
+            
+            console.log('Storage system initialized successfully');
+            return true;
+        } catch (error) {
+            console.error('Storage initialization failed:', error);
+            return false;
+        }
+    },
+
     // Basic storage operations
     set: (key, value, encrypt = false) => storage.setItem(key, value, encrypt),
     get: (key, decrypt = false, defaultValue = null) => storage.getItem(key, decrypt, defaultValue),

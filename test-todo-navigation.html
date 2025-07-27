@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo Navigation Test</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/utilities.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Todo Navigation Test</h1>
+        
+        <div class="test-section">
+            <h2>Navigation Test</h2>
+            <button id="test-todo-nav" class="primary-button">Test Todo Navigation</button>
+            <button id="test-money-nav" class="primary-button">Test Money Collection Navigation</button>
+            <div id="nav-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>App Interface</h2>
+            <!-- Main Navigation -->
+            <nav class="main-nav">
+                <div class="nav-container">
+                    <button class="nav-item active" data-section="money-collection">
+                        <span class="nav-icon">💰</span>
+                        <span class="nav-label">Money Collection</span>
+                    </button>
+                    <button class="nav-item" data-section="todo">
+                        <span class="nav-icon">📋</span>
+                        <span class="nav-label">To-Do</span>
+                    </button>
+                    <button class="nav-item" data-section="contacts">
+                        <span class="nav-icon">📞</span>
+                        <span class="nav-label">Contacts</span>
+                    </button>
+                </div>
+            </nav>
+
+            <!-- Main Content Area -->
+            <main class="main-content">
+                <!-- Money Collection Section -->
+                <section id="money-collection" class="content-section active">
+                    <div class="section-header">
+                        <h2>Money Collection</h2>
+                    </div>
+                    <p>This is the money collection section.</p>
+                </section>
+
+                <!-- To-Do Section -->
+                <section id="todo" class="content-section">
+                    <div class="section-header">
+                        <h2>To-Do List</h2>
+                        <button id="add-task" class="primary-button">
+                            <span class="button-icon">➕</span>
+                            Add Task
+                        </button>
+                    </div>
+                    <div class="todo-list">
+                        <div class="todo-filters">
+                            <button class="filter-button active" data-filter="all">All</button>
+                            <button class="filter-button" data-filter="pending">Pending</button>
+                            <button class="filter-button" data-filter="completed">Completed</button>
+                        </div>
+                        <div id="todo-items" class="todo-items">
+                            <p>Todo items will appear here when the todo manager is loaded.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Contacts Section -->
+                <section id="contacts" class="content-section">
+                    <div class="section-header">
+                        <h2>Emergency Contacts</h2>
+                    </div>
+                    <p>This is the contacts section.</p>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        function addResult(message, type = 'info') {
+            const results = document.getElementById('nav-results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = `<span class="timestamp">${new Date().toLocaleTimeString()}</span> ${message}`;
+            results.appendChild(div);
+        }
+
+        function navigateToSection(sectionName) {
+            try {
+                addResult(`🔄 Navigating to section: ${sectionName}`, 'info');
+                
+                // Hide all sections
+                const sections = document.querySelectorAll('.content-section');
+                sections.forEach(section => {
+                    section.classList.remove('active');
+                    addResult(`📝 Hiding section: ${section.id}`, 'info');
+                });
+
+                // Show target section
+                let targetSection = document.getElementById(sectionName);
+                if (!targetSection) {
+                    targetSection = document.getElementById(`${sectionName}-section`);
+                }
+                
+                if (targetSection) {
+                    targetSection.classList.add('active');
+                    addResult(`✅ Showing section: ${targetSection.id}`, 'success');
+                } else {
+                    addResult(`❌ Section not found: ${sectionName}`, 'error');
+                }
+
+                // Update navigation
+                const navItems = document.querySelectorAll('.nav-item');
+                navItems.forEach(item => {
+                    item.classList.remove('active');
+                });
+
+                const activeNavItem = document.querySelector(`[data-section="${sectionName}"]`);
+                if (activeNavItem) {
+                    activeNavItem.classList.add('active');
+                    addResult(`✅ Updated navigation: ${sectionName}`, 'success');
+                } else {
+                    addResult(`❌ Navigation item not found: ${sectionName}`, 'error');
+                }
+
+            } catch (error) {
+                addResult(`❌ Navigation error: ${error.message}`, 'error');
+            }
+        }
+
+        // Set up test buttons
+        document.getElementById('test-todo-nav').addEventListener('click', () => {
+            addResult('🧪 Testing Todo Navigation...', 'info');
+            navigateToSection('todo');
+        });
+
+        document.getElementById('test-money-nav').addEventListener('click', () => {
+            addResult('🧪 Testing Money Collection Navigation...', 'info');
+            navigateToSection('money-collection');
+        });
+
+        // Set up navigation listeners
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                const section = e.currentTarget.dataset.section;
+                addResult(`🖱️ Navigation clicked: ${section}`, 'info');
+                navigateToSection(section);
+            });
+        });
+
+        addResult('🚀 Navigation test ready. Click the test buttons or navigation items.', 'success');
+    </script>
+
+    <style>
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        
+        .result {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        
+        .result.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .result.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .result.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .timestamp {
+            font-size: 0.8em;
+            opacity: 0.7;
+        }
+    </style>
+</body>
+</html> 

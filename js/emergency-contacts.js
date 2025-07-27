@@ -101,7 +101,7 @@ export class EmergencyContacts {
 
     async loadContacts() {
         try {
-            const savedContacts = await storageUtils.contactsManager.load();
+            const savedContacts = await storageUtils.contacts.load();
             this.contacts = savedContacts || [];
             logger.info(`Loaded ${this.contacts.length} emergency contacts`);
         } catch (error) {
@@ -448,7 +448,7 @@ export class EmergencyContacts {
             }
 
             // Save to storage
-            await storageUtils.contactsManager.save(this.contacts);
+            await storageUtils.contacts.save(this.contacts);
 
             // Update display
             this.updateContactsDisplay();
@@ -480,7 +480,7 @@ export class EmergencyContacts {
             this.contacts = this.contacts.filter(c => c.id !== contactId);
 
             // Save to storage
-            await storageUtils.contactsManager.save(this.contacts);
+            await storageUtils.contacts.save(this.contacts);
 
             // Update display
             this.updateContactsDisplay();

@@ -71,6 +71,43 @@ class Logger {
         delete this.context[key];
     }
 
+    // Initialize logger
+    async init() {
+        try {
+            console.log('Initializing Logger');
+            
+            // Load stored logs
+            await this.loadStoredLogs();
+            
+            // Set up log level based on environment
+            if (config.app.debug) {
+                this.setLogLevel(LogLevel.DEBUG);
+            }
+            
+            // Add initial context
+            this.addContext('appVersion', config.app.version);
+            this.addContext('environment', config.app.environment);
+            
+            console.log('Logger initialized successfully');
+            return true;
+        } catch (error) {
+            console.error('Logger initialization failed:', error);
+            return false;
+        }
+    }
+
+    // Load stored logs from storage
+    async loadStoredLogs() {
+        try {
+            const storedLogs = await storageUtils.get('btm_logs', false, []);
+            if (Array.isArray(storedLogs)) {
+                this.logs = storedLogs.slice(-this.maxLogs); // Keep only recent logs
+            }
+        } catch (error) {
+            console.warn('Failed to load stored logs:', error);
+        }
+    }
+
     // Clear context
     clearContext() {
         this.context = {};

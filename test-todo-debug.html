@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo Debug Test</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/utilities.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Todo Debug Test</h1>
+        
+        <div class="test-section">
+            <h2>Debug Results</h2>
+            <div id="debug-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Todo Interface</h2>
+            <section id="todo" class="content-section">
+                <div class="section-header">
+                    <h2>To-Do List</h2>
+                    <button id="add-task" class="primary-button">
+                        <span class="button-icon">➕</span>
+                        Add Task
+                    </button>
+                </div>
+                <div class="todo-list">
+                    <div class="todo-filters">
+                        <button class="filter-button active" data-filter="all">All</button>
+                        <button class="filter-button" data-filter="pending">Pending</button>
+                        <button class="filter-button" data-filter="completed">Completed</button>
+                    </div>
+                    <div id="todo-items" class="todo-items">
+                        <!-- Todo items will be dynamically added here -->
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script type="module">
+        function addDebugResult(type, message) {
+            const results = document.getElementById('debug-results');
+            const div = document.createElement('div');
+            div.className = `debug-result ${type}`;
+            div.innerHTML = `<span class="timestamp">${new Date().toLocaleTimeString()}</span> ${message}`;
+            results.appendChild(div);
+        }
+
+        async function runDebugTests() {
+            addDebugResult('info', '🔍 Starting Todo Debug Tests...');
+
+            // Test 1: Check if todo section exists
+            addDebugResult('info', '📋 Testing todo section...');
+            const todoSection = document.getElementById('todo');
+            if (todoSection) {
+                addDebugResult('success', '✅ Todo section found');
+            } else {
+                addDebugResult('error', '❌ Todo section not found');
+                return;
+            }
+
+            // Test 2: Check if add task button exists
+            const addTaskBtn = document.getElementById('add-task');
+            if (addTaskBtn) {
+                addDebugResult('success', '✅ Add task button found');
+            } else {
+                addDebugResult('error', '❌ Add task button not found');
+            }
+
+            // Test 3: Check if todo items container exists
+            const todoItems = document.getElementById('todo-items');
+            if (todoItems) {
+                addDebugResult('success', '✅ Todo items container found');
+            } else {
+                addDebugResult('error', '❌ Todo items container not found');
+            }
+
+            // Test 4: Test todo manager module loading
+            addDebugResult('info', '🔧 Testing todo manager module...');
+            try {
+                const todoManager = await import('./js/todo-manager.js?v=1.0.3');
+                if (todoManager.default) {
+                    addDebugResult('success', '✅ Todo manager module loaded successfully');
+                    
+                    // Test 5: Test todo manager initialization
+                    addDebugResult('info', '🚀 Testing todo manager initialization...');
+                    try {
+                        await todoManager.default.init();
+                        addDebugResult('success', '✅ Todo manager initialized successfully');
+                    } catch (initError) {
+                        addDebugResult('error', `❌ Todo manager initialization failed: ${initError.message}`);
+                        console.error('Todo manager init error:', initError);
+                    }
+                } else {
+                    addDebugResult('error', '❌ Todo manager module not found');
+                }
+            } catch (error) {
+                addDebugResult('error', `❌ Todo manager module failed to load: ${error.message}`);
+                console.error('Todo manager load error:', error);
+            }
+
+            // Test 6: Test storage utils
+            addDebugResult('info', '💾 Testing storage utils...');
+            try {
+                const { storageUtils } = await import('./js/storage.js?v=1.0.2');
+                if (storageUtils && storageUtils.todos) {
+                    addDebugResult('success', '✅ Storage utils loaded successfully');
+                    
+                    // Test storage initialization
+                    try {
+                        await storageUtils.init();
+                        addDebugResult('success', '✅ Storage utils initialized successfully');
+                    } catch (storageError) {
+                        addDebugResult('error', `❌ Storage utils initialization failed: ${storageError.message}`);
+                    }
+                } else {
+                    addDebugResult('error', '❌ Storage utils not found');
+                }
+            } catch (error) {
+                addDebugResult('error', `❌ Storage utils failed to load: ${error.message}`);
+            }
+
+            // Test 7: Test logger
+            addDebugResult('info', '📝 Testing logger...');
+            try {
+                const { logger } = await import('./js/logger.js?v=1.0.2');
+                if (logger) {
+                    addDebugResult('success', '✅ Logger loaded successfully');
+                } else {
+                    addDebugResult('error', '❌ Logger not found');
+                }
+            } catch (error) {
+                addDebugResult('error', `❌ Logger failed to load: ${error.message}`);
+            }
+
+            addDebugResult('success', '🎉 Todo debug tests completed!');
+        }
+
+        // Run tests when page loads
+        document.addEventListener('DOMContentLoaded', runDebugTests);
+    </script>
+
+    <style>
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        
+        .debug-result {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        
+        .debug-result.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .debug-result.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .debug-result.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .timestamp {
+            font-size: 0.8em;
+            opacity: 0.7;
+        }
+    </style>
+</body>
+</html> 

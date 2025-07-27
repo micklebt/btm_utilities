@@ -13,6 +13,9 @@ import { configManager } from './config-manager.js?v=1.0.2';
 import { environmentManager } from './environment-manager.js?v=1.0.2';
 import { apiKeyManager } from './api-key-manager.js?v=1.0.2';
 import { qrScanner } from './qr-scanner.js?v=1.0.3';
+import todoManager from './todo-manager.js?v=1.0.3';
+import emergencyContacts from './emergency-contacts.js?v=1.0.2';
+import { SecurityCameras } from './security-cameras.js?v=1.0.6';
 
 // Application state management
 class AppState {
@@ -161,6 +164,24 @@ class BTMUtility {
             await apiKeyManager.init();
             await configManager.init();
             await qrScanner.init();
+            await todoManager.init();
+            await emergencyContacts.init();
+            
+            // Initialize security cameras module
+            this.securityCameras = new SecurityCameras();
+            await this.securityCameras.init();
+            
+            // Add test function to window for debugging
+            window.testApp = () => {
+                console.log('Testing BTM Utility app...');
+                console.log('Security cameras module:', this.securityCameras);
+                if (this.securityCameras) {
+                    console.log('Security cameras module loaded successfully');
+                    window.testSecurityCameras();
+                } else {
+                    console.error('Security cameras module not loaded');
+                }
+            };
             
             logger.info('All modules initialized successfully');
         } catch (error) {
@@ -301,6 +322,14 @@ class BTMUtility {
             });
         }
 
+        // Search contacts button
+        const searchContactsBtn = document.getElementById('search-contacts');
+        if (searchContactsBtn) {
+            searchContactsBtn.addEventListener('click', () => {
+                this.handleSearchContacts();
+            });
+        }
+
         // Settings button
         const settingsBtn = document.getElementById('settings-button');
         console.log('Settings button element:', settingsBtn);
@@ -406,17 +435,33 @@ class BTMUtility {
 
     // Handle add task
     handleAddTask() {
-        const taskText = prompt('Enter task description:');
-        if (taskText) {
-            const task = {
-                id: generateId('task'),
-                text: taskText,
-                completed: false,
-                timestamp: new Date().toISOString()
-            };
-            
-            logger.info('Task added', task);
-            alert('Task added successfully!');
+        // Use the todo manager to show the add task modal
+        if (todoManager && typeof todoManager.showAddTaskModal === 'function') {
+            todoManager.showAddTaskModal();
+        } else {
+            // Fallback to simple prompt
+            const taskText = prompt('Enter task description:');
+            if (taskText) {
+                const task = {
+                    id: generateId('task'),
+                    text: taskText,
+                    completed: false,
+                    timestamp: new Date().toISOString()
+                };
+                
+                logger.info('Task added', task);
+                alert('Task added successfully!');
+            }
+        }
+    }
+
+    handleSearchContacts() {
+        // Use the emergency contacts module to handle search
+        if (emergencyContacts && typeof emergencyContacts.showSearchModal === 'function') {
+            emergencyContacts.showSearchModal();
+        } else {
+            // Fallback to simple alert
+            alert('Contact search feature is being initialized. Please try again in a moment.');
         }
     }
 
@@ -455,10 +500,16 @@ class BTMUtility {
                 section.classList.remove('active');
             });
 
-            // Show target section
-            const targetSection = document.getElementById(`${sectionName}-section`);
+            // Show target section - look for both formats
+            let targetSection = document.getElementById(sectionName);
+            if (!targetSection) {
+                targetSection = document.getElementById(`${sectionName}-section`);
+            }
+            
             if (targetSection) {
                 targetSection.classList.add('active');
+            } else {
+                logger.warn(`Section not found: ${sectionName}`);
             }
 
             // Update navigation
@@ -486,6 +537,10 @@ class BTMUtility {
     // Get module
     getModule(name) {
         return this.modules.get(name);
+    }
+
+    getSecurityCameras() {
+        return this.securityCameras;
     }
 
     // Register event listener
