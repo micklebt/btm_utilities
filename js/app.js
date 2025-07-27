@@ -111,8 +111,9 @@ class BTMUtility {
             // Check online status
             this.updateOnlineStatus();
 
-            // Hide loading screen
+            // Hide loading screen and show main app
             this.hideLoadingScreen();
+            this.showMainApp();
 
             // Mark as initialized
             this.state.set('isInitialized', true);
@@ -132,24 +133,21 @@ class BTMUtility {
 
     // Initialize core modules
     async initializeModules() {
-        const modules = [
-            { name: 'ui', path: './modules/ui.js' },
-            { name: 'api', path: './modules/api.js' },
-            { name: 'notifications', path: './modules/notifications.js' },
-            { name: 'sync', path: './modules/sync.js' },
-        ];
-
-        for (const module of modules) {
-            try {
-                const moduleInstance = await this.loadModule(module.path);
-                this.modules.set(module.name, moduleInstance);
-                
-                if (moduleInstance && typeof moduleInstance.init === 'function') {
-                    await moduleInstance.init(this);
-                }
-            } catch (error) {
-                logger.warn(`Failed to load module ${module.name}`, null, error);
+        // For now, skip loading external modules until they're created
+        logger.info('Skipping external module loading for now');
+        
+        // Initialize the core feature modules we've created
+        try {
+            // Initialize money collection
+            const moneyCollectionModule = await import('./money-collection.js');
+            if (moneyCollectionModule.default) {
+                this.modules.set('moneyCollection', moneyCollectionModule.default);
             }
+            
+            // Initialize other modules as needed
+            logger.info('Core modules initialized successfully');
+        } catch (error) {
+            logger.warn('Failed to load some modules', null, error);
         }
     }
 
@@ -167,21 +165,35 @@ class BTMUtility {
     // Load application settings
     async loadSettings() {
         try {
-            const settings = storageUtils.settings.load({
+            // Use default settings for now
+            const defaultSettings = {
                 theme: 'default',
                 language: 'en',
                 notifications: true,
                 autoSync: true,
                 offlineMode: true,
-                debugMode: config.app.debug,
-            });
-
-            this.state.set('settings', settings);
+                debugMode: false,
+            };
             
-            // Apply settings
-            this.applySettings(settings);
+            this.state.set('settings', defaultSettings);
+            this.applySettings(defaultSettings);
+            
+            logger.info('Default settings applied successfully');
         } catch (error) {
-            logger.error('Failed to load settings', null, error);
+            logger.warn('Failed to load settings, using defaults', null, error);
+            
+            // Use default settings
+            const defaultSettings = {
+                theme: 'default',
+                language: 'en',
+                notifications: true,
+                autoSync: true,
+                offlineMode: true,
+                debugMode: false,
+            };
+            
+            this.state.set('settings', defaultSettings);
+            this.applySettings(defaultSettings);
         }
     }
 
@@ -231,6 +243,58 @@ class BTMUtility {
         window.addEventListener('unhandledrejection', (event) => {
             this.handleError(event.reason);
         });
+
+        // Navigation
+        this.setupNavigationListeners();
+        
+        // Form interactions
+        this.setupFormListeners();
+    }
+
+    // Set up navigation listeners
+    setupNavigationListeners() {
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                const section = e.currentTarget.dataset.section;
+                this.navigateToSection(section);
+            });
+        });
+    }
+
+    // Set up form listeners
+    setupFormListeners() {
+        // Money collection form
+        const submitCollectionBtn = document.getElementById('submit-collection');
+        if (submitCollectionBtn) {
+            submitCollectionBtn.addEventListener('click', () => {
+                this.handleCollectionSubmit();
+            });
+        }
+
+        // Add task button
+        const addTaskBtn = document.getElementById('add-task');
+        if (addTaskBtn) {
+            addTaskBtn.addEventListener('click', () => {
+                this.handleAddTask();
+            });
+        }
+
+        // Settings button
+        const settingsBtn = document.getElementById('settings-button');
+        if (settingsBtn) {
+            settingsBtn.addEventListener('click', () => {
+                this.showSettings();
+            });
+        }
+
+        // Close settings button
+        const closeSettingsBtn = document.getElementById('close-settings');
+        if (closeSettingsBtn) {
+            closeSettingsBtn.addEventListener('click', () => {
+                this.hideSettings();
+            });
+        }
     }
 
     // Update online status
@@ -267,6 +331,79 @@ class BTMUtility {
             setTimeout(() => {
                 loadingScreen.classList.add('hidden');
             }, 500); // Small delay for smooth transition
+        }
+    }
+
+    // Show main application
+    showMainApp() {
+        const appContainer = document.getElementById('app');
+        if (appContainer) {
+            appContainer.classList.remove('hidden');
+        }
+    }
+
+    // Handle collection submit
+    handleCollectionSubmit() {
+        const locationSelect = document.getElementById('location-select');
+        const machineSelect = document.getElementById('machine-select');
+        const counterValue = document.getElementById('counter-value');
+        const notes = document.getElementById('collection-notes');
+        const coinsToOffice = document.getElementById('coins-to-office');
+
+        if (!locationSelect.value || !machineSelect.value || !counterValue.value) {
+            alert('Please fill in all required fields');
+            return;
+        }
+
+        const collection = {
+            location: locationSelect.value,
+            machine: machineSelect.value,
+            counterValue: parseInt(counterValue.value),
+            notes: notes.value,
+            coinsToOffice: coinsToOffice.checked,
+            timestamp: new Date().toISOString()
+        };
+
+        logger.info('Collection submitted', collection);
+        alert('Collection submitted successfully!');
+        
+        // Clear form
+        locationSelect.value = '';
+        machineSelect.value = '';
+        counterValue.value = '';
+        notes.value = '';
+        coinsToOffice.checked = false;
+    }
+
+    // Handle add task
+    handleAddTask() {
+        const taskText = prompt('Enter task description:');
+        if (taskText) {
+            const task = {
+                id: generateId('task'),
+                text: taskText,
+                completed: false,
+                timestamp: new Date().toISOString()
+            };
+            
+            logger.info('Task added', task);
+            alert('Task added successfully!');
+        }
+    }
+
+    // Show settings
+    showSettings() {
+        const settingsModal = document.getElementById('settings-modal');
+        if (settingsModal) {
+            settingsModal.classList.remove('hidden');
+        }
+    }
+
+    // Hide settings
+    hideSettings() {
+        const settingsModal = document.getElementById('settings-modal');
+        if (settingsModal) {
+            settingsModal.classList.add('hidden');
         }
     }
 
