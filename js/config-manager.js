@@ -64,6 +64,16 @@ class ConfigManager {
                 this.hideConfigModal();
             }
         });
+
+        // Test buttons
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'test-admin-access') {
+                this.testAdminAccess();
+            }
+            if (e.target.id === 'test-dev-mode') {
+                this.testDevMode();
+            }
+        });
     }
 
     // Check if admin mode is active
@@ -700,6 +710,136 @@ class ConfigManager {
     // Hide configuration
     hideConfig() {
         this.hideConfigModal();
+    }
+
+    // Test admin access functionality
+    testAdminAccess() {
+        const resultsDiv = document.getElementById('test-results');
+        if (!resultsDiv) return;
+
+        const tests = [];
+        
+        // Test 1: Check if admin section exists
+        const adminSection = document.querySelector('.admin-section');
+        tests.push({
+            name: 'Admin Section Exists',
+            passed: !!adminSection,
+            details: adminSection ? 'Found in DOM' : 'Not found in DOM'
+        });
+
+        // Test 2: Check if admin toggle button exists
+        const adminToggle = document.getElementById('admin-toggle');
+        tests.push({
+            name: 'Admin Toggle Button',
+            passed: !!adminToggle,
+            details: adminToggle ? 'Button found' : 'Button not found'
+        });
+
+        // Test 3: Check current admin mode
+        tests.push({
+            name: 'Current Admin Mode',
+            passed: true,
+            details: `Admin mode: ${this.isAdminMode}`
+        });
+
+        // Test 4: Check development environment
+        tests.push({
+            name: 'Development Environment',
+            passed: this.isDevelopment,
+            details: `Hostname: ${window.location.hostname}, Is dev: ${this.isDevelopment}`
+        });
+
+        // Test 5: Check secure storage
+        try {
+            const usage = secureStorageUtils.getUsage();
+            tests.push({
+                name: 'Secure Storage',
+                passed: true,
+                details: `Initialized: ${usage.isInitialized}, Has credentials: ${usage.hasCredentials}`
+            });
+        } catch (error) {
+            tests.push({
+                name: 'Secure Storage',
+                passed: false,
+                details: `Error: ${error.message}`
+            });
+        }
+
+        // Display results
+        const passedTests = tests.filter(t => t.passed).length;
+        const totalTests = tests.length;
+        
+        resultsDiv.innerHTML = `
+            <div style="background: ${passedTests === totalTests ? '#d4edda' : '#f8d7da'}; 
+                        color: ${passedTests === totalTests ? '#155724' : '#721c24'}; 
+                        padding: 10px; border-radius: 4px; margin-bottom: 10px;">
+                <strong>Test Results: ${passedTests}/${totalTests} passed</strong>
+            </div>
+            ${tests.map(test => `
+                <div style="margin: 5px 0; padding: 5px; background: ${test.passed ? 'rgba(40,167,69,0.1)' : 'rgba(220,53,69,0.1)'}; border-radius: 3px;">
+                    <strong>${test.passed ? '✅' : '❌'} ${test.name}:</strong> ${test.details}
+                </div>
+            `).join('')}
+        `;
+    }
+
+    // Test development mode functionality
+    async testDevMode() {
+        const resultsDiv = document.getElementById('test-results');
+        if (!resultsDiv) return;
+
+        resultsDiv.innerHTML = '<div style="color: #ffc107;">🧪 Testing development mode...</div>';
+
+        try {
+            // Test development mode activation
+            if (!this.isDevelopment) {
+                resultsDiv.innerHTML = `
+                    <div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px;">
+                        <strong>❌ Not in development environment</strong><br>
+                        Hostname: ${window.location.hostname}<br>
+                        Expected: localhost or 127.0.0.1
+                    </div>
+                `;
+                return;
+            }
+
+            // Test secure storage initialization
+            const usage = secureStorageUtils.getUsage();
+            if (!usage.isInitialized) {
+                resultsDiv.innerHTML = `
+                    <div style="background: #fff3cd; color: #856404; padding: 10px; border-radius: 4px;">
+                        <strong>⚠️ Secure storage not initialized</strong><br>
+                        This is normal for first-time setup.
+                    </div>
+                `;
+                return;
+            }
+
+            // Test admin mode activation
+            const beforeState = this.isAdminMode;
+            await this.enterAdminMode();
+            const afterState = this.isAdminMode;
+
+            resultsDiv.innerHTML = `
+                <div style="background: #d4edda; color: #155724; padding: 10px; border-radius: 4px;">
+                    <strong>✅ Development Mode Test Results</strong><br>
+                    <strong>Environment:</strong> Development (${window.location.hostname})<br>
+                    <strong>Secure Storage:</strong> Initialized<br>
+                    <strong>Admin Mode Before:</strong> ${beforeState}<br>
+                    <strong>Admin Mode After:</strong> ${afterState}<br>
+                    <strong>Development Password:</strong> dev-admin-2024-secure<br>
+                    <strong>Test Status:</strong> ${afterState ? 'PASSED' : 'FAILED'}
+                </div>
+            `;
+
+        } catch (error) {
+            resultsDiv.innerHTML = `
+                <div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px;">
+                    <strong>❌ Development Mode Test Failed</strong><br>
+                    Error: ${error.message}
+                </div>
+            `;
+        }
     }
 }
 

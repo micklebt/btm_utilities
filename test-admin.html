@@ -5,18 +5,95 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Interface Test</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
-        button { padding: 10px 15px; margin: 5px; }
-        .admin-section { background: #f0f0f0; padding: 15px; margin: 10px 0; }
-        .result { padding: 10px; margin: 10px 0; border-radius: 4px; }
-        .success { background: #d4edda; color: #155724; }
-        .error { background: #f8d7da; color: #721c24; }
-        .info { background: #d1ecf1; color: #0c5460; }
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+        .test-section { 
+            margin: 20px 0; 
+            padding: 15px; 
+            border: 1px solid #444; 
+            border-radius: 8px;
+            background-color: #2a2a2a;
+        }
+        button { 
+            padding: 10px 15px; 
+            margin: 5px; 
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0052a3;
+        }
+        .admin-section { 
+            background: #f0f0f0; 
+            padding: 15px; 
+            margin: 10px 0; 
+        }
+        .result { 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 4px; 
+        }
+        .success { 
+            background: #d4edda; 
+            color: #155724; 
+        }
+        .error { 
+            background: #f8d7da; 
+            color: #721c24; 
+        }
+        .info { 
+            background: #d1ecf1; 
+            color: #0c5460; 
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .test-instructions {
+            background-color: #333;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .test-instructions h3 {
+            color: #ffc107;
+            margin-top: 0;
+        }
+        .test-instructions ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .test-instructions li {
+            margin: 5px 0;
+        }
+        .debug-info {
+            background-color: #444;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
-    <h1>Admin Interface Test</h1>
+    <h1>🔧 Admin Interface Test Suite</h1>
+    
+    <div class="test-instructions">
+        <h3>📋 Test Instructions:</h3>
+        <ol>
+            <li><strong>First:</strong> Open the main app in another tab: <a href="index.html" target="_blank" style="color: #ffc107;">Open Main App</a></li>
+            <li><strong>Then:</strong> Run the tests below to verify admin functionality</li>
+            <li><strong>Note:</strong> Some tests require the main app to be loaded and running</li>
+        </ol>
+    </div>
     
     <div class="test-section">
         <h2>Test 1: Check if ConfigManager is loaded</h2>
@@ -25,7 +102,7 @@
     </div>
     
     <div class="test-section">
-        <h2>Test 2: Check if Admin Section is visible</h2>
+        <h2>Test 2: Check if Admin Section is visible in main app</h2>
         <button onclick="testAdminSection()">Test Admin Section</button>
         <div id="admin-section-status"></div>
     </div>
@@ -37,10 +114,22 @@
     </div>
 
     <div class="test-section">
-        <h2>Test 4: Open Settings Modal and Check Admin Section</h2>
+        <h2>Test 4: Test Settings Modal and Admin Section</h2>
         <button onclick="testSettingsModal()">Open Settings Modal</button>
         <button onclick="closeSettingsModal()">Close Settings Modal</button>
         <div id="settings-modal-status"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 5: Test Development Mode Access</h2>
+        <button onclick="testDevelopmentMode()">Test Development Mode</button>
+        <div id="development-mode-status"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 6: Debug DOM Structure</h2>
+        <button onclick="debugDOM()">Debug DOM</button>
+        <div id="debug-status"></div>
     </div>
 
     <script type="module">
@@ -51,11 +140,14 @@
         window.testConfigManager = function() {
             const status = document.getElementById('config-manager-status');
             try {
+                const usage = secureStorageUtils.getUsage();
                 status.innerHTML = `
                     <div class="result success">
                         <p>✅ ConfigManager loaded successfully</p>
-                        <p>Admin mode: ${configManager.isAdminMode}</p>
-                        <p>Has credentials: ${secureStorageUtils.hasCredentials()}</p>
+                        <p><strong>Admin mode:</strong> ${configManager.isAdminMode}</p>
+                        <p><strong>Has credentials:</strong> ${usage.hasCredentials}</p>
+                        <p><strong>Is development:</strong> ${configManager.isDevelopment}</p>
+                        <p><strong>Secure storage initialized:</strong> ${usage.isInitialized}</p>
                     </div>
                 `;
             } catch (error) {
@@ -65,29 +157,51 @@
         
         window.testAdminSection = function() {
             const status = document.getElementById('admin-section-status');
-            const adminSection = document.querySelector('.admin-section');
+            
+            // Check if we're in the main app context
+            const mainApp = window.opener || window.parent;
+            const adminSection = document.querySelector('.admin-section') || 
+                               (mainApp && mainApp.document.querySelector('.admin-section'));
+            
             if (adminSection) {
                 status.innerHTML = `
                     <div class="result success">
                         <p>✅ Admin section found in DOM</p>
-                        <p>Visible: ${adminSection.offsetParent !== null}</p>
-                        <p>Display: ${getComputedStyle(adminSection).display}</p>
-                        <p>Classes: ${adminSection.className}</p>
+                        <p><strong>Visible:</strong> ${adminSection.offsetParent !== null}</p>
+                        <p><strong>Display:</strong> ${getComputedStyle(adminSection).display}</p>
+                        <p><strong>Classes:</strong> ${adminSection.className}</p>
+                        <p><strong>Text content:</strong> ${adminSection.textContent.substring(0, 100)}...</p>
                     </div>
                 `;
             } else {
-                status.innerHTML = '<div class="result error"><p>❌ Admin section not found in DOM</p></div>';
+                status.innerHTML = `
+                    <div class="result error">
+                        <p>❌ Admin section not found in DOM</p>
+                        <p><strong>Note:</strong> This test needs to be run from the main app page</p>
+                        <p><strong>Available sections:</strong> ${Array.from(document.querySelectorAll('.settings-section')).map(s => s.querySelector('h3')?.textContent || 'Unknown').join(', ')}</p>
+                    </div>
+                `;
             }
         };
         
         window.testAdminToggle = function() {
             const status = document.getElementById('admin-toggle-status');
             try {
+                // Check current state
+                const beforeState = configManager.isAdminMode;
+                
+                // Toggle admin mode
                 configManager.toggleAdminMode();
+                
+                // Check new state
+                const afterState = configManager.isAdminMode;
+                
                 status.innerHTML = `
                     <div class="result success">
                         <p>✅ Admin toggle executed</p>
-                        <p>Admin mode: ${configManager.isAdminMode}</p>
+                        <p><strong>Before:</strong> Admin mode: ${beforeState}</p>
+                        <p><strong>After:</strong> Admin mode: ${afterState}</p>
+                        <p><strong>Toggle successful:</strong> ${beforeState !== afterState ? 'Yes' : 'No'}</p>
                     </div>
                 `;
             } catch (error) {
@@ -98,13 +212,14 @@
         window.testSettingsModal = function() {
             const status = document.getElementById('settings-modal-status');
             
-            // First, check if we're on the main app page
+            // Check if we're on the main app page
             const settingsModal = document.getElementById('settings-modal');
             if (!settingsModal) {
                 status.innerHTML = `
                     <div class="result error">
                         <p>❌ Settings modal not found. Make sure you're on the main app page.</p>
-                        <p>Try opening the main app first: <a href="index.html" target="_blank">Open Main App</a></p>
+                        <p><strong>Available modals:</strong> ${Array.from(document.querySelectorAll('.modal')).map(m => ({ id: m.id, classes: m.className, visible: m.classList.contains('show') })).map(m => m.id || 'unnamed').join(', ')}</p>
+                        <p><strong>Available elements with 'settings':</strong> ${Array.from(document.querySelectorAll('[id*="settings"]')).map(e => e.id).join(', ')}</p>
                     </div>
                 `;
                 return;
@@ -121,10 +236,10 @@
                         <div class="result success">
                             <p>✅ Settings modal opened successfully</p>
                             <p>✅ Admin section found in settings modal</p>
-                            <p>Admin section visible: ${adminSection.offsetParent !== null}</p>
-                            <p>Admin section display: ${getComputedStyle(adminSection).display}</p>
-                            <p>Admin section classes: ${adminSection.className}</p>
-                            <p>Admin toggle button: ${adminSection.querySelector('#admin-toggle') ? 'Found' : 'Not found'}</p>
+                            <p><strong>Admin section visible:</strong> ${adminSection.offsetParent !== null}</p>
+                            <p><strong>Admin section display:</strong> ${getComputedStyle(adminSection).display}</p>
+                            <p><strong>Admin section classes:</strong> ${adminSection.className}</p>
+                            <p><strong>Admin toggle button:</strong> ${adminSection.querySelector('#admin-toggle') ? 'Found' : 'Not found'}</p>
                         </div>
                     `;
                 } else {
@@ -132,7 +247,8 @@
                         <div class="result error">
                             <p>✅ Settings modal opened successfully</p>
                             <p>❌ Admin section not found in settings modal</p>
-                            <p>Available sections: ${Array.from(settingsModal.querySelectorAll('.settings-section')).map(s => s.querySelector('h3')?.textContent || 'Unknown').join(', ')}</p>
+                            <p><strong>Available sections:</strong> ${Array.from(settingsModal.querySelectorAll('.settings-section')).map(s => s.querySelector('h3')?.textContent || 'Unknown').join(', ')}</p>
+                            <p><strong>Modal content:</strong> ${settingsModal.innerHTML.substring(0, 200)}...</p>
                         </div>
                     `;
                 }
@@ -149,6 +265,57 @@
                     </div>
                 `;
             }
+        };
+
+        window.testDevelopmentMode = function() {
+            const status = document.getElementById('development-mode-status');
+            try {
+                const isDev = configManager.isDevelopment;
+                const usage = secureStorageUtils.getUsage();
+                
+                status.innerHTML = `
+                    <div class="result ${isDev ? 'success' : 'warning'}">
+                        <p>${isDev ? '✅' : '⚠️'} Development Mode Test</p>
+                        <p><strong>Is development environment:</strong> ${isDev}</p>
+                        <p><strong>Hostname:</strong> ${window.location.hostname}</p>
+                        <p><strong>Secure storage initialized:</strong> ${usage.isInitialized}</p>
+                        <p><strong>Has credentials:</strong> ${usage.hasCredentials}</p>
+                        ${isDev ? '<p><strong>Development password:</strong> dev-admin-2024-secure</p>' : ''}
+                    </div>
+                `;
+            } catch (error) {
+                status.innerHTML = `<div class="result error"><p>❌ Error: ${error.message}</p></div>`;
+            }
+        };
+
+        window.debugDOM = function() {
+            const status = document.getElementById('debug-status');
+            
+            const debugInfo = {
+                hostname: window.location.hostname,
+                pathname: window.location.pathname,
+                modals: Array.from(document.querySelectorAll('.modal')).map(m => ({ id: m.id, classes: m.className, visible: m.classList.contains('show') })),
+                settingsSections: Array.from(document.querySelectorAll('.settings-section')).map(s => ({ 
+                    title: s.querySelector('h3')?.textContent || 'No title',
+                    classes: s.className,
+                    hasAdmin: s.classList.contains('admin-section')
+                })),
+                adminSections: Array.from(document.querySelectorAll('.admin-section')).map(a => ({ 
+                    classes: a.className,
+                    visible: a.offsetParent !== null,
+                    display: getComputedStyle(a).display
+                })),
+                buttons: Array.from(document.querySelectorAll('button')).filter(b => b.id && b.id.includes('admin')).map(b => ({ id: b.id, text: b.textContent.trim() }))
+            };
+            
+            status.innerHTML = `
+                <div class="result info">
+                    <p>🔍 DOM Debug Information</p>
+                    <div class="debug-info">
+                        <pre>${JSON.stringify(debugInfo, null, 2)}</pre>
+                    </div>
+                </div>
+            `;
         };
     </script>
 </body>
