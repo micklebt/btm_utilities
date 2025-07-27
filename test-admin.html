@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Interface Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        button { padding: 10px 15px; margin: 5px; }
+        .admin-section { background: #f0f0f0; padding: 15px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Admin Interface Test</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Check if ConfigManager is loaded</h2>
+        <button onclick="testConfigManager()">Test ConfigManager</button>
+        <div id="config-manager-status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 2: Check if Admin Section is visible</h2>
+        <button onclick="testAdminSection()">Test Admin Section</button>
+        <div id="admin-section-status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 3: Simulate Admin Toggle</h2>
+        <button onclick="testAdminToggle()">Test Admin Toggle</button>
+        <div id="admin-toggle-status"></div>
+    </div>
+
+    <script type="module">
+        // Import the modules
+        import { configManager } from './js/config-manager.js?v=1.0.2';
+        import { secureStorageUtils } from './js/secure-storage.js?v=1.0.2';
+        
+        window.testConfigManager = function() {
+            const status = document.getElementById('config-manager-status');
+            try {
+                status.innerHTML = `
+                    <p>✅ ConfigManager loaded successfully</p>
+                    <p>Admin mode: ${configManager.isAdminMode}</p>
+                    <p>Has credentials: ${secureStorageUtils.hasCredentials()}</p>
+                `;
+            } catch (error) {
+                status.innerHTML = `<p>❌ Error: ${error.message}</p>`;
+            }
+        };
+        
+        window.testAdminSection = function() {
+            const status = document.getElementById('admin-section-status');
+            const adminSection = document.querySelector('.admin-section');
+            if (adminSection) {
+                status.innerHTML = `
+                    <p>✅ Admin section found in DOM</p>
+                    <p>Visible: ${adminSection.offsetParent !== null}</p>
+                    <p>Display: ${getComputedStyle(adminSection).display}</p>
+                `;
+            } else {
+                status.innerHTML = '<p>❌ Admin section not found in DOM</p>';
+            }
+        };
+        
+        window.testAdminToggle = function() {
+            const status = document.getElementById('admin-toggle-status');
+            try {
+                configManager.toggleAdminMode();
+                status.innerHTML = `
+                    <p>✅ Admin toggle executed</p>
+                    <p>Admin mode: ${configManager.isAdminMode}</p>
+                `;
+            } catch (error) {
+                status.innerHTML = `<p>❌ Error: ${error.message}</p>`;
+            }
+        };
+    </script>
+</body>
+</html> 

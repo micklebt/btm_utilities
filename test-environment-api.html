@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Environment & API Key Manager Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Environment & API Key Manager Test</h1>
+    
+    <div class="test-section">
+        <h2>Environment Manager Test</h2>
+        <button onclick="testEnvironmentManager()">Test Environment Manager</button>
+        <div id="env-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>API Key Manager Test</h2>
+        <div>
+            <input type="text" id="service-name" placeholder="Service name (e.g., twilio)" value="test-service">
+            <input type="text" id="api-key" placeholder="API key" value="test-key-12345678901234567890123456789012">
+            <button onclick="testAddKey()">Add Test Key</button>
+            <button onclick="testValidateKey()">Validate Key</button>
+            <button onclick="testGetKeyStats()">Get Key Stats</button>
+        </div>
+        <div id="api-results"></div>
+    </div>
+
+    <script type="module">
+        import { environmentManager } from './js/environment-manager.js?v=1.0.2';
+        import { apiKeyManager } from './js/api-key-manager.js?v=1.0.2';
+
+        window.testEnvironmentManager = async function() {
+            const resultsDiv = document.getElementById('env-results');
+            resultsDiv.innerHTML = '<div class="test-result info">Testing Environment Manager...</div>';
+
+            try {
+                // Initialize environment manager
+                await environmentManager.init();
+                
+                const env = environmentManager.getEnvironment();
+                const config = environmentManager.getConfig();
+                
+                let html = `
+                    <div class="test-result success">
+                        <strong>Environment:</strong> ${env}<br>
+                        <strong>Name:</strong> ${config.name}<br>
+                        <strong>Debug Mode:</strong> ${config.debug}<br>
+                        <strong>API Base URL:</strong> ${config.apiBaseUrl}<br>
+                        <strong>Features:</strong> ${JSON.stringify(config.features, null, 2)}
+                    </div>
+                `;
+                
+                resultsDiv.innerHTML = html;
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="test-result error">Error: ${error.message}</div>`;
+            }
+        };
+
+        window.testAddKey = async function() {
+            const resultsDiv = document.getElementById('api-results');
+            const service = document.getElementById('service-name').value;
+            const key = document.getElementById('api-key').value;
+
+            try {
+                await apiKeyManager.init();
+                const keyInfo = await apiKeyManager.addKey(service, key, {
+                    description: 'Test key for validation',
+                    maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+                });
+                
+                resultsDiv.innerHTML = `
+                    <div class="test-result success">
+                        <strong>Key Added Successfully:</strong><br>
+                        Service: ${keyInfo.service}<br>
+                        Created: ${new Date(keyInfo.createdAt).toLocaleString()}<br>
+                        Rotation Date: ${new Date(keyInfo.rotationDate).toLocaleString()}<br>
+                        Permissions: ${keyInfo.permissions.join(', ')}
+                    </div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="test-result error">Error: ${error.message}</div>`;
+            }
+        };
+
+        window.testValidateKey = async function() {
+            const resultsDiv = document.getElementById('api-results');
+            const service = document.getElementById('service-name').value;
+
+            try {
+                const isValid = await apiKeyManager.validateKey(service);
+                const keyInfo = apiKeyManager.getKeyInfo(service);
+                
+                resultsDiv.innerHTML = `
+                    <div class="test-result ${isValid ? 'success' : 'error'}">
+                        <strong>Validation Result:</strong> ${isValid ? 'VALID' : 'INVALID'}<br>
+                        <strong>Last Validated:</strong> ${keyInfo.lastValidated ? new Date(keyInfo.lastValidated).toLocaleString() : 'Never'}<br>
+                        <strong>Last Used:</strong> ${keyInfo.lastUsed ? new Date(keyInfo.lastUsed).toLocaleString() : 'Never'}
+                    </div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="test-result error">Error: ${error.message}</div>`;
+            }
+        };
+
+        window.testGetKeyStats = async function() {
+            const resultsDiv = document.getElementById('api-results');
+
+            try {
+                const stats = apiKeyManager.getKeyStats();
+                const expiringSoon = apiKeyManager.getKeysExpiringSoon(30);
+                
+                resultsDiv.innerHTML = `
+                    <div class="test-result info">
+                        <strong>Key Statistics:</strong><br>
+                        Total Keys: ${stats.total}<br>
+                        Valid Keys: ${stats.valid}<br>
+                        Invalid Keys: ${stats.invalid}<br>
+                        Expired Keys: ${stats.expired}<br>
+                        Expiring Soon: ${stats.expiringSoon}<br>
+                        <br>
+                        <strong>Keys Expiring in 30 Days:</strong><br>
+                        ${expiringSoon.length > 0 ? 
+                            expiringSoon.map(k => `${k.service} (${k.daysUntilExpiry} days)`).join('<br>') : 
+                            'None'
+                        }
+                    </div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="test-result error">Error: ${error.message}</div>`;
+            }
+        };
+
+        // Auto-run environment test on load
+        window.addEventListener('load', () => {
+            setTimeout(testEnvironmentManager, 1000);
+        });
+    </script>
+</body>
+</html> 

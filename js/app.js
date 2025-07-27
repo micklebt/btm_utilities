@@ -10,6 +10,8 @@ import { logger } from './logger.js?v=1.0.2';
 import { errorHandler } from './error-handler.js?v=1.0.2';
 import { secureStorageUtils } from './secure-storage.js?v=1.0.2';
 import { configManager } from './config-manager.js?v=1.0.2';
+import { environmentManager } from './environment-manager.js?v=1.0.2';
+import { apiKeyManager } from './api-key-manager.js?v=1.0.2';
 
 // Application state management
 class AppState {
@@ -145,11 +147,28 @@ class BTMUtility {
 
     // Initialize core modules
     async initializeModules() {
-        // Skip loading external modules for now to avoid import issues
-        logger.info('Skipping external module loading for now');
-        
-        // We'll initialize modules later when the basic app is working
-        logger.info('Core modules initialization skipped');
+        try {
+            logger.info('Initializing core modules');
+            
+            // Initialize environment manager
+            await environmentManager.init();
+            this.modules.set('environment', environmentManager);
+            
+            // Initialize API key manager
+            await apiKeyManager.init();
+            this.modules.set('apiKeys', apiKeyManager);
+            
+            // Initialize config manager
+            await configManager.init();
+            this.modules.set('config', configManager);
+            
+            logger.info('Core modules initialized successfully');
+            
+            return true;
+        } catch (error) {
+            logger.error('Failed to initialize modules', null, error);
+            throw error;
+        }
     }
 
     // Load module dynamically

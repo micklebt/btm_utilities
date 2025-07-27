@@ -475,6 +475,57 @@
     transform: scale(1.1);
 }
 
+/* Session Timeout Message */
+.session-timeout-message {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.timeout-content {
+    background-color: var(--btm-primary-dark);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-xl);
+    text-align: center;
+    max-width: 400px;
+    box-shadow: var(--shadow-xl);
+}
+
+.timeout-content h3 {
+    color: var(--btm-secondary);
+    margin-bottom: var(--spacing-md);
+    font-size: var(--font-size-xl);
+}
+
+.timeout-content p {
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: var(--spacing-lg);
+    line-height: 1.5;
+}
+
+.timeout-content button {
+    background-color: var(--btm-secondary);
+    color: var(--btm-primary-dark);
+    border: none;
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: var(--font-size-md);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+}
+
+.timeout-content button:hover {
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
 /* Camera Feeds */
 .camera-grid {
     display: grid;
