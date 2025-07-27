@@ -12,6 +12,7 @@ import { secureStorageUtils } from './secure-storage.js?v=1.0.2';
 import { configManager } from './config-manager.js?v=1.0.2';
 import { environmentManager } from './environment-manager.js?v=1.0.2';
 import { apiKeyManager } from './api-key-manager.js?v=1.0.2';
+import { qrScanner } from './qr-scanner.js?v=1.0.3';
 
 // Application state management
 class AppState {
@@ -148,26 +149,26 @@ class BTMUtility {
     // Initialize core modules
     async initializeModules() {
         try {
-            logger.info('Initializing core modules');
+            logger.info('Initializing application modules...');
             
-            // Initialize environment manager
+            // Initialize core modules
+            await storageUtils.init();
+            await errorHandler.init();
+            await logger.init();
+            
+            // Initialize feature modules
             await environmentManager.init();
-            this.modules.set('environment', environmentManager);
-            
-            // Initialize API key manager
             await apiKeyManager.init();
-            this.modules.set('apiKeys', apiKeyManager);
-            
-            // Initialize config manager
             await configManager.init();
-            this.modules.set('config', configManager);
+            await qrScanner.init();
             
-            logger.info('Core modules initialized successfully');
-            
-            return true;
+            logger.info('All modules initialized successfully');
         } catch (error) {
-            logger.error('Failed to initialize modules', null, error);
-            throw error;
+            errorHandler.handleError(error, {
+                type: 'client',
+                severity: 'high',
+                context: 'app-module-init'
+            });
         }
     }
 
