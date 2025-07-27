@@ -89,29 +89,37 @@ class BTMUtility {
     // Initialize application
     async init() {
         try {
+            console.log('BTM Utility: Starting initialization...');
             logger.info('Initializing BTM Utility...');
             
             // Validate configuration
+            console.log('BTM Utility: Validating configuration...');
             if (!validateConfig()) {
                 throw new Error('Invalid configuration');
             }
 
             // Show loading screen
+            console.log('BTM Utility: Showing loading screen...');
             this.showLoadingScreen();
 
             // Initialize core modules
+            console.log('BTM Utility: Initializing modules...');
             await this.initializeModules();
 
             // Load settings
+            console.log('BTM Utility: Loading settings...');
             await this.loadSettings();
 
             // Set up event listeners
+            console.log('BTM Utility: Setting up event listeners...');
             this.setupEventListeners();
 
             // Check online status
+            console.log('BTM Utility: Checking online status...');
             this.updateOnlineStatus();
 
             // Hide loading screen and show main app
+            console.log('BTM Utility: Hiding loading screen and showing main app...');
             this.hideLoadingScreen();
             this.showMainApp();
 
@@ -119,6 +127,7 @@ class BTMUtility {
             this.state.set('isInitialized', true);
             this.isInitialized = true;
 
+            console.log('BTM Utility: Initialization complete!');
             logger.info('BTM Utility initialized successfully');
             playSuccessBeep();
             
@@ -126,6 +135,7 @@ class BTMUtility {
             this.triggerEvent('app:initialized');
 
         } catch (error) {
+            console.error('BTM Utility: Initialization failed!', error);
             logger.error('Failed to initialize BTM Utility', null, error);
             this.handleError(error);
         }
@@ -557,10 +567,18 @@ const app = new BTMUtility();
 // Export application instance and utilities
 export { app, AppState };
 
+console.log('BTM Utility: App instance created, checking document ready state...');
+console.log('Document ready state:', document.readyState);
+
 // Initialize application when DOM is ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => app.init());
+    console.log('BTM Utility: Document still loading, adding DOMContentLoaded listener...');
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('BTM Utility: DOMContentLoaded fired, initializing app...');
+        app.init();
+    });
 } else {
+    console.log('BTM Utility: Document already loaded, initializing app immediately...');
     app.init();
 }
 
