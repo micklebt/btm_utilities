@@ -72,9 +72,13 @@ export class QRScanner {
             throw new Error('Canvas API not supported in this browser');
         }
 
-        // Check for jsQR library (will be loaded dynamically)
-        if (typeof jsQR === 'undefined') {
-            logger.warn('jsQR library not loaded - QR detection may not work');
+        // Check for QR libraries (primary and fallback)
+        if (typeof jsQR !== 'undefined') {
+            logger.info('jsQR library loaded successfully');
+        } else if (typeof QrCodeReader !== 'undefined') {
+            logger.info('QrCodeReader library loaded (fallback)');
+        } else {
+            logger.warn('No QR code library detected - QR scanning may not work');
         }
 
         logger.info('QR Scanner API support verified');
@@ -356,7 +360,7 @@ export class QRScanner {
             // Get image data for QR detection
             const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
             
-            // Use jsQR library for QR detection
+            // Try jsQR library first (primary)
             if (typeof jsQR !== 'undefined') {
                 const code = jsQR(imageData.data, imageData.width, imageData.height);
                 
@@ -365,12 +369,30 @@ export class QRScanner {
                     return;
                 }
             }
+            
+            // Try QrCodeReader library as fallback
+            if (typeof QrCodeReader !== 'undefined') {
+                try {
+                    const qr = new QrCodeReader();
+                    const result = await qr.decode(canvas);
+                    
+                    if (result && result.data) {
+                        this.handleQRCodeDetected(result.data);
+                        return;
+                    }
+                } catch (fallbackError) {
+                    // Fallback library failed, continue with animation
+                }
+            }
 
             // Visual feedback - animate scan line
             this.animateScanLine();
 
+            // Continue scanning
+            requestAnimationFrame(() => this.scanQRCode());
         } catch (error) {
             logger.error('Error scanning QR code', null, error);
+            requestAnimationFrame(() => this.scanQRCode());
         }
     }
 
@@ -788,13 +810,18 @@ export class QRScanner {
     }
 }
 
+// Create and export the QR Scanner instance
+const qrScanner = new QRScanner();
+
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        window.qrScanner = new QRScanner();
+        window.qrScanner = qrScanner;
     });
 } else {
-    window.qrScanner = new QRScanner();
+    window.qrScanner = qrScanner;
 }
 
-export default window.qrScanner; 
+// Export both the class and the instance
+export { qrScanner };
+export default qrScanner; 

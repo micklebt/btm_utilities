@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Library Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .result { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <h1>QR Library Loading Test</h1>
+    
+    <div id="results"></div>
+    
+    <button onclick="testLibraries()">Test QR Libraries</button>
+    
+    <!-- QR Code Detection Library -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    
+    <!-- Fallback QR Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-reader@1.0.4/dist/qrcode-reader.min.js"></script>
+    
+    <script>
+        function testLibraries() {
+            const results = document.getElementById('results');
+            results.innerHTML = '';
+            
+            // Test jsQR
+            if (typeof jsQR !== 'undefined') {
+                results.innerHTML += '<div class="result success">✅ jsQR library loaded successfully</div>';
+                console.log('jsQR available:', jsQR);
+            } else {
+                results.innerHTML += '<div class="result error">❌ jsQR library not loaded</div>';
+            }
+            
+            // Test QrCodeReader
+            if (typeof QrCodeReader !== 'undefined') {
+                results.innerHTML += '<div class="result success">✅ QrCodeReader library loaded successfully</div>';
+                console.log('QrCodeReader available:', QrCodeReader);
+            } else {
+                results.innerHTML += '<div class="result error">❌ QrCodeReader library not loaded</div>';
+            }
+            
+            // Test global objects
+            results.innerHTML += '<div class="result warning">🔍 Checking global objects...</div>';
+            console.log('Global jsQR:', window.jsQR);
+            console.log('Global QrCodeReader:', window.QrCodeReader);
+            
+            // Test if libraries are actually functional
+            if (typeof jsQR === 'function') {
+                results.innerHTML += '<div class="result success">✅ jsQR is a function and ready to use</div>';
+            } else if (typeof jsQR === 'object') {
+                results.innerHTML += '<div class="result success">✅ jsQR is an object and ready to use</div>';
+            }
+            
+            if (typeof QrCodeReader === 'function') {
+                results.innerHTML += '<div class="result success">✅ QrCodeReader is a function and ready to use</div>';
+            } else if (typeof QrCodeReader === 'object') {
+                results.innerHTML += '<div class="result success">✅ QrCodeReader is an object and ready to use</div>';
+            }
+        }
+        
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            setTimeout(testLibraries, 1000); // Wait for libraries to load
+        });
+    </script>
+</body>
+</html> 

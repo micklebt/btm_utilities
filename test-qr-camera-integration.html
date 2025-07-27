@@ -285,6 +285,12 @@
         </div>
     </div>
 
+    <!-- QR Code Detection Library -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    
+    <!-- Fallback QR Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-reader@1.0.4/dist/qrcode-reader.min.js"></script>
+
     <script>
         // Test Results Storage
         let testResults = {
@@ -334,8 +340,10 @@
                 // Check if jsQR library is available
                 if (typeof jsQR !== 'undefined') {
                     addResult(taskId, 'success', 'jsQR library is available');
+                } else if (typeof QrCodeReader !== 'undefined') {
+                    addResult(taskId, 'success', 'QrCodeReader library is available (fallback)');
                 } else {
-                    addResult(taskId, 'error', 'jsQR library not found - needs to be included');
+                    addResult(taskId, 'error', 'No QR code library found - needs to be included');
                 }
 
                 // Check for camera API support
