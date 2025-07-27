@@ -1,0 +1,8 @@
+{
+  "development": true,
+  "debug": true,
+  "port": 3000,
+  "host": "localhost",
+  "cors": true,
+  "hotReload": true
+}

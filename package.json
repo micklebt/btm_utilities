@@ -1,0 +1,54 @@
+{
+  "name": "btm-utility",
+  "version": "1.0.0",
+  "description": "BTM Utility - Comprehensive Laundromat Management System",
+  "main": "index.html",
+  "scripts": {
+    "start": "http-server . -p 3000 -c-1 -o",
+    "dev": "http-server . -p 3000 -c-1 -o --cors",
+    "test": "echo \"No tests specified\" && exit 0",
+    "build": "echo \"No build process required for static site\"",
+    "lint": "echo \"No linting configured\" && exit 0",
+    "serve": "python -m http.server 3000",
+    "serve-php": "php -S localhost:3000",
+    "serve-node": "npx http-server . -p 3000 -c-1",
+    "serve-live": "npx live-server --port=3000 --host=localhost --no-browser",
+    "clean": "echo \"Cleaning build artifacts\"",
+    "preview": "http-server . -p 3000 -c-1 -o"
+  },
+  "keywords": [
+    "laundromat",
+    "management",
+    "pwa",
+    "mobile-first",
+    "btm-inc"
+  ],
+  "author": "BTM Inc Development Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/micklebt/btm_utilities.git"
+  },
+  "bugs": {
+    "url": "https://github.com/micklebt/btm_utilities/issues"
+  },
+  "homepage": "https://brianmickley.com/util",
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "live-server": "^1.2.2"
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ],
+  "config": {
+    "port": 3000,
+    "host": "localhost"
+  }
+} 

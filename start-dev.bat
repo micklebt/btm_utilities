@@ -1,0 +1,3 @@
+@echo off
+echo Starting BTM Utility Development Server...
+node server.js
