@@ -553,7 +553,7 @@ class ErrorHandler {
 const errorHandler = new ErrorHandler();
 
 // Export error handler instance and utilities
-export { errorHandler, ErrorType, ErrorSeverity };
+export { errorHandler };
 
 // Export default error handler
 export default errorHandler; 
