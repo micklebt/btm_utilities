@@ -73,6 +73,15 @@ class ConfigManager {
             if (e.target.id === 'test-dev-mode') {
                 this.testDevMode();
             }
+            if (e.target.id === 'test-settings-modal') {
+                this.testSettingsModal();
+            }
+            if (e.target.id === 'test-admin-toggle') {
+                this.testAdminToggle();
+            }
+            if (e.target.id === 'clear-test-results') {
+                this.clearTestResults();
+            }
         });
     }
 
@@ -839,6 +848,161 @@ class ConfigManager {
                     Error: ${error.message}
                 </div>
             `;
+        }
+    }
+
+    // Test settings modal functionality
+    testSettingsModal() {
+        const resultsDiv = document.getElementById('test-results');
+        if (!resultsDiv) return;
+
+        const tests = [];
+        
+        // Test 1: Check if settings modal exists
+        const settingsModal = document.getElementById('settings-modal');
+        tests.push({
+            name: 'Settings Modal Exists',
+            passed: !!settingsModal,
+            details: settingsModal ? 'Found in DOM' : 'Not found in DOM'
+        });
+
+        // Test 2: Check if settings modal is visible
+        if (settingsModal) {
+            const isVisible = settingsModal.classList.contains('show');
+            tests.push({
+                name: 'Settings Modal Visibility',
+                passed: isVisible,
+                details: isVisible ? 'Modal is visible' : 'Modal is hidden'
+            });
+        }
+
+        // Test 3: Check if admin section exists in settings modal
+        if (settingsModal) {
+            const adminSection = settingsModal.querySelector('.admin-section');
+            tests.push({
+                name: 'Admin Section in Modal',
+                passed: !!adminSection,
+                details: adminSection ? 'Found in settings modal' : 'Not found in settings modal'
+            });
+        }
+
+        // Test 4: Check if admin toggle button exists in modal
+        if (settingsModal) {
+            const adminToggle = settingsModal.querySelector('#admin-toggle');
+            tests.push({
+                name: 'Admin Toggle in Modal',
+                passed: !!adminToggle,
+                details: adminToggle ? 'Button found in modal' : 'Button not found in modal'
+            });
+        }
+
+        // Test 5: Check modal structure
+        if (settingsModal) {
+            const sections = settingsModal.querySelectorAll('.settings-section');
+            tests.push({
+                name: 'Modal Structure',
+                passed: sections.length > 0,
+                details: `Found ${sections.length} settings sections`
+            });
+        }
+
+        // Display results
+        const passedTests = tests.filter(t => t.passed).length;
+        const totalTests = tests.length;
+        
+        resultsDiv.innerHTML = `
+            <div style="background: ${passedTests === totalTests ? '#d4edda' : '#f8d7da'}; 
+                        color: ${passedTests === totalTests ? '#155724' : '#721c24'}; 
+                        padding: 10px; border-radius: 4px; margin-bottom: 10px;">
+                <strong>Settings Modal Test Results: ${passedTests}/${totalTests} passed</strong>
+            </div>
+            ${tests.map(test => `
+                <div style="margin: 5px 0; padding: 5px; background: ${test.passed ? 'rgba(40,167,69,0.1)' : 'rgba(220,53,69,0.1)'}; border-radius: 3px;">
+                    <strong>${test.passed ? '✅' : '❌'} ${test.name}:</strong> ${test.details}
+                </div>
+            `).join('')}
+        `;
+    }
+
+    // Test admin toggle functionality
+    async testAdminToggle() {
+        const resultsDiv = document.getElementById('test-results');
+        if (!resultsDiv) return;
+
+        resultsDiv.innerHTML = '<div style="color: #ffc107;">🔄 Testing admin toggle...</div>';
+
+        try {
+            const tests = [];
+            
+            // Test 1: Check current state
+            const beforeState = this.isAdminMode;
+            tests.push({
+                name: 'Initial Admin State',
+                passed: true,
+                details: `Admin mode: ${beforeState}`
+            });
+
+            // Test 2: Check if toggle method exists
+            tests.push({
+                name: 'Toggle Method',
+                passed: typeof this.toggleAdminMode === 'function',
+                details: typeof this.toggleAdminMode === 'function' ? 'Method exists' : 'Method not found'
+            });
+
+            // Test 3: Execute toggle
+            if (typeof this.toggleAdminMode === 'function') {
+                await this.toggleAdminMode();
+                const afterState = this.isAdminMode;
+                
+                tests.push({
+                    name: 'Toggle Execution',
+                    passed: beforeState !== afterState,
+                    details: `Before: ${beforeState}, After: ${afterState}, Changed: ${beforeState !== afterState}`
+                });
+
+                // Test 4: Toggle back
+                await this.toggleAdminMode();
+                const finalState = this.isAdminMode;
+                
+                tests.push({
+                    name: 'Toggle Reversal',
+                    passed: finalState === beforeState,
+                    details: `Final state: ${finalState}, Expected: ${beforeState}`
+                });
+            }
+
+            // Display results
+            const passedTests = tests.filter(t => t.passed).length;
+            const totalTests = tests.length;
+            
+            resultsDiv.innerHTML = `
+                <div style="background: ${passedTests === totalTests ? '#d4edda' : '#f8d7da'}; 
+                            color: ${passedTests === totalTests ? '#155724' : '#721c24'}; 
+                            padding: 10px; border-radius: 4px; margin-bottom: 10px;">
+                    <strong>Admin Toggle Test Results: ${passedTests}/${totalTests} passed</strong>
+                </div>
+                ${tests.map(test => `
+                    <div style="margin: 5px 0; padding: 5px; background: ${test.passed ? 'rgba(40,167,69,0.1)' : 'rgba(220,53,69,0.1)'}; border-radius: 3px;">
+                        <strong>${test.passed ? '✅' : '❌'} ${test.name}:</strong> ${test.details}
+                    </div>
+                `).join('')}
+            `;
+
+        } catch (error) {
+            resultsDiv.innerHTML = `
+                <div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px;">
+                    <strong>❌ Admin Toggle Test Failed</strong><br>
+                    Error: ${error.message}
+                </div>
+            `;
+        }
+    }
+
+    // Clear test results
+    clearTestResults() {
+        const resultsDiv = document.getElementById('test-results');
+        if (resultsDiv) {
+            resultsDiv.innerHTML = '';
         }
     }
 }
