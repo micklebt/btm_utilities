@@ -1,0 +1,56 @@
+/* Layout Styles - Grid and Flexbox Layouts */
+
+/* Collection Form Layout */
+.collection-form {
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: var(--btm-primary-light);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-xl);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Settings Layout */
+.settings-section {
+    margin-bottom: var(--spacing-xl);
+}
+
+.settings-section h3 {
+    margin-bottom: var(--spacing-md);
+    color: var(--btm-secondary);
+    font-size: var(--font-size-lg);
+}
+
+/* Contact Categories */
+.contact-category {
+    margin-bottom: var(--spacing-xl);
+}
+
+.contact-category h3 {
+    margin-bottom: var(--spacing-md);
+    color: var(--btm-secondary);
+    font-size: var(--font-size-lg);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding-bottom: var(--spacing-sm);
+}
+
+/* Responsive Grid Layouts */
+@media (min-width: 768px) {
+    .collection-form {
+        padding: var(--spacing-2xl);
+    }
+    
+    .camera-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .climate-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .camera-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+} 
