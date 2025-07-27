@@ -15,9 +15,9 @@
 - [x] 1.1 - Initialize project structure at brianmickley.com/util with index.html entry point
 - [x] 1.2 - Set up Git repository with proper .gitignore for sensitive config data
 - [x] 1.3 - Create basic HTML5 boilerplate with PWA manifest and meta tags
-- [ ] 1.4 - Implement responsive CSS framework with mobile-first approach (BTM Inc branding) [x]
-- [ ] 1.5 - Set up JavaScript module structure with ES6+ support [x]
-- [ ] 1.6 - Create basic error handling and logging system [x]
+- [x] 1.4 - Implement responsive CSS framework with mobile-first approach (BTM Inc branding)
+- [x] 1.5 - Set up JavaScript module structure with ES6+ support
+- [x] 1.6 - Create basic error handling and logging system
 - [ ] 1.7 - Set up development environment with local testing server
 
 ### **2.0 - Configuration & Security Foundation**
