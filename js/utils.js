@@ -331,6 +331,60 @@ export function downloadFile(data, filename, type = 'text/plain') {
     URL.revokeObjectURL(url);
 }
 
+// Audio utilities
+export function playBeep(frequency = 800, duration = 200, volume = 0.3) {
+    try {
+        // Create audio context
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Create oscillator
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        // Configure oscillator
+        oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+        oscillator.type = 'sine';
+        
+        // Configure gain (volume)
+        gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
+        
+        // Connect nodes
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        // Play beep
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + duration / 1000);
+        
+        // Note: logger will be available when imported
+    } catch (error) {
+        // Note: logger will be available when imported
+        // Fallback: try to play a simple beep using HTML5 audio
+        try {
+            const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT');
+            audio.volume = volume;
+            audio.play().catch(() => {
+                // Silent fallback if audio fails
+            });
+        } catch (fallbackError) {
+            // Silent fallback if all audio methods fail
+        }
+    }
+}
+
+export function playSuccessBeep() {
+    playBeep(1000, 150, 0.3); // Higher pitch, shorter duration
+}
+
+export function playErrorBeep() {
+    playBeep(400, 300, 0.3); // Lower pitch, longer duration
+}
+
+export function playNotificationBeep() {
+    playBeep(800, 200, 0.3); // Standard notification beep
+}
+
 // Export default utilities
 export default {
     debounce,

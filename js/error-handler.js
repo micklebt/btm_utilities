@@ -6,7 +6,7 @@
 import { config } from './config.js';
 import { logger } from './logger.js';
 import { storageUtils } from './storage.js';
-import { generateId, formatDate } from './utils.js';
+import { generateId, formatDate, playErrorBeep } from './utils.js';
 
 // Error types
 export const ErrorType = {
@@ -175,6 +175,11 @@ class ErrorHandler {
 
             // Show error to user
             await this.showErrorToUser(errorObj, userMessage);
+
+            // Play error beep for high severity errors
+            if (errorObj.severity === ErrorSeverity.HIGH || errorObj.severity === ErrorSeverity.CRITICAL) {
+                playErrorBeep();
+            }
 
             // Execute recovery strategy
             await this.executeRecoveryStrategy(errorObj);

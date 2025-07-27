@@ -5,7 +5,7 @@
 
 import { config, validateConfig } from './config.js';
 import { storageUtils } from './storage.js';
-import { generateId, formatDate, isMobile, supportsFeature } from './utils.js';
+import { generateId, formatDate, isMobile, supportsFeature, playSuccessBeep, playNotificationBeep } from './utils.js';
 import { logger } from './logger.js';
 import { errorHandler } from './error-handler.js';
 
@@ -119,6 +119,7 @@ class BTMUtility {
             this.isInitialized = true;
 
             logger.info('BTM Utility initialized successfully');
+            playSuccessBeep();
             
             // Trigger initialization event
             this.triggerEvent('app:initialized');
