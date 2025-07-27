@@ -332,44 +332,79 @@ export function downloadFile(data, filename, type = 'text/plain') {
 }
 
 // Audio utilities
+let audioContext = null;
+
+function getAudioContext() {
+    if (!audioContext) {
+        try {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (error) {
+            // AudioContext creation failed, return null
+            return null;
+        }
+    }
+    return audioContext;
+}
+
 export function playBeep(frequency = 800, duration = 200, volume = 0.3) {
     try {
-        // Create audio context
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        // Get or create audio context
+        const ctx = getAudioContext();
         
-        // Create oscillator
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        // Configure oscillator
-        oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
-        oscillator.type = 'sine';
-        
-        // Configure gain (volume)
-        gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
-        
-        // Connect nodes
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        // Play beep
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + duration / 1000);
-        
-        // Note: logger will be available when imported
-    } catch (error) {
-        // Note: logger will be available when imported
-        // Fallback: try to play a simple beep using HTML5 audio
-        try {
-            const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT');
-            audio.volume = volume;
-            audio.play().catch(() => {
-                // Silent fallback if audio fails
-            });
-        } catch (fallbackError) {
-            // Silent fallback if all audio methods fail
+        if (!ctx) {
+            // AudioContext not available, use fallback
+            playBeepFallback(volume);
+            return;
         }
+        
+        // Resume audio context if suspended (required for autoplay policies)
+        if (ctx.state === 'suspended') {
+            ctx.resume().then(() => {
+                playBeepInternal(ctx, frequency, duration, volume);
+            }).catch(() => {
+                // Fallback to HTML5 audio if AudioContext fails
+                playBeepFallback(volume);
+            });
+        } else {
+            playBeepInternal(ctx, frequency, duration, volume);
+        }
+    } catch (error) {
+        // Fallback to HTML5 audio
+        playBeepFallback(volume);
+    }
+}
+
+function playBeepInternal(audioContext, frequency, duration, volume) {
+    // Create oscillator
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    // Configure oscillator
+    oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+    oscillator.type = 'sine';
+    
+    // Configure gain (volume)
+    gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
+    
+    // Connect nodes
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    // Play beep
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + duration / 1000);
+}
+
+function playBeepFallback(volume) {
+    try {
+        const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT');
+        audio.volume = volume;
+        audio.play().catch(() => {
+            // Silent fallback if audio fails
+        });
+    } catch (fallbackError) {
+        // Silent fallback if all audio methods fail
     }
 }
 

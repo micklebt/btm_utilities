@@ -323,6 +323,7 @@ export const contactsManager = new DataManager(config.storage.contacts, true);
 export const todosManager = new DataManager(config.storage.todos, false);
 export const settingsManager = new DataManager(config.storage.settings, true);
 export const credentialsManager = new DataManager(config.storage.apiCredentials, true);
+export const notificationsManager = new DataManager('btm_notifications', false);
 
 // Session storage for temporary data
 export const sessionManager = new DataManager('btm_session', false);
@@ -388,6 +389,7 @@ export const storageUtils = {
     todos: todosManager,
     settings: settingsManager,
     credentials: credentialsManager,
+    notifications: notificationsManager,
     session: sessionManager,
 
     // Migration

@@ -8,6 +8,8 @@ import { storageUtils } from './storage.js?v=1.0.2';
 import { generateId, formatDate, isMobile, supportsFeature, playSuccessBeep, playNotificationBeep } from './utils.js?v=1.0.2';
 import { logger } from './logger.js?v=1.0.2';
 import { errorHandler } from './error-handler.js?v=1.0.2';
+import { secureStorageUtils } from './secure-storage.js?v=1.0.2';
+import { configManager } from './config-manager.js?v=1.0.2';
 
 // Application state management
 class AppState {
@@ -281,10 +283,18 @@ class BTMUtility {
 
         // Settings button
         const settingsBtn = document.getElementById('settings-button');
+        console.log('Settings button element:', settingsBtn);
+        console.log('Settings button HTML:', settingsBtn ? settingsBtn.outerHTML : 'NOT FOUND');
         if (settingsBtn) {
-            settingsBtn.addEventListener('click', () => {
+            console.log('Adding click listener to settings button');
+            settingsBtn.addEventListener('click', (e) => {
+                console.log('Settings button clicked!', e.target);
+                e.preventDefault();
+                e.stopPropagation();
                 this.showSettings();
             });
+        } else {
+            console.error('Settings button not found!');
         }
 
         // Close settings button
@@ -392,9 +402,19 @@ class BTMUtility {
 
     // Show settings
     showSettings() {
+        console.log('showSettings() called');
         const settingsModal = document.getElementById('settings-modal');
+        console.log('Settings modal element:', settingsModal);
         if (settingsModal) {
-            settingsModal.classList.remove('hidden');
+            console.log('Showing settings modal');
+            console.log('Modal classes before:', settingsModal.className);
+            settingsModal.classList.add('show');
+            console.log('Modal classes after showing:', settingsModal.className);
+            console.log('Modal computed style display:', window.getComputedStyle(settingsModal).display);
+            console.log('Modal computed style visibility:', window.getComputedStyle(settingsModal).visibility);
+            console.log('Modal computed style opacity:', window.getComputedStyle(settingsModal).opacity);
+        } else {
+            console.error('Settings modal element not found!');
         }
     }
 
@@ -402,7 +422,7 @@ class BTMUtility {
     hideSettings() {
         const settingsModal = document.getElementById('settings-modal');
         if (settingsModal) {
-            settingsModal.classList.add('hidden');
+            settingsModal.classList.remove('show');
         }
     }
 

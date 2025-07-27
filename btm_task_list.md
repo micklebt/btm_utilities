@@ -21,8 +21,8 @@
 - [x] 1.7 - Set up development environment with local testing server
 
 ### **2.0 - Configuration & Security Foundation**
-- [ ] 2.1 - Create encrypted localStorage system for API credentials
-- [ ] 2.2 - Build configuration interface for Brian's admin access only
+- [x] 2.1 - Create encrypted localStorage system for API credentials
+- [x] 2.2 - Build configuration interface for Brian's admin access only
 - [ ] 2.3 - Implement environment management for development vs production
 - [ ] 2.4 - Set up API key validation and rotation system
 - [ ] 2.5 - Create secure config.js template with placeholder structure

@@ -33,15 +33,15 @@
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0066cc">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="BTM Utility">
     
     <!-- Icons -->
     <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <link rel="apple-touch-icon" href="images/icons/icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="images/icons/icon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="images/icons/icon-16x16.png">
+    <link rel="apple-touch-icon" href="images/icons/icon-192x192.svg">
+    <link rel="icon" type="image/svg+xml" sizes="32x32" href="images/icons/icon-32x32.svg">
+    <link rel="icon" type="image/svg+xml" sizes="16x16" href="images/icons/icon-16x16.svg">
     
     <!-- Preconnect to external domains for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -332,49 +332,73 @@
             </section>
         </main>
 
-        <!-- Settings Modal -->
-        <div id="settings-modal" class="modal hidden">
+                <!-- Settings Modal -->
+        <div id="settings-modal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
                     <h2>Settings</h2>
                     <button id="close-settings" class="close-button">&times;</button>
                 </div>
                 <div class="modal-body">
-                    <div class="settings-section">
-                        <h3>Configuration</h3>
-                        <div class="form-group">
-                            <label for="api-key">API Key</label>
-                            <input type="password" id="api-key" class="form-input" placeholder="Enter API key">
+                    <form id="settings-form" class="settings-form">
+                        <div class="settings-section">
+                            <h3>Configuration</h3>
+                            <!-- Hidden username field for accessibility -->
+                            <label for="username" class="hidden">Username</label>
+                            <input type="text" id="username" name="username" autocomplete="username" class="hidden">
+                            <div class="form-group">
+                                <label for="api-key">API Key</label>
+                                <input type="password" id="api-key" class="form-input" placeholder="Enter API key" autocomplete="current-password">
+                            </div>
+                            <div class="form-group">
+                                <label for="twilio-sid">Twilio SID</label>
+                                <input type="password" id="twilio-sid" class="form-input" placeholder="Enter Twilio SID" autocomplete="new-password">
+                            </div>
+                            <div class="form-group">
+                                <label for="twilio-token">Twilio Token</label>
+                                <input type="password" id="twilio-token" class="form-input" placeholder="Enter Twilio token" autocomplete="new-password">
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="twilio-sid">Twilio SID</label>
-                            <input type="password" id="twilio-sid" class="form-input" placeholder="Enter Twilio SID">
+                        <div class="settings-section">
+                            <h3>Notifications</h3>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="enable-sms">
+                                <span class="checkmark"></span>
+                                Enable SMS notifications
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="enable-push">
+                                <span class="checkmark"></span>
+                                Enable push notifications
+                            </label>
                         </div>
-                        <div class="form-group">
-                            <label for="twilio-token">Twilio Token</label>
-                            <input type="password" id="twilio-token" class="form-input" placeholder="Enter Twilio token">
+                        <button type="submit" id="save-settings" class="primary-button full-width">Save Settings</button>
+                    </form>
+                    
+                    <!-- Admin Configuration Section -->
+                    <div class="settings-section admin-section">
+                        <h3>🔐 Admin Configuration</h3>
+                        <div class="admin-controls">
+                            <button type="button" id="admin-toggle" class="secondary-button">
+                                <span class="admin-icon">🔒</span>
+                                Enter Admin Mode
+                            </button>
+                            <div id="admin-indicator" class="admin-indicator hidden">
+                                <span class="admin-icon">👑</span>
+                                Admin Mode Active
+                            </div>
                         </div>
+                        <p class="admin-note">
+                            <strong>Admin mode allows you to securely manage API credentials and system configuration.</strong><br>
+                            Requires master password for access. Scroll down to see this section.
+                        </p>
                     </div>
-                    <div class="settings-section">
-                        <h3>Notifications</h3>
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="enable-sms">
-                            <span class="checkmark"></span>
-                            Enable SMS notifications
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="enable-push">
-                            <span class="checkmark"></span>
-                            Enable push notifications
-                        </label>
-                    </div>
-                    <button id="save-settings" class="primary-button full-width">Save Settings</button>
                 </div>
             </div>
         </div>
 
         <!-- QR Scanner Modal -->
-        <div id="qr-modal" class="modal hidden">
+        <div id="qr-modal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
                     <h2>Scan QR Code</h2>

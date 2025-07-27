@@ -78,7 +78,7 @@ export class NotificationSystem {
 
     async loadNotifications() {
         try {
-            const savedNotifications = await storageUtils.notificationsManager.load();
+            const savedNotifications = await storageUtils.notifications.load();
             this.notifications = savedNotifications || [];
             logger.info(`Loaded ${this.notifications.length} notifications`);
         } catch (error) {
@@ -304,7 +304,7 @@ export class NotificationSystem {
             }
 
             // Save to storage
-            storageUtils.notificationsManager.save(this.notifications);
+            storageUtils.notifications.save(this.notifications);
 
             // Display notification
             this.displayNotification(notification);
@@ -678,7 +678,7 @@ export class NotificationSystem {
         const notification = this.notifications.find(n => n.id === notificationId);
         if (notification) {
             notification.read = true;
-            storageUtils.notificationsManager.save(this.notifications);
+            storageUtils.notifications.save(this.notifications);
             this.updateNotificationCenter();
             logger.info('Notification marked as read', { notificationId });
         }
@@ -688,7 +688,7 @@ export class NotificationSystem {
         const notification = this.notifications.find(n => n.id === notificationId);
         if (notification) {
             notification.read = !notification.read;
-            storageUtils.notificationsManager.save(this.notifications);
+            storageUtils.notifications.save(this.notifications);
             this.updateNotificationCenter();
             logger.info('Notification read status toggled', { notificationId, read: notification.read });
         }
@@ -698,7 +698,7 @@ export class NotificationSystem {
         this.notifications.forEach(notification => {
             notification.read = true;
         });
-        storageUtils.notificationsManager.save(this.notifications);
+        storageUtils.notifications.save(this.notifications);
         this.updateNotificationCenter();
         logger.info('All notifications marked as read');
     }
@@ -708,7 +708,7 @@ export class NotificationSystem {
         if (notification) {
             notification.dismissed = true;
             this.notifications = this.notifications.filter(n => n.id !== notificationId);
-            storageUtils.notificationsManager.save(this.notifications);
+            storageUtils.notifications.save(this.notifications);
             this.updateNotificationCenter();
             logger.info('Notification dismissed', { notificationId });
         }
@@ -717,7 +717,7 @@ export class NotificationSystem {
     clearAll() {
         if (confirm('Are you sure you want to clear all notifications?')) {
             this.notifications = [];
-            storageUtils.notificationsManager.save(this.notifications);
+            storageUtils.notifications.save(this.notifications);
             this.updateNotificationCenter();
             logger.info('All notifications cleared');
         }
@@ -846,6 +846,36 @@ if (document.readyState === 'loading') {
     });
 } else {
     window.notificationSystem = new NotificationSystem();
+}
+
+// Utility function for simple notifications
+export function showNotification(message, type = 'info', options = {}) {
+    if (window.notificationSystem) {
+        return window.notificationSystem.show(type, message, options);
+    } else {
+        // Fallback for when notification system isn't ready
+        console.warn('Notification system not ready, using fallback');
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            z-index: 10000;
+            max-width: 300px;
+        `;
+        document.body.appendChild(notification);
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 5000);
+    }
 }
 
 export default window.notificationSystem; 
