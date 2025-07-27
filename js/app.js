@@ -6,6 +6,8 @@
 import { config, validateConfig } from './config.js';
 import { storageUtils } from './storage.js';
 import { generateId, formatDate, isMobile, supportsFeature } from './utils.js';
+import { logger } from './logger.js';
+import { errorHandler } from './error-handler.js';
 
 // Application state management
 class AppState {
@@ -87,7 +89,7 @@ class BTMUtility {
     // Initialize application
     async init() {
         try {
-            console.log('Initializing BTM Utility...');
+            logger.info('Initializing BTM Utility...');
             
             // Validate configuration
             if (!validateConfig()) {
@@ -116,13 +118,13 @@ class BTMUtility {
             this.state.set('isInitialized', true);
             this.isInitialized = true;
 
-            console.log('BTM Utility initialized successfully');
+            logger.info('BTM Utility initialized successfully');
             
             // Trigger initialization event
             this.triggerEvent('app:initialized');
 
         } catch (error) {
-            console.error('Failed to initialize BTM Utility:', error);
+            logger.error('Failed to initialize BTM Utility', null, error);
             this.handleError(error);
         }
     }
@@ -145,7 +147,7 @@ class BTMUtility {
                     await moduleInstance.init(this);
                 }
             } catch (error) {
-                console.warn(`Failed to load module ${module.name}:`, error);
+                logger.warn(`Failed to load module ${module.name}`, null, error);
             }
         }
     }
@@ -178,7 +180,7 @@ class BTMUtility {
             // Apply settings
             this.applySettings(settings);
         } catch (error) {
-            console.error('Failed to load settings:', error);
+            logger.error('Failed to load settings', null, error);
         }
     }
 
@@ -300,7 +302,7 @@ class BTMUtility {
             this.triggerEvent('app:navigationChanged', { section: sectionName });
 
         } catch (error) {
-            console.error('Navigation error:', error);
+            logger.error('Navigation error', null, error);
         }
     }
 
@@ -341,7 +343,7 @@ class BTMUtility {
 
     // Handle errors
     handleError(error) {
-        console.error('Application error:', error);
+        logger.error('Application error', null, error);
         
         this.state.set('error', {
             message: error.message || 'An unknown error occurred',
@@ -349,11 +351,12 @@ class BTMUtility {
             stack: error.stack,
         });
 
-        // Show error notification
-        const notificationsModule = this.getModule('notifications');
-        if (notificationsModule) {
-            notificationsModule.show('error', 'An error occurred. Please try again.');
-        }
+        // Use error handler for user-friendly error display
+        errorHandler.handleError(error, {
+            type: 'client',
+            severity: 'medium',
+            context: 'application',
+        });
 
         // Trigger error event
         this.triggerEvent('app:error', error);
@@ -403,9 +406,9 @@ class BTMUtility {
             // Clear event listeners
             this.eventListeners.clear();
 
-            console.log('BTM Utility cleanup completed');
+            logger.info('BTM Utility cleanup completed');
         } catch (error) {
-            console.error('Cleanup error:', error);
+            logger.error('Cleanup error', null, error);
         }
     }
 }
