@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+    <!-- Primary Meta Tags -->
+    <title>BTM Utility - Laundromat Management System</title>
+    <meta name="title" content="BTM Utility - Laundromat Management System">
+    <meta name="description" content="Comprehensive mobile-first management system for BTM Inc laundromat operations including money collection, task management, and equipment monitoring.">
+    <meta name="keywords" content="laundromat, management, money collection, equipment monitoring, BTM Inc">
+    <meta name="author" content="BTM Inc">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://brianmickley.com/util/">
+    <meta property="og:title" content="BTM Utility - Laundromat Management System">
+    <meta property="og:description" content="Comprehensive mobile-first management system for BTM Inc laundromat operations.">
+    <meta property="og:image" content="https://brianmickley.com/util/images/btm-utility-preview.png">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://brianmickley.com/util/">
+    <meta property="twitter:title" content="BTM Utility - Laundromat Management System">
+    <meta property="twitter:description" content="Comprehensive mobile-first management system for BTM Inc laundromat operations.">
+    <meta property="twitter:image" content="https://brianmickley.com/util/images/btm-utility-preview.png">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0066cc">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="BTM Utility">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="images/icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/icons/icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/icons/icon-16x16.png">
+    
+    <!-- Preconnect to external domains for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/utilities.css">
+    
+    <!-- Security Headers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.twilio.com https://www.googleapis.com;">
+    
+    <!-- Performance Optimizations -->
+    <link rel="dns-prefetch" href="//api.twilio.com">
+    <link rel="dns-prefetch" href="//www.googleapis.com">
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "BTM Utility",
+        "description": "Comprehensive mobile-first management system for BTM Inc laundromat operations",
+        "url": "https://brianmickley.com/util/",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "author": {
+            "@type": "Organization",
+            "name": "BTM Inc"
+        }
+    }
+    </script>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h2>BTM Utility</h2>
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <!-- Offline Indicator -->
+    <div id="offline-indicator" class="offline-indicator hidden">
+        <span>⚠️ You're offline. Some features may be limited.</span>
+    </div>
+
+    <!-- Main Application Container -->
+    <div id="app" class="app-container hidden">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1 class="app-title">BTM Utility</h1>
+                <div class="header-actions">
+                    <button id="sync-status" class="sync-button" title="Sync Status">
+                        <span class="sync-icon">🔄</span>
+                    </button>
+                    <button id="settings-button" class="settings-button" title="Settings">
+                        <span class="settings-icon">⚙️</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Navigation -->
+        <nav class="main-nav">
+            <div class="nav-container">
+                <button class="nav-item active" data-section="money-collection">
+                    <span class="nav-icon">💰</span>
+                    <span class="nav-label">Money Collection</span>
+                </button>
+                <button class="nav-item" data-section="todo">
+                    <span class="nav-icon">📋</span>
+                    <span class="nav-label">To-Do</span>
+                </button>
+                <button class="nav-item" data-section="contacts">
+                    <span class="nav-icon">📞</span>
+                    <span class="nav-label">Contacts</span>
+                </button>
+                <button class="nav-item" data-section="security">
+                    <span class="nav-icon">📹</span>
+                    <span class="nav-label">Security</span>
+                </button>
+                <button class="nav-item" data-section="climate">
+                    <span class="nav-icon">🌡️</span>
+                    <span class="nav-label">Climate</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Money Collection Section -->
+            <section id="money-collection" class="content-section active">
+                <div class="section-header">
+                    <h2>Money Collection</h2>
+                    <button id="scan-qr" class="primary-button">
+                        <span class="button-icon">📱</span>
+                        Scan QR Code
+                    </button>
+                </div>
+                <div class="collection-form">
+                    <div class="form-group">
+                        <label for="location-select">Location</label>
+                        <select id="location-select" class="form-select" required>
+                            <option value="">Select Location</option>
+                            <option value="peacock">Peacock</option>
+                            <option value="dover">Dover</option>
+                            <option value="massillon">Massillon</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="machine-select">Machine</label>
+                        <select id="machine-select" class="form-select" required>
+                            <option value="">Select Machine</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="counter-value">Counter Value</label>
+                        <input type="number" id="counter-value" class="form-input" placeholder="Enter counter reading" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="collection-notes">Notes</label>
+                        <textarea id="collection-notes" class="form-textarea" placeholder="Add any notes about this collection"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="coins-to-office">
+                            <span class="checkmark"></span>
+                            Coins brought to office
+                        </label>
+                    </div>
+                    <button id="submit-collection" class="primary-button full-width">
+                        Submit Collection
+                    </button>
+                </div>
+            </section>
+
+            <!-- To-Do Section -->
+            <section id="todo" class="content-section">
+                <div class="section-header">
+                    <h2>To-Do List</h2>
+                    <button id="add-task" class="primary-button">
+                        <span class="button-icon">➕</span>
+                        Add Task
+                    </button>
+                </div>
+                <div class="todo-list">
+                    <div class="todo-filters">
+                        <button class="filter-button active" data-filter="all">All</button>
+                        <button class="filter-button" data-filter="pending">Pending</button>
+                        <button class="filter-button" data-filter="completed">Completed</button>
+                    </div>
+                    <div id="todo-items" class="todo-items">
+                        <!-- Todo items will be dynamically added here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Contacts Section -->
+            <section id="contacts" class="content-section">
+                <div class="section-header">
+                    <h2>Emergency Contacts</h2>
+                    <button id="search-contacts" class="secondary-button">
+                        <span class="button-icon">🔍</span>
+                        Search
+                    </button>
+                </div>
+                <div class="contacts-list">
+                    <div class="contact-category">
+                        <h3>Police Departments</h3>
+                        <div class="contact-item">
+                            <div class="contact-info">
+                                <h4>Massillon Police</h4>
+                                <p>330-832-9811</p>
+                            </div>
+                            <button class="call-button" data-phone="3308329811">📞</button>
+                        </div>
+                        <div class="contact-item">
+                            <div class="contact-info">
+                                <h4>Dover Police</h4>
+                                <p>330-343-6726</p>
+                            </div>
+                            <button class="call-button" data-phone="3303436726">📞</button>
+                        </div>
+                        <div class="contact-item">
+                            <div class="contact-info">
+                                <h4>Carrollton Police</h4>
+                                <p>330-627-2858</p>
+                            </div>
+                            <button class="call-button" data-phone="3306272858">📞</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Security Section -->
+            <section id="security" class="content-section">
+                <div class="section-header">
+                    <h2>Security Cameras</h2>
+                    <button id="refresh-cameras" class="secondary-button">
+                        <span class="button-icon">🔄</span>
+                        Refresh
+                    </button>
+                </div>
+                <div class="camera-grid">
+                    <div class="camera-feed">
+                        <h3>Peacock - Camera 1</h3>
+                        <div class="camera-placeholder">
+                            <span class="camera-icon">📹</span>
+                            <p>Camera feed loading...</p>
+                        </div>
+                    </div>
+                    <div class="camera-feed">
+                        <h3>Dover - Camera 1</h3>
+                        <div class="camera-placeholder">
+                            <span class="camera-icon">📹</span>
+                            <p>Camera feed loading...</p>
+                        </div>
+                    </div>
+                    <div class="camera-feed">
+                        <h3>Massillon - Camera 1</h3>
+                        <div class="camera-placeholder">
+                            <span class="camera-icon">📹</span>
+                            <p>Camera feed loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Climate Section -->
+            <section id="climate" class="content-section">
+                <div class="section-header">
+                    <h2>Climate Control</h2>
+                    <button id="refresh-climate" class="secondary-button">
+                        <span class="button-icon">🔄</span>
+                        Refresh
+                    </button>
+                </div>
+                <div class="climate-grid">
+                    <div class="climate-card">
+                        <h3>Peacock</h3>
+                        <div class="temperature-display">
+                            <span class="temp-value">--</span>
+                            <span class="temp-unit">°F</span>
+                        </div>
+                        <div class="climate-controls">
+                            <button class="temp-button" data-action="decrease">-</button>
+                            <button class="temp-button" data-action="increase">+</button>
+                        </div>
+                    </div>
+                    <div class="climate-card">
+                        <h3>Dover</h3>
+                        <div class="temperature-display">
+                            <span class="temp-value">--</span>
+                            <span class="temp-unit">°F</span>
+                        </div>
+                        <div class="climate-controls">
+                            <button class="temp-button" data-action="decrease">-</button>
+                            <button class="temp-button" data-action="increase">+</button>
+                        </div>
+                    </div>
+                    <div class="climate-card">
+                        <h3>Massillon</h3>
+                        <div class="temperature-display">
+                            <span class="temp-value">--</span>
+                            <span class="temp-unit">°F</span>
+                        </div>
+                        <div class="climate-controls">
+                            <button class="temp-button" data-action="decrease">-</button>
+                            <button class="temp-button" data-action="increase">+</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Settings Modal -->
+        <div id="settings-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Settings</h2>
+                    <button id="close-settings" class="close-button">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="settings-section">
+                        <h3>Configuration</h3>
+                        <div class="form-group">
+                            <label for="api-key">API Key</label>
+                            <input type="password" id="api-key" class="form-input" placeholder="Enter API key">
+                        </div>
+                        <div class="form-group">
+                            <label for="twilio-sid">Twilio SID</label>
+                            <input type="password" id="twilio-sid" class="form-input" placeholder="Enter Twilio SID">
+                        </div>
+                        <div class="form-group">
+                            <label for="twilio-token">Twilio Token</label>
+                            <input type="password" id="twilio-token" class="form-input" placeholder="Enter Twilio token">
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <h3>Notifications</h3>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="enable-sms">
+                            <span class="checkmark"></span>
+                            Enable SMS notifications
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="enable-push">
+                            <span class="checkmark"></span>
+                            Enable push notifications
+                        </label>
+                    </div>
+                    <button id="save-settings" class="primary-button full-width">Save Settings</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- QR Scanner Modal -->
+        <div id="qr-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Scan QR Code</h2>
+                    <button id="close-qr" class="close-button">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div id="qr-scanner-container" class="qr-scanner">
+                        <video id="qr-video" autoplay playsinline></video>
+                        <div class="qr-overlay">
+                            <div class="qr-frame"></div>
+                        </div>
+                    </div>
+                    <div class="qr-controls">
+                        <button id="switch-camera" class="secondary-button">Switch Camera</button>
+                        <button id="manual-entry" class="secondary-button">Manual Entry</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container" class="notification-container"></div>
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(function(err) {
+                        console.log('ServiceWorker registration failed');
+                    });
+            });
+        }
+    </script>
+
+    <!-- Application Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/qr-scanner.js"></script>
+    <script src="js/money-collection.js"></script>
+    <script src="js/todo.js"></script>
+    <script src="js/contacts.js"></script>
+    <script src="js/security.js"></script>
+    <script src="js/climate.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html> 
