@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Permissive OCR Scanner Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .scanner-section {
+            margin-bottom: 30px;
+        }
+        
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+            margin: 20px 0;
+        }
+        
+        #video {
+            width: 100%;
+            border: 2px solid #28a745;
+            border-radius: 8px;
+        }
+        
+        #canvas {
+            display: none;
+        }
+        
+        .controls {
+            margin: 20px 0;
+        }
+        
+        .btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        
+        .btn:hover {
+            background: #218838;
+        }
+        
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .status.warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .qr-result {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        
+        .text-results {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .text-result-item {
+            background: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .text-result-item h4 {
+            margin: 0 0 10px 0;
+            color: #495057;
+        }
+        
+        .text-content {
+            color: #0066cc;
+            font-weight: bold;
+            word-wrap: break-word;
+        }
+        
+        .text-confidence {
+            color: #28a745;
+        }
+        
+        .text-confidence.low {
+            color: #ffc107;
+        }
+        
+        .text-confidence.very-low {
+            color: #dc3545;
+        }
+        
+        .text-numbers {
+            color: #6f42c1;
+            font-weight: bold;
+        }
+        
+        .text-has-content {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .text-no-content {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .instructions {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .instructions h3 {
+            margin-top: 0;
+            color: #0056b3;
+        }
+        
+        .console-output {
+            background: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+        
+        .stats {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .target-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .target-info h3 {
+            margin-top: 0;
+            color: #856404;
+        }
+        
+        .permissive-info {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .permissive-info h3 {
+            margin-top: 0;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔓 Permissive OCR Scanner Test</h1>
+    
+    <div class="container">
+        <div class="target-info">
+            <h3>🎯 Target: Detect ANY Text</h3>
+            <p><strong>Goal:</strong> Use very permissive OCR settings to detect ANY text in the image</p>
+            <p><strong>Purpose:</strong> See if there's any text at all being detected</p>
+            <p><strong>Expected:</strong> Should detect ANY text, even if it's not numbers</p>
+        </div>
+        
+        <div class="permissive-info">
+            <h3>🔓 Permissive Features</h3>
+            <p>This scanner uses very relaxed settings:</p>
+            <ul>
+                <li><strong>NO Character Whitelist:</strong> Allows ALL characters, not just numbers</li>
+                <li><strong>NO Noise Removal:</strong> Doesn't filter out any text</li>
+                <li><strong>Automatic Segmentation:</strong> Lets Tesseract decide how to segment text</li>
+                <li><strong>Preserve Spaces:</strong> Keeps all spaces and formatting</li>
+                <li><strong>8 Scan Regions:</strong> Including the full image</li>
+            </ul>
+        </div>
+        
+        <div class="instructions">
+            <h3>📋 Permissive OCR Instructions</h3>
+            <p>This permissive scanner will detect ANY text:</p>
+            <ol>
+                <li><strong>Start Permissive Scanning</strong> - Click the scan button</li>
+                <li><strong>Point Camera</strong> - At the image with QR code and digital counter</li>
+                <li><strong>Watch Results</strong> - See ALL text detected, even non-numeric</li>
+                <li><strong>Analyze Output</strong> - Look for any text at all being detected</li>
+                <li><strong>Check Console</strong> - Detailed logs show exactly what's happening</li>
+            </ol>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>🔓 Permissive OCR Scanner</h2>
+            <div class="video-container">
+                <video id="video" autoplay playsinline></video>
+                <canvas id="canvas"></canvas>
+            </div>
+            
+            <div class="controls">
+                <button id="startBtn" class="btn">Start Permissive Scanning</button>
+                <button id="stopBtn" class="btn btn-danger" disabled>Stop Scanning</button>
+                <button id="clearBufferBtn" class="btn btn-warning">Clear Frame Buffer</button>
+                <button id="testOCRBtn" class="btn">Test OCR</button>
+            </div>
+            
+            <div id="status" class="status info">
+                Ready to start permissive OCR scanning. This will detect ANY text in the image.
+            </div>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>📊 Permissive Scan Results</h2>
+            <div id="result" class="result">
+                <h3>Permissive Scan Result</h3>
+                <div id="resultContent"></div>
+            </div>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>🔍 ALL Text Results (Permissive)</h2>
+            <div class="text-results">
+                <div id="textResultsContent">
+                    <p>Text results will appear here when scanning starts...</p>
+                    <p>This will show ALL text detected, even non-numeric content.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>📈 Scanner Statistics</h2>
+            <div class="stats">
+                <div id="statsContent">
+                    <p><strong>Frame Buffer:</strong> <span id="frameBufferSize">0</span> / <span id="maxFrameBuffer">3</span> frames</p>
+                    <p><strong>Scan Status:</strong> <span id="scanStatus">Ready</span></p>
+                    <p><strong>Total Text Results:</strong> <span id="totalTextResults">0</span></p>
+                    <p><strong>Results with Text:</strong> <span id="resultsWithText">0</span></p>
+                    <p><strong>Last QR Result:</strong> <span id="lastQRResult">None</span></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>🎯 Permissive Strategy</h2>
+            <div class="stats">
+                <p><strong>Step 1 - QR Detection:</strong> Scan entire image for QR codes</p>
+                <p><strong>Step 2 - OCR ALL Regions:</strong> Scan 8 different regions for ANY text</p>
+                <p><strong>Step 3 - Show ALL Results:</strong> Display every text result, even empty ones</p>
+                <p><strong>Step 4 - Analyze Content:</strong> Look for any text at all being detected</p>
+                <p><strong>Step 5 - Identify Issues:</strong> See if OCR is detecting anything</p>
+                <p><strong>Scan Regions:</strong> primary_display, full_center, top_area, bottom_area, left_side, right_side, very_large, full_image</p>
+            </div>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>🖥️ Console Output</h2>
+            <p>Open your browser's developer console (F12) to see detailed permissive logging.</p>
+            <div class="console-output">
+                <div>Console output will appear here when scanning starts...</div>
+                <div>Look for messages starting with "Permissive OCR Scanner:"</div>
+                <div>This will show ALL text results and processing details.</div>
+            </div>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>🧪 Permissive Instructions</h2>
+            <p>To test the permissive OCR scanner:</p>
+            <ol>
+                <li>Open browser developer console (F12)</li>
+                <li>Click "Start Permissive Scanning"</li>
+                <li>Point camera at the image with both QR code and digital counter</li>
+                <li>Watch the "ALL Text Results" section for ANY text detected</li>
+                <li>Look for any text at all, even if it's not numbers</li>
+                <li>Check if any regions are detecting text vs. completely empty</li>
+                <li>Note the confidence levels for any detected text</li>
+            </ol>
+            <p><strong>Expected:</strong> We should see ANY text detected, even if it's not the target numbers. If we see NO text at all, there's a fundamental issue with the image or OCR setup.</p>
+        </div>
+    </div>
+
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
+    
+    <!-- Application Scripts -->
+    <script type="module">
+        import { permissiveOCRScanner } from './js/permissive-ocr-scanner.js';
+        
+        class PermissiveOCRTest {
+            constructor() {
+                this.video = document.getElementById('video');
+                this.canvas = document.getElementById('canvas');
+                this.startBtn = document.getElementById('startBtn');
+                this.stopBtn = document.getElementById('stopBtn');
+                this.clearBufferBtn = document.getElementById('clearBufferBtn');
+                this.testOCRBtn = document.getElementById('testOCRBtn');
+                this.status = document.getElementById('status');
+                this.result = document.getElementById('result');
+                this.resultContent = document.getElementById('resultContent');
+                this.textResultsContent = document.getElementById('textResultsContent');
+                this.frameBufferSize = document.getElementById('frameBufferSize');
+                this.maxFrameBuffer = document.getElementById('maxFrameBuffer');
+                this.scanStatus = document.getElementById('scanStatus');
+                this.lastQRResult = document.getElementById('lastQRResult');
+                this.totalTextResults = document.getElementById('totalTextResults');
+                this.resultsWithText = document.getElementById('resultsWithText');
+                
+                this.isScanning = false;
+                this.stream = null;
+                this.scanInterval = null;
+                this.lastScanTime = 0;
+                this.scanCooldown = 5000; // 5 seconds between scans for permissive
+                
+                this.initializeEventListeners();
+                console.log('Permissive OCR Test: Initialized');
+            }
+            
+            initializeEventListeners() {
+                this.startBtn.addEventListener('click', () => this.startScanning());
+                this.stopBtn.addEventListener('click', () => this.stopScanning());
+                this.clearBufferBtn.addEventListener('click', () => this.clearBuffer());
+                this.testOCRBtn.addEventListener('click', () => this.testOCR());
+            }
+            
+            async testOCR() {
+                console.log('Permissive OCR Test: Testing OCR...');
+                this.updateStatus('Testing OCR...', 'info');
+                
+                try {
+                    if (typeof Tesseract === 'undefined') {
+                        console.error('Permissive OCR Test: Tesseract not loaded!');
+                        this.updateStatus('ERROR: Tesseract library not loaded!', 'error');
+                        return;
+                    }
+                    
+                    if (typeof jsQR === 'undefined') {
+                        console.error('Permissive OCR Test: jsQR not loaded!');
+                        this.updateStatus('ERROR: jsQR library not loaded!', 'error');
+                        return;
+                    }
+                    
+                    console.log('Permissive OCR Test: Both libraries available');
+                    this.updateStatus('Both Tesseract and jsQR libraries loaded', 'info');
+                    
+                    const worker = await Tesseract.createWorker();
+                    console.log('Permissive OCR Test: OCR worker created');
+                    
+                    await worker.loadLanguage('eng');
+                    console.log('Permissive OCR Test: English language loaded');
+                    
+                    await worker.initialize('eng');
+                    console.log('Permissive OCR Test: OCR initialized');
+                    
+                    await worker.terminate();
+                    console.log('Permissive OCR Test: OCR worker terminated');
+                    
+                    this.updateStatus('OCR test completed successfully', 'info');
+                } catch (error) {
+                    console.error('Permissive OCR Test: OCR test failed:', error);
+                    this.updateStatus(`OCR test failed: ${error.message}`, 'error');
+                }
+            }
+            
+            clearBuffer() {
+                permissiveOCRScanner.clearFrameBuffer();
+                this.updateStats();
+                this.updateStatus('Frame buffer cleared', 'info');
+            }
+            
+            async startScanning() {
+                try {
+                    console.log('Permissive OCR Test: Requesting camera access...');
+                    this.updateStatus('Requesting camera access...', 'info');
+                    
+                    this.stream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: 'environment',
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        }
+                    });
+                    
+                    console.log('Permissive OCR Test: Camera access granted');
+                    this.video.srcObject = this.stream;
+                    
+                    this.video.addEventListener('loadedmetadata', () => {
+                        console.log(`Permissive OCR Test: Video dimensions: ${this.video.videoWidth}x${this.video.videoHeight}`);
+                        this.video.play();
+                        this.startPermissiveScanning();
+                    });
+                    
+                } catch (error) {
+                    console.error('Permissive OCR Test: Camera access failed:', error);
+                    this.updateStatus(`Camera access failed: ${error.message}`, 'error');
+                }
+            }
+            
+            async startPermissiveScanning() {
+                try {
+                    this.isScanning = true;
+                    this.startBtn.disabled = true;
+                    this.stopBtn.disabled = false;
+                    this.updateStatus('Permissive scanning active - detecting ANY text', 'success');
+                    console.log('Permissive OCR Test: Permissive scanning started');
+                    
+                    this.scanInterval = setInterval(() => {
+                        this.performPermissiveScan();
+                    }, 5000); // Scan every 5 seconds for permissive
+                    
+                } catch (error) {
+                    console.error('Permissive OCR Test: Permissive scanning error:', error);
+                    this.updateStatus(`Permissive scanning error: ${error.message}`, 'error');
+                }
+            }
+            
+            async performPermissiveScan() {
+                if (!this.isScanning || !this.video || !this.canvas) {
+                    console.log('Permissive OCR Test: Scanning stopped or video/canvas not available');
+                    return;
+                }
+                
+                const now = Date.now();
+                if (now - this.lastScanTime < this.scanCooldown) {
+                    return;
+                }
+                
+                console.log('Permissive OCR Test: Starting permissive scan...');
+                this.updateStatus('Permissive scanning for QR codes and ANY text...', 'info');
+                
+                try {
+                    this.canvas.width = this.video.videoWidth;
+                    this.canvas.height = this.video.videoHeight;
+                    
+                    console.log(`Permissive OCR Test: Canvas size: ${this.canvas.width}x${this.canvas.height}`);
+                    
+                    const ctx = this.canvas.getContext('2d');
+                    ctx.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
+                    
+                    console.log('Permissive OCR Test: Video frame drawn to canvas');
+                    
+                    const imageData = ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+                    
+                    console.log(`Permissive OCR Test: Image data size: ${imageData.width}x${imageData.height}`);
+                    
+                    if (!permissiveOCRScanner) {
+                        console.error('Permissive OCR Test: Permissive scanner not available!');
+                        return;
+                    }
+                    
+                    console.log('Permissive OCR Test: Permissive scanner available, starting scan...');
+                    
+                    const result = await permissiveOCRScanner.scanPermissive(imageData);
+                    
+                    if (result) {
+                        this.lastScanTime = now;
+                        console.log('Permissive OCR Test: Permissive scan completed!', result);
+                        this.handlePermissiveResult(result);
+                    } else {
+                        console.log('Permissive OCR Test: No permissive results');
+                        this.updateStatus('No QR codes or text results detected', 'warning');
+                    }
+                    
+                    this.updateStats();
+                    
+                } catch (error) {
+                    console.error('Permissive OCR Test: Scan error:', error);
+                }
+            }
+            
+            stopScanning() {
+                this.isScanning = false;
+                
+                if (this.scanInterval) {
+                    clearInterval(this.scanInterval);
+                    this.scanInterval = null;
+                }
+                
+                if (this.stream) {
+                    this.stream.getTracks().forEach(track => track.stop());
+                    this.stream = null;
+                }
+                
+                this.startBtn.disabled = false;
+                this.stopBtn.disabled = true;
+                this.updateStatus('Permissive scanning stopped', 'info');
+                console.log('Permissive OCR Test: Scanning stopped');
+            }
+            
+            handlePermissiveResult(result) {
+                this.showPermissiveResult(result);
+            }
+            
+            showPermissiveResult(result) {
+                this.result.style.display = 'block';
+                this.result.className = 'result success';
+                
+                let html = '<h3>🔓 Permissive Scan Results</h3>';
+                
+                // QR Code Results
+                if (result.qrCode) {
+                    html += `
+                        <div class="qr-result">
+                            <h4>📱 QR Code Detected</h4>
+                            <p><strong>QR Data:</strong> <span class="qr-data">${result.qrCode.data}</span></p>
+                            <p><strong>Confidence:</strong> <span class="confidence">${result.qrCode.confidence}%</span></p>
+                        </div>
+                    `;
+                    this.lastQRResult.textContent = result.qrCode.data;
+                } else {
+                    html += `
+                        <div class="qr-result">
+                            <h4>❌ No QR Code Detected</h4>
+                            <p>No QR code found in the image</p>
+                        </div>
+                    `;
+                    this.lastQRResult.textContent = 'None';
+                }
+                
+                html += `<p><strong>Timestamp:</strong> ${new Date(result.timestamp).toLocaleString()}</p>`;
+                
+                this.resultContent.innerHTML = html;
+                
+                // Show ALL Text Results
+                this.showAllTextResults(result.allTextResults);
+                
+                // Update status
+                let statusMessage = '';
+                if (result.qrCode && result.allTextResults && result.allTextResults.length > 0) {
+                    statusMessage = '🎉 SUCCESS! QR code and text detected!';
+                } else if (result.qrCode) {
+                    statusMessage = '✅ QR code detected, check text results below';
+                } else if (result.allTextResults && result.allTextResults.length > 0) {
+                    statusMessage = '✅ Text detected, but no QR code found';
+                } else {
+                    statusMessage = '❌ No QR codes or text detected - fundamental issue';
+                }
+                
+                this.updateStatus(statusMessage, result.qrCode && result.allTextResults && result.allTextResults.length > 0 ? 'success' : 'warning');
+            }
+            
+            showAllTextResults(allResults) {
+                console.log('Permissive OCR Test: Showing all text results:', allResults);
+                
+                let html = '<h3>🔍 ALL Text Results (Permissive)</h3>';
+                
+                if (allResults && allResults.length > 0) {
+                    html += `<p><strong>Total Text Results:</strong> ${allResults.length}</p>`;
+                    
+                    const resultsWithText = allResults.filter(r => r.hasText).length;
+                    html += `<p><strong>Results with Text:</strong> ${resultsWithText}</p>`;
+                    
+                    allResults.forEach((result, index) => {
+                        const confidenceClass = this.getConfidenceClass(result.confidence);
+                        const numbersText = result.numbers.length > 0 ? result.numbers.join(', ') : 'None';
+                        const hasTextClass = result.hasText ? 'text-has-content' : 'text-no-content';
+                        const hasTextText = result.hasText ? 'YES' : 'NO';
+                        
+                        html += `
+                            <div class="text-result-item">
+                                <h4>Result ${index + 1} - ${result.region} (Frame ${result.frameIndex + 1})</h4>
+                                <p><strong>Has Text:</strong> <span class="${hasTextClass}">${hasTextText}</span></p>
+                                <p><strong>Raw Text:</strong> <span class="text-content">"${result.rawText}"</span></p>
+                                <p><strong>Confidence:</strong> <span class="text-confidence ${confidenceClass}">${result.confidence}%</span></p>
+                                <p><strong>Extracted Numbers:</strong> <span class="text-numbers">[${numbersText}]</span></p>
+                                <p><strong>Region:</strong> ${result.region}</p>
+                                <p><strong>Frame:</strong> ${result.frameIndex + 1}</p>
+                                ${result.error ? `<p><strong>Error:</strong> <span style="color: red;">${result.error}</span></p>` : ''}
+                            </div>
+                        `;
+                    });
+                } else {
+                    html += '<p><strong>No text results found</strong></p>';
+                }
+                
+                this.textResultsContent.innerHTML = html;
+                this.totalTextResults.textContent = allResults ? allResults.length : 0;
+                this.resultsWithText.textContent = allResults ? allResults.filter(r => r.hasText).length : 0;
+            }
+            
+            getConfidenceClass(confidence) {
+                if (confidence >= 80) return '';
+                if (confidence >= 60) return 'low';
+                return 'very-low';
+            }
+            
+            updateStats() {
+                const stats = permissiveOCRScanner.getScanStats();
+                this.frameBufferSize.textContent = stats.frameBufferSize;
+                this.maxFrameBuffer.textContent = stats.maxFrameBuffer;
+                this.scanStatus.textContent = this.isScanning ? 'Active' : 'Stopped';
+            }
+            
+            updateStatus(message, type = 'info') {
+                this.status.textContent = message;
+                this.status.className = `status ${type}`;
+            }
+        }
+        
+        // Initialize the test when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new PermissiveOCRTest();
+        });
+    </script>
+</body>
+</html> 

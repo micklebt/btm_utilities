@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Manager Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>Location Manager Test</h1>
+    
+    <div class="test-section">
+        <h3>Test Results:</h3>
+        <div id="results"></div>
+    </div>
+
+    <script type="module">
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            results.appendChild(div);
+        }
+
+        try {
+            log('Starting location manager test...', 'info');
+            
+            // Test import
+            const { locationManager } = await import('./js/location-config.js?v=1.0.1');
+            log('Location manager imported successfully', 'success');
+            
+            // Test getting locations
+            const locations = locationManager.getLocations();
+            log(`Found ${locations.length} locations: ${locations.map(l => l.name).join(', ')}`, 'success');
+            
+            // Test getting machines for each location
+            locations.forEach(location => {
+                const machines = locationManager.getMachines(location.id);
+                log(`${location.name}: ${machines.length} machines`, 'info');
+                machines.forEach(machine => {
+                    log(`  - ${machine.name}`, 'info');
+                });
+            });
+            
+            // Test dropdown population
+            const testSelect = document.createElement('select');
+            locationManager.populateLocationDropdown(testSelect);
+            const options = Array.from(testSelect.options).map(opt => opt.textContent);
+            log(`Dropdown options: ${options.join(', ')}`, 'success');
+            
+        } catch (error) {
+            log(`Error: ${error.message}`, 'error');
+            console.error('Full error:', error);
+        }
+    </script>
+</body>
+</html> 

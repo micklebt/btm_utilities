@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Dropdown Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        select, input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .test-results {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>Location Dropdown Test</h1>
+    
+    <div class="form-group">
+        <label for="location-select">Location</label>
+        <select id="location-select" class="form-select" required>
+            <option value="">Select Location</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="machine-select">Machine</label>
+        <select id="machine-select" class="form-select" required>
+            <option value="">Select Machine</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="counter-value">Counter Value</label>
+        <input type="number" id="counter-value" class="form-input" placeholder="Enter counter reading" required>
+    </div>
+    
+    <button id="test-submit" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+        Test Submit
+    </button>
+    
+    <div class="test-results" id="test-results">
+        <h3>Test Results</h3>
+        <div id="results-content"></div>
+    </div>
+
+    <script type="module">
+        import { locationManager } from './js/location-config.js?v=1.0.1';
+        
+        // Test results container
+        const resultsContent = document.getElementById('results-content');
+        
+        function logResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            resultsContent.appendChild(div);
+        }
+        
+        // Initialize dropdowns
+        function initializeDropdowns() {
+            try {
+                const locationSelect = document.getElementById('location-select');
+                const machineSelect = document.getElementById('machine-select');
+                
+                if (locationSelect) {
+                    // Populate location dropdown
+                    locationManager.populateLocationDropdown(locationSelect);
+                    logResult('Location dropdown populated successfully', 'success');
+                    
+                    // Add change listener to update machine dropdown
+                    locationSelect.addEventListener('change', (e) => {
+                        const selectedLocation = e.target.value;
+                        logResult(`Location changed to: ${selectedLocation}`, 'info');
+                        
+                        if (selectedLocation && machineSelect) {
+                            locationManager.populateMachineDropdown(machineSelect, selectedLocation);
+                            logResult(`Machine dropdown populated for location: ${selectedLocation}`, 'success');
+                        } else if (machineSelect) {
+                            machineSelect.innerHTML = '<option value="">Select Machine</option>';
+                            logResult('Machine dropdown cleared', 'info');
+                        }
+                    });
+                } else {
+                    logResult('Location select element not found', 'error');
+                }
+            } catch (error) {
+                logResult(`Error initializing dropdowns: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test submit functionality
+        function testSubmit() {
+            const locationSelect = document.getElementById('location-select');
+            const machineSelect = document.getElementById('machine-select');
+            const counterValue = document.getElementById('counter-value');
+            
+            if (!locationSelect.value || !machineSelect.value || !counterValue.value) {
+                logResult('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            // Validate location and machine combination
+            const locationId = locationSelect.value;
+            const machineId = machineSelect.value;
+            
+            if (!locationManager.validateLocationMachine(locationId, machineId)) {
+                logResult('Invalid location and machine combination', 'error');
+                return;
+            }
+            
+            // Get location and machine details
+            const location = locationManager.getLocation(locationId);
+            const machine = locationManager.getMachineById(machineId);
+            
+            const collection = {
+                location: locationId,
+                locationName: location ? location.name : locationId,
+                machine: machineId,
+                machineName: machine ? machine.name : machineId,
+                counterValue: parseInt(counterValue.value),
+                timestamp: new Date().toISOString()
+            };
+            
+            logResult('Collection submitted successfully!', 'success');
+            logResult(`Data: ${JSON.stringify(collection, null, 2)}`, 'info');
+        }
+        
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            logResult('DOM loaded, initializing dropdowns...', 'info');
+            initializeDropdowns();
+            
+            // Add test submit listener
+            const testSubmitBtn = document.getElementById('test-submit');
+            if (testSubmitBtn) {
+                testSubmitBtn.addEventListener('click', testSubmit);
+            }
+        });
+    </script>
+</body>
+</html> 

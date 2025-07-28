@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Location Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        select { width: 200px; padding: 5px; margin: 5px; }
+        .result { margin: 10px 0; padding: 10px; background: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h1>Simple Location Manager Test</h1>
+    
+    <div>
+        <label for="location">Location:</label>
+        <select id="location" title="Select a location">
+            <option value="">Select Location</option>
+        </select>
+    </div>
+    
+    <div>
+        <label for="machine">Machine:</label>
+        <select id="machine" title="Select a machine">
+            <option value="">Select Machine</option>
+        </select>
+    </div>
+    
+    <div class="result" id="result">Results will appear here...</div>
+
+    <script type="module">
+        async function test() {
+            const result = document.getElementById('result');
+            const locationSelect = document.getElementById('location');
+            const machineSelect = document.getElementById('machine');
+            
+            function log(message) {
+                result.innerHTML += '<div>' + message + '</div>';
+                console.log(message);
+            }
+            
+            try {
+                log('Starting test...');
+                
+                // Import location manager
+                const { locationManager } = await import('./js/location-config.js?v=1.0.1');
+                log('✓ Location manager imported');
+                
+                // Get locations
+                const locations = locationManager.getLocations();
+                log(`✓ Found ${locations.length} locations`);
+                
+                // Populate location dropdown
+                locations.forEach(location => {
+                    const option = document.createElement('option');
+                    option.value = location.id;
+                    option.textContent = location.name;
+                    locationSelect.appendChild(option);
+                });
+                log('✓ Location dropdown populated');
+                
+                // Add change listener
+                locationSelect.addEventListener('change', (e) => {
+                    const selectedLocation = e.target.value;
+                    log(`Location changed to: ${selectedLocation}`);
+                    
+                    if (selectedLocation) {
+                        // Clear machine dropdown
+                        machineSelect.innerHTML = '<option value="">Select Machine</option>';
+                        
+                        // Get machines for selected location
+                        const machines = locationManager.getMachines(selectedLocation);
+                        log(`Found ${machines.length} machines for ${selectedLocation}`);
+                        
+                        // Populate machine dropdown
+                        machines.forEach(machine => {
+                            const option = document.createElement('option');
+                            option.value = machine.id;
+                            option.textContent = machine.name;
+                            machineSelect.appendChild(option);
+                        });
+                        
+                        log('✓ Machine dropdown populated');
+                    } else {
+                        machineSelect.innerHTML = '<option value="">Select Machine</option>';
+                        log('Machine dropdown cleared');
+                    }
+                });
+                
+                log('✓ Test complete - try selecting a location!');
+                
+            } catch (error) {
+                log('✗ Error: ' + error.message);
+                console.error('Full error:', error);
+            }
+        }
+        
+        // Run test when page loads
+        document.addEventListener('DOMContentLoaded', test);
+    </script>
+</body>
+</html> 

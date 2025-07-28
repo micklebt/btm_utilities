@@ -1,9 +1,10 @@
 /**
  * Climate Control Monitoring System
  * Handles temperature, humidity tracking, and HVAC controls
+ * Version: 1.0.4 - Fixed syntax error
  */
 
-import { config } from './config.js';
+import { config } from './config.js?v=1.0.3';
 import { logger } from './logger.js';
 import { errorHandler } from './error-handler.js';
 import { storageUtils } from './storage.js';
@@ -127,9 +128,46 @@ export class ClimateControl {
 
     async loadData() {
         try {
-            const savedReadings = await storageUtils.readingsManager.load();
-            const savedAlerts = await storageUtils.alertsManager.load();
-            const savedSettings = await storageUtils.settingsManager.load();
+            // Load data with null checks
+            let savedReadings = [];
+            let savedAlerts = [];
+            let savedSettings = null;
+
+            try {
+                if (storageUtils.readingsManager && storageUtils.readingsManager.load) {
+                    savedReadings = await storageUtils.readingsManager.load();
+                } else {
+                    console.warn('storageUtils.readingsManager not available');
+                    logger.warn('storageUtils.readingsManager not available');
+                }
+            } catch (error) {
+                console.error('Failed to load readings:', error);
+                logger.error('Failed to load readings', null, error);
+            }
+
+            try {
+                if (storageUtils.alertsManager && storageUtils.alertsManager.load) {
+                    savedAlerts = await storageUtils.alertsManager.load();
+                } else {
+                    console.warn('storageUtils.alertsManager not available');
+                    logger.warn('storageUtils.alertsManager not available');
+                }
+            } catch (error) {
+                console.error('Failed to load alerts:', error);
+                logger.error('Failed to load alerts', null, error);
+            }
+
+            try {
+                if (storageUtils.settingsManager && storageUtils.settingsManager.load) {
+                    savedSettings = await storageUtils.settingsManager.load();
+                } else {
+                    console.warn('storageUtils.settingsManager not available');
+                    logger.warn('storageUtils.settingsManager not available');
+                }
+            } catch (error) {
+                console.error('Failed to load settings:', error);
+                logger.error('Failed to load settings', null, error);
+            }
             
             this.readings = savedReadings || [];
             this.alerts = savedAlerts || [];
@@ -393,6 +431,12 @@ export class ClimateControl {
         if (settingsBtn) {
             settingsBtn.addEventListener('click', () => this.showSettingsModal());
         }
+
+        // Refresh button
+        const refreshBtn = document.getElementById('refresh-climate');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => this.refreshClimateData());
+        }
     }
 
     startMonitoring() {
@@ -540,7 +584,18 @@ export class ClimateControl {
             this.readings = this.readings.slice(-1000);
         }
         
-        storageUtils.readingsManager.save(this.readings);
+        // Save readings with null check
+        try {
+            if (storageUtils.readingsManager && storageUtils.readingsManager.save) {
+                storageUtils.readingsManager.save(this.readings);
+            } else {
+                console.warn('storageUtils.readingsManager not available, skipping save');
+                logger.warn('storageUtils.readingsManager not available, skipping save');
+            }
+        } catch (error) {
+            console.error('Failed to save readings:', error);
+            logger.error('Failed to save readings', null, error);
+        }
         
         // Update overview
         this.updateOverview();
@@ -606,9 +661,19 @@ export class ClimateControl {
             this.alerts.push(alertObj);
         });
         
-        // Save alerts
+        // Save alerts with null check
         if (alerts.length > 0) {
-            storageUtils.alertsManager.save(this.alerts);
+            try {
+                if (storageUtils.alertsManager && storageUtils.alertsManager.save) {
+                    storageUtils.alertsManager.save(this.alerts);
+                } else {
+                    console.warn('storageUtils.alertsManager not available, skipping save');
+                    logger.warn('storageUtils.alertsManager not available, skipping save');
+                }
+            } catch (error) {
+                console.error('Failed to save alerts:', error);
+                logger.error('Failed to save alerts', null, error);
+            }
             this.updateAlertsList();
         }
     }
@@ -676,8 +741,18 @@ export class ClimateControl {
             this.updateHVACDisplay();
             this.updateOverview();
             
-            // Save settings
-            storageUtils.settingsManager.save(this.settings);
+            // Save settings with null check
+            try {
+                if (storageUtils.settingsManager && storageUtils.settingsManager.save) {
+                    storageUtils.settingsManager.save(this.settings);
+                } else {
+                    console.warn('storageUtils.settingsManager not available, skipping save');
+                    logger.warn('storageUtils.settingsManager not available, skipping save');
+                }
+            } catch (error) {
+                console.error('Failed to save settings:', error);
+                logger.error('Failed to save settings', null, error);
+            }
             
             this.showNotification(`HVAC mode set to ${mode}`, 'success');
             logger.info('HVAC mode changed', { mode });
@@ -741,8 +816,18 @@ export class ClimateControl {
             // Update settings
             this.settings = newSettings;
             
-            // Save to storage
-            await storageUtils.settingsManager.save(this.settings);
+            // Save to storage with null check
+            try {
+                if (storageUtils.settingsManager && storageUtils.settingsManager.save) {
+                    await storageUtils.settingsManager.save(this.settings);
+                } else {
+                    console.warn('storageUtils.settingsManager not available, skipping save');
+                    logger.warn('storageUtils.settingsManager not available, skipping save');
+                }
+            } catch (error) {
+                console.error('Failed to save settings:', error);
+                logger.error('Failed to save settings', null, error);
+            }
             
             // Update display
             this.updateOverview();
@@ -831,7 +916,17 @@ export class ClimateControl {
             };
             
             this.alerts.push(alert);
-            storageUtils.alertsManager.save(this.alerts);
+            try {
+                if (storageUtils.alertsManager && storageUtils.alertsManager.save) {
+                    storageUtils.alertsManager.save(this.alerts);
+                } else {
+                    console.warn('storageUtils.alertsManager not available, skipping save');
+                    logger.warn('storageUtils.alertsManager not available, skipping save');
+                }
+            } catch (error) {
+                console.error('Failed to save alerts:', error);
+                logger.error('Failed to save alerts', null, error);
+            }
             this.updateAlertsList();
             
             logger.info('Maintenance alert created', { unitId, unitName: unit.name });
@@ -846,13 +941,66 @@ export class ClimateControl {
             const alert = this.alerts.find(a => a.id === alertId);
             if (alert) {
                 alert.status = 'dismissed';
-                storageUtils.alertsManager.save(this.alerts);
+                try {
+                    if (storageUtils.alertsManager && storageUtils.alertsManager.save) {
+                        storageUtils.alertsManager.save(this.alerts);
+                    } else {
+                        console.warn('storageUtils.alertsManager not available, skipping save');
+                        logger.warn('storageUtils.alertsManager not available, skipping save');
+                    }
+                } catch (error) {
+                    console.error('Failed to save alerts:', error);
+                    logger.error('Failed to save alerts', null, error);
+                }
                 this.updateAlertsList();
                 
                 logger.info('Alert dismissed', { alertId });
             }
         } catch (error) {
             logger.error('Error dismissing alert', null, error);
+        }
+    }
+
+    refreshClimateData() {
+        try {
+            console.log('Refreshing climate data...');
+            
+            // Update all displays
+            this.updateSensorsDisplay();
+            this.updateHVACDisplay();
+            this.updateOverview();
+            this.updateReadings();
+            this.updateAlertsList();
+            
+            // Generate new readings for online sensors
+            this.sensorConfigs.forEach(sensor => {
+                if (sensor.status === 'online') {
+                    const tempReading = this.generateTemperatureReading();
+                    const humidityReading = this.generateHumidityReading();
+                    
+                    // Update display
+                    const tempElement = document.getElementById(`temp-${sensor.id}`);
+                    const humidityElement = document.getElementById(`humidity-${sensor.id}`);
+                    
+                    if (tempElement) {
+                        tempElement.textContent = `${tempReading}°F`;
+                        tempElement.className = `reading-value ${this.getTemperatureClass(tempReading)}`;
+                    }
+                    
+                    if (humidityElement) {
+                        humidityElement.textContent = `${humidityReading}%`;
+                        humidityElement.className = `reading-value ${this.getHumidityClass(humidityReading)}`;
+                    }
+                }
+            });
+            
+            this.showNotification('Climate data refreshed successfully', 'success');
+            logger.info('Climate data refreshed successfully');
+            
+        } catch (error) {
+            console.error('Failed to refresh climate data:', error);
+            logger.error('Failed to refresh climate data', null, error);
+            this.showNotification('Failed to refresh climate data', 'error');
         }
     }
 

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced QR + OCR Scanner Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .scanner-section {
+            margin-bottom: 30px;
+        }
+        
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+            margin: 20px 0;
+        }
+        
+        #video {
+            width: 100%;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+        }
+        
+        #canvas {
+            display: none;
+        }
+        
+        .controls {
+            margin: 20px 0;
+        }
+        
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+        }
+        
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .status.warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .scan-history {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+        }
+        
+        .scan-item {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            font-size: 12px;
+        }
+        
+        .scan-item:last-child {
+            border-bottom: none;
+        }
+        
+        .counter-value {
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        .confidence {
+            color: #28a745;
+        }
+        
+        .confidence.low {
+            color: #ffc107;
+        }
+        
+        .confidence.very-low {
+            color: #dc3545;
+        }
+        
+        .instructions {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .instructions h3 {
+            margin-top: 0;
+            color: #0056b3;
+        }
+        
+        .instructions ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 Enhanced QR + OCR Scanner Test</h1>
+    
+    <div class="container">
+        <div class="instructions">
+            <h3>📋 How to Test</h3>
+            <ul>
+                <li><strong>QR Code Scanning:</strong> Show a QR code with format "Location, changer X, Y = $Z"</li>
+                <li><strong>OCR Counter Reading:</strong> The scanner will also try to read numeric counter values from the image</li>
+                <li><strong>Combined Results:</strong> Both QR data and OCR counter values will be processed together</li>
+                <li><strong>Test Images:</strong> Use the provided test images or your own QR codes with counter displays</li>
+            </ul>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>📷 Camera Scanner</h2>
+            <div class="video-container">
+                <video id="video" autoplay playsinline></video>
+                <canvas id="canvas"></canvas>
+            </div>
+            
+            <div class="controls">
+                <button id="startBtn" class="btn">Start Scanning</button>
+                <button id="stopBtn" class="btn btn-danger" disabled>Stop Scanning</button>
+                <button id="clearHistoryBtn" class="btn">Clear History</button>
+            </div>
+            
+            <div id="status" class="status info">
+                Ready to start scanning. Click "Start Scanning" to begin.
+            </div>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>📊 Scan Results</h2>
+            <div id="result" class="result">
+                <h3>Scan Result</h3>
+                <div id="resultContent"></div>
+            </div>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>📈 Scan History</h2>
+            <div id="scanHistory" class="scan-history">
+                <div class="scan-item">No scans yet. Start scanning to see results.</div>
+            </div>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>🧪 Test QR Codes</h2>
+            <p>You can use these sample QR codes for testing:</p>
+            <ul>
+                <li><strong>Peacock Changer 1:</strong> <code>Peacock, changer 1, 4 = $1</code></li>
+                <li><strong>Dover Changer 3:</strong> <code>Dover, changer 3, 1 = $1</code></li>
+                <li><strong>Massillon Changer 2:</strong> <code>Massillon, changer 2, 4 = $1</code></li>
+            </ul>
+            <p><strong>Format:</strong> <code>Location, changer X, Y = $Z</code></p>
+            <p><strong>Where:</strong> X = changer number, Y = counter value, Z = dollar amount</p>
+            <p><strong>Tip:</strong> Use your phone to display a QR code by searching "QR code generator" online and creating one with the sample data above.</p>
+        </div>
+    </div>
+
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
+    
+    <!-- Application Scripts -->
+    <script type="module">
+        import { enhancedScanner } from './js/enhanced-qr-ocr-scanner.js';
+        
+        class EnhancedScannerTest {
+            constructor() {
+                this.video = document.getElementById('video');
+                this.canvas = document.getElementById('canvas');
+                this.startBtn = document.getElementById('startBtn');
+                this.stopBtn = document.getElementById('stopBtn');
+                this.clearHistoryBtn = document.getElementById('clearHistoryBtn');
+                this.status = document.getElementById('status');
+                this.result = document.getElementById('result');
+                this.resultContent = document.getElementById('resultContent');
+                this.scanHistory = document.getElementById('scanHistory');
+                
+                this.isScanning = false;
+                this.stream = null;
+                
+                this.initializeEventListeners();
+                this.updateScanHistory();
+            }
+            
+            initializeEventListeners() {
+                this.startBtn.addEventListener('click', () => this.startScanning());
+                this.stopBtn.addEventListener('click', () => this.stopScanning());
+                this.clearHistoryBtn.addEventListener('click', () => this.clearHistory());
+                
+                // Listen for enhanced scan results
+                window.addEventListener('enhancedScanResult', (event) => {
+                    this.handleScanResult(event.detail);
+                });
+            }
+            
+            async startScanning() {
+                try {
+                    this.updateStatus('Requesting camera access...', 'info');
+                    
+                    this.stream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: 'environment',
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        }
+                    });
+                    
+                    this.video.srcObject = this.stream;
+                    
+                    this.video.addEventListener('loadedmetadata', () => {
+                        this.video.play();
+                        this.startEnhancedScanning();
+                    });
+                    
+                } catch (error) {
+                    this.updateStatus(`Camera access failed: ${error.message}`, 'error');
+                    console.error('Camera access error:', error);
+                }
+            }
+            
+            async startEnhancedScanning() {
+                try {
+                    const success = await enhancedScanner.startScanning(this.video, this.canvas);
+                    
+                    if (success) {
+                        this.isScanning = true;
+                        this.startBtn.disabled = true;
+                        this.stopBtn.disabled = false;
+                        this.updateStatus('Enhanced scanning active - QR codes and counter values will be detected', 'info');
+                    } else {
+                        this.updateStatus('Failed to start enhanced scanning', 'error');
+                    }
+                } catch (error) {
+                    this.updateStatus(`Enhanced scanning error: ${error.message}`, 'error');
+                    console.error('Enhanced scanning error:', error);
+                }
+            }
+            
+            stopScanning() {
+                enhancedScanner.stopScanning();
+                
+                if (this.stream) {
+                    this.stream.getTracks().forEach(track => track.stop());
+                    this.stream = null;
+                }
+                
+                this.isScanning = false;
+                this.startBtn.disabled = false;
+                this.stopBtn.disabled = true;
+                this.updateStatus('Scanning stopped', 'info');
+            }
+            
+            handleScanResult(result) {
+                this.showResult(result);
+                this.updateScanHistory();
+            }
+            
+            showResult(result) {
+                this.result.style.display = 'block';
+                this.result.className = 'result success';
+                
+                const qrData = result.qrData;
+                const ocrData = result.ocrData;
+                
+                let html = `
+                    <h3>✅ Enhanced Scan Successful!</h3>
+                    <p><strong>Scan ID:</strong> ${result.scanId}</p>
+                    <p><strong>Timestamp:</strong> ${new Date(result.timestamp).toLocaleString()}</p>
+                    
+                    <h4>📱 QR Code Data:</h4>
+                    <p><strong>Location:</strong> ${qrData.locationName}</p>
+                    <p><strong>Machine:</strong> ${qrData.machineDisplayName}</p>
+                    <p><strong>Machine ID:</strong> ${qrData.machineId}</p>
+                    <p><strong>Dollar Amount:</strong> $${qrData.dollarAmount}</p>
+                    <p><strong>QR Counter Value:</strong> ${qrData.counterValue}</p>
+                `;
+                
+                if (ocrData) {
+                    html += `
+                        <h4>🔍 OCR Counter Data:</h4>
+                        <p><strong>Detected Counter Value:</strong> <span class="counter-value">${result.counterValue}</span></p>
+                        <p><strong>Counter Source:</strong> ${result.counterSource}</p>
+                        <p><strong>Confidence:</strong> <span class="confidence ${this.getConfidenceClass(result.confidence)}">${result.confidence}%</span></p>
+                        <p><strong>OCR Regions Processed:</strong> ${ocrData.length}</p>
+                    `;
+                } else {
+                    html += `
+                        <h4>🔍 OCR Status:</h4>
+                        <p><strong>Counter Value:</strong> <span class="counter-value">${result.counterValue}</span> (from QR code)</p>
+                        <p><strong>Counter Source:</strong> ${result.counterSource}</p>
+                        <p><strong>OCR:</strong> No counter display detected in image</p>
+                    `;
+                }
+                
+                html += `
+                    <h4>📊 Combined Result:</h4>
+                    <p><strong>Final Counter Value:</strong> <span class="counter-value">${result.counterValue}</span></p>
+                    <p><strong>Data Source:</strong> ${result.counterSource === 'ocr' ? 'OCR (Image Reading)' : 'QR Code'}</p>
+                `;
+                
+                this.resultContent.innerHTML = html;
+            }
+            
+            getConfidenceClass(confidence) {
+                if (confidence >= 80) return '';
+                if (confidence >= 60) return 'low';
+                return 'very-low';
+            }
+            
+            updateStatus(message, type = 'info') {
+                this.status.textContent = message;
+                this.status.className = `status ${type}`;
+            }
+            
+            updateScanHistory() {
+                const history = enhancedScanner.getScanHistory();
+                
+                if (history.length === 0) {
+                    this.scanHistory.innerHTML = '<div class="scan-item">No scans yet. Start scanning to see results.</div>';
+                    return;
+                }
+                
+                let html = '';
+                history.slice(0, 10).forEach(scan => {
+                    const confidenceClass = this.getConfidenceClass(scan.confidence);
+                    html += `
+                        <div class="scan-item">
+                            <strong>${scan.location} - ${scan.machine}</strong><br>
+                            Counter: <span class="counter-value">${scan.counterValue}</span> 
+                            (${scan.counterSource}) | 
+                            Confidence: <span class="confidence ${confidenceClass}">${scan.confidence}%</span> | 
+                            ${new Date(scan.timestamp).toLocaleTimeString()}
+                        </div>
+                    `;
+                });
+                
+                this.scanHistory.innerHTML = html;
+            }
+            
+            clearHistory() {
+                enhancedScanner.clearScanHistory();
+                this.updateScanHistory();
+                this.updateStatus('Scan history cleared', 'info');
+            }
+        }
+        
+        // Initialize the test when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new EnhancedScannerTest();
+        });
+    </script>
+</body>
+</html> 

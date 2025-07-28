@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manifest Test</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>Manifest Test</h1>
+    
+    <div class="test-section">
+        <h3>Manifest Status:</h3>
+        <div id="manifest-status">Checking...</div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Icon Test:</h3>
+        <div id="icon-test">
+            <img src="images/icons/icon-144x144.svg" alt="144x144 Icon" style="width: 72px; height: 72px;">
+            <img src="images/icons/icon-96x96.svg" alt="96x96 Icon" style="width: 48px; height: 48px;">
+            <img src="images/icons/icon-32x32.svg" alt="32x32 Icon" style="width: 32px; height: 32px;">
+        </div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const status = document.getElementById('manifest-status');
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            status.appendChild(div);
+        }
+
+        // Test manifest loading
+        async function testManifest() {
+            try {
+                log('Testing manifest.json...', 'info');
+                
+                const response = await fetch('manifest.json');
+                if (response.ok) {
+                    const manifest = await response.json();
+                    log('Manifest loaded successfully', 'success');
+                    log(`App name: ${manifest.name}`, 'info');
+                    log(`Icons count: ${manifest.icons.length}`, 'info');
+                    
+                    // Test icon loading
+                    for (const icon of manifest.icons) {
+                        try {
+                            const iconResponse = await fetch(icon.src);
+                            if (iconResponse.ok) {
+                                log(`✓ Icon loaded: ${icon.src}`, 'success');
+                            } else {
+                                log(`✗ Icon failed: ${icon.src} (${iconResponse.status})`, 'error');
+                            }
+                        } catch (error) {
+                            log(`✗ Icon error: ${icon.src} - ${error.message}`, 'error');
+                        }
+                    }
+                } else {
+                    log(`Manifest failed to load: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`Error testing manifest: ${error.message}`, 'error');
+            }
+        }
+
+        // Test PWA features
+        function testPWAFeatures() {
+            log('Testing PWA features...', 'info');
+            
+            if ('serviceWorker' in navigator) {
+                log('✓ Service Worker supported', 'success');
+            } else {
+                log('✗ Service Worker not supported', 'error');
+            }
+            
+            if ('Notification' in window) {
+                log('✓ Notifications supported', 'success');
+            } else {
+                log('✗ Notifications not supported', 'error');
+            }
+            
+            if ('manifest' in document.createElement('link')) {
+                log('✓ Web App Manifest supported', 'success');
+            } else {
+                log('✗ Web App Manifest not supported', 'error');
+            }
+        }
+
+        // Initialize tests
+        document.addEventListener('DOMContentLoaded', () => {
+            testManifest();
+            testPWAFeatures();
+        });
+    </script>
+</body>
+</html> 

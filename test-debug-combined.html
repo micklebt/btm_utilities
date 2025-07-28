@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Combined QR + OCR Scanner</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .scanner-section {
+            margin-bottom: 30px;
+        }
+        
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+            margin: 20px 0;
+        }
+        
+        #video {
+            width: 100%;
+            border: 2px solid #dc3545;
+            border-radius: 8px;
+        }
+        
+        #canvas {
+            display: none;
+        }
+        
+        .controls {
+            margin: 20px 0;
+        }
+        
+        .btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        
+        .btn:hover {
+            background: #c82333;
+        }
+        
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .status.warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .qr-result {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        
+        .counter-result {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        
+        .debug-results {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .ocr-result-item {
+            background: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .ocr-result-item h4 {
+            margin: 0 0 10px 0;
+            color: #495057;
+        }
+        
+        .ocr-text {
+            color: #0066cc;
+            font-weight: bold;
+        }
+        
+        .ocr-confidence {
+            color: #28a745;
+        }
+        
+        .ocr-confidence.low {
+            color: #ffc107;
+        }
+        
+        .ocr-confidence.very-low {
+            color: #dc3545;
+        }
+        
+        .ocr-numbers {
+            color: #6f42c1;
+            font-weight: bold;
+        }
+        
+        .instructions {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .instructions h3 {
+            margin-top: 0;
+            color: #856404;
+        }
+        
+        .console-output {
+            background: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+        
+        .stats {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .target-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .target-info h3 {
+            margin-top: 0;
+            color: #856404;
+        }
+        
+        .debug-info {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .debug-info h3 {
+            margin-top: 0;
+            color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Combined QR + OCR Scanner</h1>
+    
+    <div class="container">
+        <div class="target-info">
+            <h3>🎯 Debug Target: Show ALL OCR Results</h3>
+            <p><strong>Goal:</strong> Show every single OCR result, even if it doesn't meet validation criteria</p>
+            <p><strong>Purpose:</strong> See exactly what the scanner is detecting in each region</p>
+            <p><strong>Expected:</strong> We should see ALL text detected, including noise, partial numbers, etc.</p>
+        </div>
+        
+        <div class="debug-info">
+            <h3>🔍 Debug Features</h3>
+            <p>This debug scanner will show:</p>
+            <ul>
+                <li><strong>ALL OCR Results:</strong> Every text detected, even invalid ones</li>
+                <li><strong>Raw Text:</strong> The exact text OCR found</li>
+                <li><strong>Cleaned Text:</strong> Numbers only</li>
+                <li><strong>Extracted Numbers:</strong> All numbers found in each region</li>
+                <li><strong>Confidence Scores:</strong> How confident OCR is about each result</li>
+                <li><strong>Region Information:</strong> Which area of the image was scanned</li>
+            </ul>
+        </div>
+        
+        <div class="instructions">
+            <h3>📋 Debug Instructions</h3>
+            <p>This debug version will show you EXACTLY what the OCR is seeing:</p>
+            <ol>
+                <li><strong>Start Debug Scanning</strong> - Click the debug scan button</li>
+                <li><strong>Point Camera</strong> - At the image with QR code and digital counter</li>
+                <li><strong>Watch Results</strong> - See ALL OCR results, even invalid ones</li>
+                <li><strong>Analyze Output</strong> - Look for patterns in what's being detected</li>
+                <li><strong>Check Console</strong> - Detailed logs show exactly what's happening</li>
+            </ol>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>🔍 Debug Combined Scanner</h2>
+            <div class="video-container">
+                <video id="video" autoplay playsinline></video>
+                <canvas id="canvas"></canvas>
+            </div>
+            
+            <div class="controls">
+                <button id="startBtn" class="btn">Start Debug Scanning</button>
+                <button id="stopBtn" class="btn btn-success" disabled>Stop Scanning</button>
+                <button id="clearBufferBtn" class="btn btn-warning">Clear Frame Buffer</button>
+                <button id="testOCRBtn" class="btn">Test OCR</button>
+            </div>
+            
+            <div id="status" class="status info">
+                Ready to start debug scanning. This will show ALL OCR results for analysis.
+            </div>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>📊 Debug Scan Results</h2>
+            <div id="result" class="result">
+                <h3>Debug Scan Result</h3>
+                <div id="resultContent"></div>
+            </div>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>🔍 ALL OCR Results (Debug)</h2>
+            <div class="debug-results">
+                <div id="debugResultsContent">
+                    <p>Debug results will appear here when scanning starts...</p>
+                    <p>This will show EVERY OCR result, even invalid ones.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>📈 Scanner Statistics</h2>
+            <div class="stats">
+                <div id="statsContent">
+                    <p><strong>Frame Buffer:</strong> <span id="frameBufferSize">0</span> / <span id="maxFrameBuffer">3</span> frames</p>
+                    <p><strong>Scan Status:</strong> <span id="scanStatus">Ready</span></p>
+                    <p><strong>Total OCR Results:</strong> <span id="totalOCRResults">0</span></p>
+                    <p><strong>Last QR Result:</strong> <span id="lastQRResult">None</span></p>
+                    <p><strong>Last Counter Result:</strong> <span id="lastCounterResult">None</span></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>🎯 Debug Strategy</h2>
+            <div class="stats">
+                <p><strong>Step 1 - QR Detection:</strong> Scan entire image for QR codes</p>
+                <p><strong>Step 2 - OCR ALL Regions:</strong> Scan 7 different regions for any text</p>
+                <p><strong>Step 3 - Show ALL Results:</strong> Display every OCR result, even invalid ones</p>
+                <p><strong>Step 4 - Analyze Patterns:</strong> Look for consistent numbers or text patterns</p>
+                <p><strong>Step 5 - Identify Issues:</strong> See what's being missed or misread</p>
+                <p><strong>Scan Regions:</strong> primary_display, full_center, top_area, bottom_area, left_side, right_side, very_large</p>
+            </div>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>🖥️ Console Output</h2>
+            <p>Open your browser's developer console (F12) to see detailed debug logging.</p>
+            <div class="console-output">
+                <div>Console output will appear here when scanning starts...</div>
+                <div>Look for messages starting with "Debug Combined Scanner:"</div>
+                <div>This will show ALL OCR results and processing details.</div>
+            </div>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>🧪 Debug Instructions</h2>
+            <p>To debug the combined QR + OCR scanner:</p>
+            <ol>
+                <li>Open browser developer console (F12)</li>
+                <li>Click "Start Debug Scanning"</li>
+                <li>Point camera at the image with both QR code and digital counter</li>
+                <li>Watch the debug results section for ALL OCR outputs</li>
+                <li>Look for patterns in the detected text</li>
+                <li>Check if numbers like 963373 appear anywhere in the results</li>
+                <li>Note any regions that consistently detect text vs. empty results</li>
+            </ol>
+            <p><strong>Expected:</strong> We should see ALL OCR results, including noise, partial numbers, and any text detected in each region.</p>
+        </div>
+    </div>
+
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
+    
+    <!-- Application Scripts -->
+    <script type="module">
+        import { debugCombinedScanner } from './js/debug-combined-scanner.js';
+        
+        class DebugCombinedTest {
+            constructor() {
+                this.video = document.getElementById('video');
+                this.canvas = document.getElementById('canvas');
+                this.startBtn = document.getElementById('startBtn');
+                this.stopBtn = document.getElementById('stopBtn');
+                this.clearBufferBtn = document.getElementById('clearBufferBtn');
+                this.testOCRBtn = document.getElementById('testOCRBtn');
+                this.status = document.getElementById('status');
+                this.result = document.getElementById('result');
+                this.resultContent = document.getElementById('resultContent');
+                this.debugResultsContent = document.getElementById('debugResultsContent');
+                this.frameBufferSize = document.getElementById('frameBufferSize');
+                this.maxFrameBuffer = document.getElementById('maxFrameBuffer');
+                this.scanStatus = document.getElementById('scanStatus');
+                this.lastQRResult = document.getElementById('lastQRResult');
+                this.lastCounterResult = document.getElementById('lastCounterResult');
+                this.totalOCRResults = document.getElementById('totalOCRResults');
+                
+                this.isScanning = false;
+                this.stream = null;
+                this.scanInterval = null;
+                this.lastScanTime = 0;
+                this.scanCooldown = 5000; // 5 seconds between scans for debug
+                
+                this.initializeEventListeners();
+                console.log('Debug Combined Test: Initialized');
+            }
+            
+            initializeEventListeners() {
+                this.startBtn.addEventListener('click', () => this.startScanning());
+                this.stopBtn.addEventListener('click', () => this.stopScanning());
+                this.clearBufferBtn.addEventListener('click', () => this.clearBuffer());
+                this.testOCRBtn.addEventListener('click', () => this.testOCR());
+            }
+            
+            async testOCR() {
+                console.log('Debug Combined Test: Testing OCR...');
+                this.updateStatus('Testing OCR...', 'info');
+                
+                try {
+                    if (typeof Tesseract === 'undefined') {
+                        console.error('Debug Combined Test: Tesseract not loaded!');
+                        this.updateStatus('ERROR: Tesseract library not loaded!', 'error');
+                        return;
+                    }
+                    
+                    if (typeof jsQR === 'undefined') {
+                        console.error('Debug Combined Test: jsQR not loaded!');
+                        this.updateStatus('ERROR: jsQR library not loaded!', 'error');
+                        return;
+                    }
+                    
+                    console.log('Debug Combined Test: Both libraries available');
+                    this.updateStatus('Both Tesseract and jsQR libraries loaded', 'info');
+                    
+                    const worker = await Tesseract.createWorker();
+                    console.log('Debug Combined Test: OCR worker created');
+                    
+                    await worker.loadLanguage('eng');
+                    console.log('Debug Combined Test: English language loaded');
+                    
+                    await worker.initialize('eng');
+                    console.log('Debug Combined Test: OCR initialized');
+                    
+                    await worker.terminate();
+                    console.log('Debug Combined Test: OCR worker terminated');
+                    
+                    this.updateStatus('OCR test completed successfully', 'info');
+                } catch (error) {
+                    console.error('Debug Combined Test: OCR test failed:', error);
+                    this.updateStatus(`OCR test failed: ${error.message}`, 'error');
+                }
+            }
+            
+            clearBuffer() {
+                debugCombinedScanner.clearFrameBuffer();
+                this.updateStats();
+                this.updateStatus('Frame buffer cleared', 'info');
+            }
+            
+            async startScanning() {
+                try {
+                    console.log('Debug Combined Test: Requesting camera access...');
+                    this.updateStatus('Requesting camera access...', 'info');
+                    
+                    this.stream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: 'environment',
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        }
+                    });
+                    
+                    console.log('Debug Combined Test: Camera access granted');
+                    this.video.srcObject = this.stream;
+                    
+                    this.video.addEventListener('loadedmetadata', () => {
+                        console.log(`Debug Combined Test: Video dimensions: ${this.video.videoWidth}x${this.video.videoHeight}`);
+                        this.video.play();
+                        this.startDebugScanning();
+                    });
+                    
+                } catch (error) {
+                    console.error('Debug Combined Test: Camera access failed:', error);
+                    this.updateStatus(`Camera access failed: ${error.message}`, 'error');
+                }
+            }
+            
+            async startDebugScanning() {
+                try {
+                    this.isScanning = true;
+                    this.startBtn.disabled = true;
+                    this.stopBtn.disabled = false;
+                    this.updateStatus('Debug scanning active - showing ALL OCR results', 'success');
+                    console.log('Debug Combined Test: Debug scanning started');
+                    
+                    this.scanInterval = setInterval(() => {
+                        this.performDebugScan();
+                    }, 5000); // Scan every 5 seconds for debug
+                    
+                } catch (error) {
+                    console.error('Debug Combined Test: Debug scanning error:', error);
+                    this.updateStatus(`Debug scanning error: ${error.message}`, 'error');
+                }
+            }
+            
+            async performDebugScan() {
+                if (!this.isScanning || !this.video || !this.canvas) {
+                    console.log('Debug Combined Test: Scanning stopped or video/canvas not available');
+                    return;
+                }
+                
+                const now = Date.now();
+                if (now - this.lastScanTime < this.scanCooldown) {
+                    return;
+                }
+                
+                console.log('Debug Combined Test: Starting debug scan...');
+                this.updateStatus('Debug scanning for QR codes and ALL OCR results...', 'info');
+                
+                try {
+                    this.canvas.width = this.video.videoWidth;
+                    this.canvas.height = this.video.videoHeight;
+                    
+                    console.log(`Debug Combined Test: Canvas size: ${this.canvas.width}x${this.canvas.height}`);
+                    
+                    const ctx = this.canvas.getContext('2d');
+                    ctx.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
+                    
+                    console.log('Debug Combined Test: Video frame drawn to canvas');
+                    
+                    const imageData = ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+                    
+                    console.log(`Debug Combined Test: Image data size: ${imageData.width}x${imageData.height}`);
+                    
+                    if (!debugCombinedScanner) {
+                        console.error('Debug Combined Test: Debug scanner not available!');
+                        return;
+                    }
+                    
+                    console.log('Debug Combined Test: Debug scanner available, starting scan...');
+                    
+                    const result = await debugCombinedScanner.scanCombined(imageData);
+                    
+                    if (result) {
+                        this.lastScanTime = now;
+                        console.log('Debug Combined Test: Debug scan completed!', result);
+                        this.handleDebugResult(result);
+                    } else {
+                        console.log('Debug Combined Test: No debug results');
+                        this.updateStatus('No QR codes or OCR results detected', 'warning');
+                    }
+                    
+                    this.updateStats();
+                    
+                } catch (error) {
+                    console.error('Debug Combined Test: Scan error:', error);
+                }
+            }
+            
+            stopScanning() {
+                this.isScanning = false;
+                
+                if (this.scanInterval) {
+                    clearInterval(this.scanInterval);
+                    this.scanInterval = null;
+                }
+                
+                if (this.stream) {
+                    this.stream.getTracks().forEach(track => track.stop());
+                    this.stream = null;
+                }
+                
+                this.startBtn.disabled = false;
+                this.stopBtn.disabled = true;
+                this.updateStatus('Debug scanning stopped', 'info');
+                console.log('Debug Combined Test: Scanning stopped');
+            }
+            
+            handleDebugResult(result) {
+                this.showDebugResult(result);
+            }
+            
+            showDebugResult(result) {
+                this.result.style.display = 'block';
+                this.result.className = 'result success';
+                
+                let html = '<h3>🔍 Debug Scan Results</h3>';
+                
+                // QR Code Results
+                if (result.qrCode) {
+                    html += `
+                        <div class="qr-result">
+                            <h4>📱 QR Code Detected</h4>
+                            <p><strong>QR Data:</strong> <span class="qr-data">${result.qrCode.data}</span></p>
+                            <p><strong>Confidence:</strong> <span class="confidence">${result.qrCode.confidence}%</span></p>
+                        </div>
+                    `;
+                    this.lastQRResult.textContent = result.qrCode.data;
+                } else {
+                    html += `
+                        <div class="qr-result">
+                            <h4>❌ No QR Code Detected</h4>
+                            <p>No QR code found in the image</p>
+                        </div>
+                    `;
+                    this.lastQRResult.textContent = 'None';
+                }
+                
+                // Counter Results
+                if (result.counterValue) {
+                    const confidenceClass = this.getConfidenceClass(result.counterValue.confidence);
+                    html += `
+                        <div class="counter-result">
+                            <h4>🔢 Best Counter Value</h4>
+                            <p><strong>Counter Value:</strong> <span class="counter-value">${result.counterValue.value}</span></p>
+                            <p><strong>Confidence:</strong> <span class="confidence ${confidenceClass}">${result.counterValue.confidence}%</span></p>
+                            <p><strong>Region:</strong> ${result.counterValue.region}</p>
+                            <p><strong>Raw OCR Text:</strong> <code>${result.counterValue.rawText}</code></p>
+                        </div>
+                    `;
+                    this.lastCounterResult.textContent = result.counterValue.value;
+                } else {
+                    html += `
+                        <div class="counter-result">
+                            <h4>❌ No Valid Counter Value</h4>
+                            <p>No valid counter value found (but check ALL OCR results below)</p>
+                        </div>
+                    `;
+                    this.lastCounterResult.textContent = 'None';
+                }
+                
+                html += `<p><strong>Timestamp:</strong> ${new Date(result.timestamp).toLocaleString()}</p>`;
+                
+                this.resultContent.innerHTML = html;
+                
+                // Show ALL OCR Results
+                this.showAllOCRResults(result.allOCRResults);
+                
+                // Update status
+                let statusMessage = '';
+                if (result.qrCode && result.counterValue) {
+                    statusMessage = '🎉 SUCCESS! Both QR code and counter detected!';
+                } else if (result.qrCode) {
+                    statusMessage = '✅ QR code detected, check OCR results below';
+                } else if (result.counterValue) {
+                    statusMessage = '✅ Counter detected, but no QR code found';
+                } else {
+                    statusMessage = '🔍 No QR codes or valid counters, but check ALL OCR results below';
+                }
+                
+                this.updateStatus(statusMessage, result.qrCode && result.counterValue ? 'success' : 'warning');
+            }
+            
+            showAllOCRResults(allResults) {
+                console.log('Debug Combined Test: Showing all OCR results:', allResults);
+                
+                let html = '<h3>🔍 ALL OCR Results (Debug)</h3>';
+                
+                if (allResults && allResults.length > 0) {
+                    html += `<p><strong>Total OCR Results:</strong> ${allResults.length}</p>`;
+                    
+                    allResults.forEach((result, index) => {
+                        const confidenceClass = this.getConfidenceClass(result.confidence);
+                        const numbersText = result.numbers.length > 0 ? result.numbers.join(', ') : 'None';
+                        
+                        html += `
+                            <div class="ocr-result-item">
+                                <h4>Result ${index + 1} - ${result.region} (Frame ${result.frameIndex + 1})</h4>
+                                <p><strong>Raw Text:</strong> <span class="ocr-text">"${result.rawText}"</span></p>
+                                <p><strong>Cleaned Text:</strong> <span class="ocr-text">"${result.cleanText}"</span></p>
+                                <p><strong>Extracted Numbers:</strong> <span class="ocr-numbers">[${numbersText}]</span></p>
+                                <p><strong>Confidence:</strong> <span class="ocr-confidence ${confidenceClass}">${result.confidence}%</span></p>
+                                <p><strong>Region:</strong> ${result.region}</p>
+                                <p><strong>Frame:</strong> ${result.frameIndex + 1}</p>
+                            </div>
+                        `;
+                    });
+                } else {
+                    html += '<p><strong>No OCR results found</strong></p>';
+                }
+                
+                this.debugResultsContent.innerHTML = html;
+                this.totalOCRResults.textContent = allResults ? allResults.length : 0;
+            }
+            
+            getConfidenceClass(confidence) {
+                if (confidence >= 80) return '';
+                if (confidence >= 60) return 'low';
+                return 'very-low';
+            }
+            
+            updateStats() {
+                const stats = debugCombinedScanner.getScanStats();
+                this.frameBufferSize.textContent = stats.frameBufferSize;
+                this.maxFrameBuffer.textContent = stats.maxFrameBuffer;
+                this.scanStatus.textContent = this.isScanning ? 'Active' : 'Stopped';
+            }
+            
+            updateStatus(message, type = 'info') {
+                this.status.textContent = message;
+                this.status.className = `status ${type}`;
+            }
+        }
+        
+        // Initialize the test when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new DebugCombinedTest();
+        });
+    </script>
+</body>
+</html> 

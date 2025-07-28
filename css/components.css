@@ -87,6 +87,18 @@
     overflow: hidden !important;
 }
 
+.sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
 /* Admin Configuration Styles */
 .admin-section {
     border-top: 2px solid rgba(255, 255, 255, 0.3);
@@ -218,41 +230,30 @@
 }
 
 .form-input,
-.form-select,
 .form-textarea {
     width: 100%;
     padding: var(--spacing-sm) var(--spacing-md);
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: var(--border-radius-md);
-    background-color: rgba(255, 255, 255, 0.1);
-    color: var(--btm-secondary);
+    background-color: var(--btm-accent);
+    color: #003366;
     font-size: var(--font-size-base);
     transition: all var(--transition-fast);
     min-height: 44px;
 }
 
-.form-input:focus,
-.form-select:focus,
-.form-textarea:focus {
-    outline: none;
-    border-color: var(--btm-secondary);
-    background-color: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
-}
-
-.form-input::placeholder,
-.form-textarea::placeholder {
-    color: rgba(255, 255, 255, 0.6);
-}
-
-.form-textarea {
-    resize: vertical;
-    min-height: 100px;
-}
-
 .form-select {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--border-radius-md);
+    background-color: var(--btm-accent);
+    color: #003366;
+    font-size: var(--font-size-base);
+    transition: all var(--transition-fast);
+    min-height: 44px;
     cursor: pointer;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23003366' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
     background-position: right var(--spacing-sm) center;
     background-repeat: no-repeat;
     background-size: 16px;
@@ -260,6 +261,47 @@
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+    outline: none;
+    border-color: var(--btm-secondary);
+    background-color: var(--btm-accent);
+    color: #003366;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+    color: rgba(0, 51, 102, 0.6);
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+
+
+/* Dropdown option styling for better visibility */
+.form-select option {
+    background-color: #e6f0fa;
+    color: #003366;
+    padding: var(--spacing-sm);
+    border: none;
+    font-weight: 500;
+}
+
+.form-select option:hover {
+    background-color: #0066cc;
+    color: #ffffff;
+}
+
+.form-select option:checked {
+    background-color: #e6f0fa;
+    color: #003366;
 }
 
 /* Checkbox */
@@ -753,6 +795,8 @@
     left: 0;
     width: 100%;
     z-index: 1;
+    /* Ensure it doesn't interfere with mobile menu */
+    pointer-events: none;
 }
 
 .camera-stream {
@@ -844,6 +888,8 @@
     cursor: pointer;
     font-size: var(--font-size-sm);
     transition: all var(--transition-fast);
+    /* Ensure buttons are clickable */
+    pointer-events: auto;
 }
 
 .load-stream-btn:hover {
@@ -1343,6 +1389,142 @@
     gap: var(--spacing-md);
     justify-content: center;
     margin-top: var(--spacing-lg);
+}
+
+/* Numeric Keypad */
+.keypad-content {
+    max-width: 350px;
+    width: 90vw;
+}
+
+.keypad-display {
+    margin-bottom: var(--spacing-lg);
+}
+
+.keypad-input {
+    width: 100%;
+    padding: var(--spacing-lg);
+    font-size: var(--font-size-2xl);
+    text-align: center;
+    background-color: var(--btm-accent);
+    color: #003366;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--border-radius-lg);
+    font-weight: bold;
+}
+
+.numeric-keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+    width: 100%;
+}
+
+.keypad-btn {
+    width: 100%;
+    height: 70px;
+    border: none;
+    border-radius: var(--border-radius-md);
+    font-size: var(--font-size-xl);
+    font-weight: bold;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    position: relative;
+    overflow: hidden;
+}
+
+.number-btn {
+    background-color: var(--btm-secondary);
+    color: var(--btm-primary);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.number-btn:hover {
+    background-color: var(--btm-accent);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.number-btn:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
+    background-color: var(--btm-primary);
+    color: var(--btm-secondary);
+}
+
+.action-btn {
+    background-color: transparent;
+    color: var(--btm-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.action-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.action-btn:active {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(0);
+}
+
+.keypad-actions {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: space-between;
+}
+
+.keypad-actions button {
+    flex: 1;
+    height: 50px;
+}
+
+/* Mobile-specific keypad styling */
+@media (max-width: 768px) {
+    .keypad-content {
+        max-width: 320px;
+        width: 95vw;
+    }
+    
+    .keypad-btn {
+        height: 65px;
+        font-size: var(--font-size-lg);
+    }
+    
+    .keypad-input {
+        font-size: var(--font-size-xl);
+        padding: var(--spacing-md);
+    }
+    
+    .keypad-actions button {
+        height: 45px;
+        font-size: var(--font-size-base);
+    }
+}
+
+@media (max-width: 480px) {
+    .keypad-content {
+        max-width: 300px;
+        width: 98vw;
+    }
+    
+    .keypad-btn {
+        height: 60px;
+        font-size: var(--font-size-base);
+    }
+    
+    .numeric-keypad {
+        gap: var(--spacing-xs);
+    }
 }
 
 /* Notifications */

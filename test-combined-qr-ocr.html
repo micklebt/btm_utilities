@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Combined QR + OCR Scanner Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .scanner-section {
+            margin-bottom: 30px;
+        }
+        
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+            margin: 20px 0;
+        }
+        
+        #video {
+            width: 100%;
+            border: 2px solid #28a745;
+            border-radius: 8px;
+        }
+        
+        #canvas {
+            display: none;
+        }
+        
+        .controls {
+            margin: 20px 0;
+        }
+        
+        .btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        
+        .btn:hover {
+            background: #218838;
+        }
+        
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .status.warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .qr-result {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        
+        .counter-result {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        
+        .qr-data {
+            font-weight: bold;
+            color: #0056b3;
+            font-size: 16px;
+        }
+        
+        .counter-value {
+            font-weight: bold;
+            color: #856404;
+            font-size: 20px;
+        }
+        
+        .confidence {
+            color: #28a745;
+        }
+        
+        .confidence.low {
+            color: #ffc107;
+        }
+        
+        .confidence.very-low {
+            color: #dc3545;
+        }
+        
+        .instructions {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .instructions h3 {
+            margin-top: 0;
+            color: #0056b3;
+        }
+        
+        .console-output {
+            background: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+        
+        .stats {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .target-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .target-info h3 {
+            margin-top: 0;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔗 Combined QR + OCR Scanner Test</h1>
+    
+    <div class="container">
+        <div class="target-info">
+            <h3>🎯 Target: QR Code + Digital Counter</h3>
+            <p><strong>QR Code:</strong> "Dover, changer 3, 1 = $1" format</p>
+            <p><strong>Digital Counter:</strong> 963373 (6-digit display)</p>
+            <p><strong>Goal:</strong> Detect BOTH the QR code data AND the counter value in one scan</p>
+        </div>
+        
+        <div class="instructions">
+            <h3>📋 Combined QR + OCR Scanner Features</h3>
+            <p>This scanner detects BOTH QR codes AND digital counter values:</p>
+            <ul>
+                <li><strong>QR Code Detection:</strong> Uses jsQR library to detect QR codes</li>
+                <li><strong>Digital Counter OCR:</strong> Uses Tesseract.js to read the 963373 display</li>
+                <li><strong>Frame Averaging:</strong> Uses 3 consecutive frames for stability</li>
+                <li><strong>Combined Results:</strong> Returns both QR data and counter value</li>
+                <li><strong>Webcam Optimized:</strong> Handles camera movement and focus issues</li>
+            </ul>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>📷 Combined QR + OCR Scanner</h2>
+            <div class="video-container">
+                <video id="video" autoplay playsinline></video>
+                <canvas id="canvas"></canvas>
+            </div>
+            
+            <div class="controls">
+                <button id="startBtn" class="btn">Start Combined Scanning</button>
+                <button id="stopBtn" class="btn btn-danger" disabled>Stop Scanning</button>
+                <button id="clearBufferBtn" class="btn btn-warning">Clear Frame Buffer</button>
+                <button id="testOCRBtn" class="btn">Test OCR</button>
+            </div>
+            
+            <div id="status" class="status info">
+                Ready to start combined QR + OCR scanning. This will detect both QR codes and digital counters.
+            </div>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>📊 Combined Scan Results</h2>
+            <div id="result" class="result">
+                <h3>Combined Scan Result</h3>
+                <div id="resultContent"></div>
+            </div>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>📈 Scanner Statistics</h2>
+            <div class="stats">
+                <div id="statsContent">
+                    <p><strong>Frame Buffer:</strong> <span id="frameBufferSize">0</span> / <span id="maxFrameBuffer">3</span> frames</p>
+                    <p><strong>Scan Status:</strong> <span id="scanStatus">Ready</span></p>
+                    <p><strong>Last QR Result:</strong> <span id="lastQRResult">None</span></p>
+                    <p><strong>Last Counter Result:</strong> <span id="lastCounterResult">None</span></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>🎯 Scanning Strategy</h2>
+            <div class="stats">
+                <p><strong>Step 1 - QR Detection:</strong> Scan entire image for QR codes using jsQR</p>
+                <p><strong>Step 2 - Counter OCR:</strong> Scan specific regions for digital counter using Tesseract</p>
+                <p><strong>Step 3 - Frame Averaging:</strong> Use 3 frames for more stable counter readings</p>
+                <p><strong>Step 4 - Combined Results:</strong> Return both QR data and counter value together</p>
+                <p><strong>Target Areas:</strong> Primary display area (where 963373 is located) gets priority</p>
+            </div>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>🖥️ Console Output</h2>
+            <p>Open your browser's developer console (F12) to see detailed logging information.</p>
+            <div class="console-output">
+                <div>Console output will appear here when scanning starts...</div>
+                <div>Look for messages starting with "Combined QR+OCR Scanner:"</div>
+                <div>This should show both QR detection and OCR results.</div>
+            </div>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>🧪 Test Instructions</h2>
+            <p>To test the combined QR + OCR scanner:</p>
+            <ol>
+                <li>Open browser developer console (F12)</li>
+                <li>Click "Start Combined Scanning"</li>
+                <li>Point camera at the image with both QR code and digital counter</li>
+                <li>Ensure both the QR code and 963373 display are clearly visible</li>
+                <li>The scanner will detect both simultaneously</li>
+                <li>Watch for both QR detection and OCR results in console</li>
+                <li>Results should show both QR data and counter value</li>
+            </ol>
+            <p><strong>Expected:</strong> Detection of both the QR code data AND the 963373 counter value in one scan.</p>
+        </div>
+    </div>
+
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
+    
+    <!-- Application Scripts -->
+    <script type="module">
+        import { combinedQROCRScanner } from './js/combined-qr-ocr-scanner.js';
+        
+        class CombinedQROCRTest {
+            constructor() {
+                this.video = document.getElementById('video');
+                this.canvas = document.getElementById('canvas');
+                this.startBtn = document.getElementById('startBtn');
+                this.stopBtn = document.getElementById('stopBtn');
+                this.clearBufferBtn = document.getElementById('clearBufferBtn');
+                this.testOCRBtn = document.getElementById('testOCRBtn');
+                this.status = document.getElementById('status');
+                this.result = document.getElementById('result');
+                this.resultContent = document.getElementById('resultContent');
+                this.frameBufferSize = document.getElementById('frameBufferSize');
+                this.maxFrameBuffer = document.getElementById('maxFrameBuffer');
+                this.scanStatus = document.getElementById('scanStatus');
+                this.lastQRResult = document.getElementById('lastQRResult');
+                this.lastCounterResult = document.getElementById('lastCounterResult');
+                
+                this.isScanning = false;
+                this.stream = null;
+                this.scanInterval = null;
+                this.lastScanTime = 0;
+                this.scanCooldown = 4000; // 4 seconds between scans
+                
+                this.initializeEventListeners();
+                console.log('Combined QR+OCR Test: Initialized');
+            }
+            
+            initializeEventListeners() {
+                this.startBtn.addEventListener('click', () => this.startScanning());
+                this.stopBtn.addEventListener('click', () => this.stopScanning());
+                this.clearBufferBtn.addEventListener('click', () => this.clearBuffer());
+                this.testOCRBtn.addEventListener('click', () => this.testOCR());
+            }
+            
+            async testOCR() {
+                console.log('Combined QR+OCR Test: Testing OCR...');
+                this.updateStatus('Testing OCR...', 'info');
+                
+                try {
+                    if (typeof Tesseract === 'undefined') {
+                        console.error('Combined QR+OCR Test: Tesseract not loaded!');
+                        this.updateStatus('ERROR: Tesseract library not loaded!', 'error');
+                        return;
+                    }
+                    
+                    if (typeof jsQR === 'undefined') {
+                        console.error('Combined QR+OCR Test: jsQR not loaded!');
+                        this.updateStatus('ERROR: jsQR library not loaded!', 'error');
+                        return;
+                    }
+                    
+                    console.log('Combined QR+OCR Test: Both libraries available');
+                    this.updateStatus('Both Tesseract and jsQR libraries loaded', 'info');
+                    
+                    // Test OCR worker
+                    const worker = await Tesseract.createWorker();
+                    console.log('Combined QR+OCR Test: OCR worker created');
+                    
+                    await worker.loadLanguage('eng');
+                    console.log('Combined QR+OCR Test: English language loaded');
+                    
+                    await worker.initialize('eng');
+                    console.log('Combined QR+OCR Test: OCR initialized');
+                    
+                    await worker.terminate();
+                    console.log('Combined QR+OCR Test: OCR worker terminated');
+                    
+                    this.updateStatus('OCR test completed successfully', 'info');
+                } catch (error) {
+                    console.error('Combined QR+OCR Test: OCR test failed:', error);
+                    this.updateStatus(`OCR test failed: ${error.message}`, 'error');
+                }
+            }
+            
+            clearBuffer() {
+                combinedQROCRScanner.clearFrameBuffer();
+                this.updateStats();
+                this.updateStatus('Frame buffer cleared', 'info');
+            }
+            
+            async startScanning() {
+                try {
+                    console.log('Combined QR+OCR Test: Requesting camera access...');
+                    this.updateStatus('Requesting camera access...', 'info');
+                    
+                    this.stream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: 'environment',
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        }
+                    });
+                    
+                    console.log('Combined QR+OCR Test: Camera access granted');
+                    this.video.srcObject = this.stream;
+                    
+                    this.video.addEventListener('loadedmetadata', () => {
+                        console.log(`Combined QR+OCR Test: Video dimensions: ${this.video.videoWidth}x${this.video.videoHeight}`);
+                        this.video.play();
+                        this.startCombinedScanning();
+                    });
+                    
+                } catch (error) {
+                    console.error('Combined QR+OCR Test: Camera access failed:', error);
+                    this.updateStatus(`Camera access failed: ${error.message}`, 'error');
+                }
+            }
+            
+            async startCombinedScanning() {
+                try {
+                    this.isScanning = true;
+                    this.startBtn.disabled = true;
+                    this.stopBtn.disabled = false;
+                    this.updateStatus('Combined QR + OCR scanning active', 'success');
+                    console.log('Combined QR+OCR Test: Combined scanning started');
+                    
+                    // Start scanning loop
+                    this.scanInterval = setInterval(() => {
+                        this.performCombinedScan();
+                    }, 3000); // Scan every 3 seconds
+                    
+                } catch (error) {
+                    console.error('Combined QR+OCR Test: Combined scanning error:', error);
+                    this.updateStatus(`Combined scanning error: ${error.message}`, 'error');
+                }
+            }
+            
+            async performCombinedScan() {
+                if (!this.isScanning || !this.video || !this.canvas) {
+                    console.log('Combined QR+OCR Test: Scanning stopped or video/canvas not available');
+                    return;
+                }
+                
+                // Check cooldown
+                const now = Date.now();
+                if (now - this.lastScanTime < this.scanCooldown) {
+                    return;
+                }
+                
+                console.log('Combined QR+OCR Test: Starting combined scan...');
+                this.updateStatus('Scanning for QR codes and digital counters...', 'info');
+                
+                try {
+                    // Set canvas size to match video
+                    this.canvas.width = this.video.videoWidth;
+                    this.canvas.height = this.video.videoHeight;
+                    
+                    console.log(`Combined QR+OCR Test: Canvas size: ${this.canvas.width}x${this.canvas.height}`);
+                    
+                    // Draw current video frame to canvas
+                    const ctx = this.canvas.getContext('2d');
+                    ctx.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
+                    
+                    console.log('Combined QR+OCR Test: Video frame drawn to canvas');
+                    
+                    // Get image data for processing
+                    const imageData = ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+                    
+                    console.log(`Combined QR+OCR Test: Image data size: ${imageData.width}x${imageData.height}`);
+                    
+                    // Check if combined scanner is available
+                    if (!combinedQROCRScanner) {
+                        console.error('Combined QR+OCR Test: Combined scanner not available!');
+                        return;
+                    }
+                    
+                    console.log('Combined QR+OCR Test: Combined scanner available, starting scan...');
+                    
+                    // Perform combined scan
+                    const result = await combinedQROCRScanner.scanCombined(imageData);
+                    
+                    if (result) {
+                        this.lastScanTime = now;
+                        console.log('Combined QR+OCR Test: Combined scan successful!', result);
+                        this.handleCombinedResult(result);
+                    } else {
+                        console.log('Combined QR+OCR Test: No combined results detected');
+                        this.updateStatus('No QR codes or counter values detected', 'warning');
+                    }
+                    
+                    // Update statistics
+                    this.updateStats();
+                    
+                } catch (error) {
+                    console.error('Combined QR+OCR Test: Scan error:', error);
+                }
+            }
+            
+            stopScanning() {
+                this.isScanning = false;
+                
+                if (this.scanInterval) {
+                    clearInterval(this.scanInterval);
+                    this.scanInterval = null;
+                }
+                
+                if (this.stream) {
+                    this.stream.getTracks().forEach(track => track.stop());
+                    this.stream = null;
+                }
+                
+                this.startBtn.disabled = false;
+                this.stopBtn.disabled = true;
+                this.updateStatus('Combined scanning stopped', 'info');
+                console.log('Combined QR+OCR Test: Scanning stopped');
+            }
+            
+            handleCombinedResult(result) {
+                this.showCombinedResult(result);
+            }
+            
+            showCombinedResult(result) {
+                this.result.style.display = 'block';
+                this.result.className = 'result success';
+                
+                let html = '<h3>✅ Combined Scan Results</h3>';
+                
+                // QR Code Results
+                if (result.qrCode) {
+                    html += `
+                        <div class="qr-result">
+                            <h4>📱 QR Code Detected</h4>
+                            <p><strong>QR Data:</strong> <span class="qr-data">${result.qrCode.data}</span></p>
+                            <p><strong>Confidence:</strong> <span class="confidence">${result.qrCode.confidence}%</span></p>
+                        </div>
+                    `;
+                    this.lastQRResult.textContent = result.qrCode.data;
+                } else {
+                    html += `
+                        <div class="qr-result">
+                            <h4>❌ No QR Code Detected</h4>
+                            <p>No QR code found in the image</p>
+                        </div>
+                    `;
+                    this.lastQRResult.textContent = 'None';
+                }
+                
+                // Counter Results
+                if (result.counterValue) {
+                    const confidenceClass = this.getConfidenceClass(result.counterValue.confidence);
+                    const stabilityInfo = result.counterValue.stability ? `
+                        <p><strong>Stability:</strong> Detected ${result.counterValue.stability.occurrences} times across ${result.counterValue.stability.totalFrames} frames</p>
+                        <p><strong>Average Confidence:</strong> ${result.counterValue.stability.avgConfidence.toFixed(1)}%</p>
+                    ` : '';
+                    
+                    html += `
+                        <div class="counter-result">
+                            <h4>🔢 Digital Counter Detected</h4>
+                            <p><strong>Counter Value:</strong> <span class="counter-value">${result.counterValue.value}</span></p>
+                            <p><strong>Confidence:</strong> <span class="confidence ${confidenceClass}">${result.counterValue.confidence}%</span></p>
+                            <p><strong>Region:</strong> ${result.counterValue.region}</p>
+                            <p><strong>Raw OCR Text:</strong> <code>${result.counterValue.rawText}</code></p>
+                            ${stabilityInfo}
+                        </div>
+                    `;
+                    this.lastCounterResult.textContent = result.counterValue.value;
+                } else {
+                    html += `
+                        <div class="counter-result">
+                            <h4>❌ No Digital Counter Detected</h4>
+                            <p>No counter value found in the image</p>
+                        </div>
+                    `;
+                    this.lastCounterResult.textContent = 'None';
+                }
+                
+                html += `<p><strong>Timestamp:</strong> ${new Date(result.timestamp).toLocaleString()}</p>`;
+                
+                this.resultContent.innerHTML = html;
+                
+                // Check for success
+                let successMessage = '';
+                if (result.qrCode && result.counterValue) {
+                    successMessage = '🎉 SUCCESS! Both QR code and counter detected!';
+                } else if (result.qrCode) {
+                    successMessage = '✅ QR code detected, but no counter value found';
+                } else if (result.counterValue) {
+                    successMessage = '✅ Counter detected, but no QR code found';
+                } else {
+                    successMessage = '❌ No QR codes or counter values detected';
+                }
+                
+                this.updateStatus(successMessage, result.qrCode && result.counterValue ? 'success' : 'warning');
+            }
+            
+            getConfidenceClass(confidence) {
+                if (confidence >= 80) return '';
+                if (confidence >= 60) return 'low';
+                return 'very-low';
+            }
+            
+            updateStats() {
+                const stats = combinedQROCRScanner.getScanStats();
+                this.frameBufferSize.textContent = stats.frameBufferSize;
+                this.maxFrameBuffer.textContent = stats.maxFrameBuffer;
+                this.scanStatus.textContent = this.isScanning ? 'Active' : 'Stopped';
+            }
+            
+            updateStatus(message, type = 'info') {
+                this.status.textContent = message;
+                this.status.className = `status ${type}`;
+            }
+        }
+        
+        // Initialize the test when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new CombinedQROCRTest();
+        });
+    </script>
+</body>
+</html> 

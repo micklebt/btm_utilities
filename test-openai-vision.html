@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenAI Vision Scanner Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .section h2 {
+            margin-top: 0;
+            color: #555;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+        
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .video-container {
+            position: relative;
+            margin: 20px 0;
+        }
+        
+        #video {
+            width: 100%;
+            max-width: 640px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .canvas-container {
+            margin: 20px 0;
+        }
+        
+        #canvas {
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            max-width: 100%;
+        }
+        
+        .results {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+            margin: 20px 0;
+        }
+        
+        .results h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .json-display {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .scan-status {
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .scan-status.active {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .scan-status.inactive {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 OpenAI Vision Scanner Test</h1>
+        
+        <!-- API Key Section -->
+        <div class="section">
+            <h2>🔑 API Key Configuration</h2>
+            <div class="form-group">
+                <label for="apiKey">OpenAI API Key:</label>
+                <input type="text" id="apiKey" placeholder="sk-..." style="font-family: monospace;">
+            </div>
+            <div class="controls">
+                <button onclick="setApiKey()">Set API Key</button>
+                <button onclick="testApiKey()">Test API Key</button>
+                <button onclick="loadApiKey()">Load from Storage</button>
+                <button onclick="clearApiKey()">Clear Key</button>
+                <button onclick="debugApiKeyManager()" style="background-color: #6c757d;">Debug Manager</button>
+            </div>
+            <div id="apiKeyStatus"></div>
+        </div>
+        
+        <!-- Camera Section -->
+        <div class="section">
+            <h2>📹 Camera Access</h2>
+            <div class="controls">
+                <button onclick="startCamera()">Start Camera</button>
+                <button onclick="stopCamera()">Stop Camera</button>
+                <button onclick="captureFrame()">Capture Frame</button>
+            </div>
+            <div class="video-container">
+                <video id="video" autoplay muted></video>
+            </div>
+            <div class="canvas-container">
+                <canvas id="canvas" style="display: none;"></canvas>
+            </div>
+            <div id="cameraStatus"></div>
+        </div>
+        
+        <!-- Scanning Section -->
+        <div class="section">
+            <h2>🔍 OpenAI Vision Scanning</h2>
+            <div class="controls">
+                <button onclick="startScanning()">Start Scanning</button>
+                <button onclick="stopScanning()">Stop Scanning</button>
+                <button onclick="singleScan()">Single Scan</button>
+                <button onclick="clearResults()">Clear Results</button>
+            </div>
+            <div id="scanStatus" class="scan-status inactive">Scanning: Inactive</div>
+            <div id="scanResults"></div>
+        </div>
+        
+        <!-- Statistics Section -->
+        <div class="section">
+            <h2>📊 Scanner Statistics</h2>
+            <div class="stats" id="stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="frameBufferSize">0</div>
+                    <div class="stat-label">Frame Buffer</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="scanCount">0</div>
+                    <div class="stat-label">Scans Performed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="qrDetections">0</div>
+                    <div class="stat-label">QR Detections</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="visionResults">0</div>
+                    <div class="stat-label">Vision Results</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Results Section -->
+        <div class="section">
+            <h2>📋 Latest Results</h2>
+            <div class="results">
+                <h3>Structured Data from OpenAI Vision</h3>
+                <div class="json-display" id="latestResults">No results yet...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script type="module">
+        import { openAIVisionScanner } from './js/openai-vision-scanner.js';
+        import { addAPIKey, getAPIKey, apiKeyManager } from './js/api-key-manager.js';
+        import { secureStorageUtils } from './js/secure-storage.js';
+        
+        // Global variables
+        let videoStream = null;
+        let scanningInterval = null;
+        let scanCount = 0;
+        let qrDetections = 0;
+        let visionResults = 0;
+        
+        // DOM elements
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // API Key Management
+        window.setApiKey = async function() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            if (!apiKey) {
+                showStatus('Please enter an API key', 'error');
+                return;
+            }
+            
+            try {
+                console.log('Adding API key to system...');
+                // Add the key to the API key manager system
+                await addAPIKey('openai', apiKey, {
+                    description: 'OpenAI API key for Vision API',
+                    permissions: ['read', 'write'],
+                    maxAge: 365 * 24 * 60 * 60 * 1000 // 1 year
+                });
+                
+                // Also store in localStorage for this test page
+                localStorage.setItem('openai_api_key', apiKey);
+                console.log('API key added successfully');
+                showStatus('API key added to system successfully', 'success');
+                
+                // Debug: Check if key was actually stored
+                setTimeout(async () => {
+                    try {
+                        const storedKey = await getAPIKey('openai');
+                        console.log('Stored key retrieved:', storedKey ? 'SUCCESS' : 'FAILED');
+                    } catch (error) {
+                        console.error('Failed to retrieve stored key:', error);
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Error adding API key:', error);
+                showStatus(`Failed to add API key: ${error.message}`, 'error');
+            }
+        };
+        
+        window.testApiKey = async function() {
+            const result = await openAIVisionScanner.testApiKey();
+            if (result.success) {
+                showStatus(result.message, 'success');
+            } else {
+                showStatus(`API key test failed: ${result.error}`, 'error');
+            }
+        };
+        
+        window.loadApiKey = async function() {
+            try {
+                // Try to get the key from the API key manager first
+                const apiKey = await getAPIKey('openai');
+                if (apiKey) {
+                    document.getElementById('apiKey').value = apiKey;
+                    showStatus('API key loaded from system', 'success');
+                    return;
+                }
+            } catch (error) {
+                // If not found in system, try localStorage
+                const apiKey = localStorage.getItem('openai_api_key');
+                if (apiKey) {
+                    document.getElementById('apiKey').value = apiKey;
+                    showStatus('API key loaded from local storage', 'success');
+                } else {
+                    showStatus('No API key found', 'info');
+                }
+            }
+        };
+        
+        window.clearApiKey = function() {
+            document.getElementById('apiKey').value = '';
+            localStorage.removeItem('openai_api_key');
+            showStatus('API key cleared', 'success');
+        };
+        
+        // Debug function to check API key manager state
+        window.debugApiKeyManager = async function() {
+            try {
+                console.log('=== API Key Manager Debug ===');
+                console.log('Manager initialized:', apiKeyManager.isInitialized);
+                console.log('Total keys stored:', apiKeyManager.keys.size);
+                console.log('Keys:', Array.from(apiKeyManager.keys.keys()));
+                
+                // Try to get the OpenAI key
+                try {
+                    const key = await getAPIKey('openai');
+                    console.log('OpenAI key found:', key ? 'YES' : 'NO');
+                } catch (error) {
+                    console.log('OpenAI key error:', error.message);
+                }
+                
+                // Check localStorage
+                const localKey = localStorage.getItem('openai_api_key');
+                console.log('localStorage key:', localKey ? 'FOUND' : 'NOT FOUND');
+                
+            } catch (error) {
+                console.error('Debug error:', error);
+            }
+        };
+        
+        // Camera Management
+        window.startCamera = async function() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    } 
+                });
+                
+                videoStream = stream;
+                video.srcObject = stream;
+                showStatus('Camera started successfully', 'success');
+                updateCameraStatus('Camera: Active');
+            } catch (error) {
+                showStatus(`Camera error: ${error.message}`, 'error');
+                updateCameraStatus('Camera: Error');
+            }
+        };
+        
+        window.stopCamera = function() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+                video.srcObject = null;
+                showStatus('Camera stopped', 'success');
+                updateCameraStatus('Camera: Inactive');
+            }
+        };
+        
+        window.captureFrame = function() {
+            if (!videoStream) {
+                showStatus('No camera active', 'error');
+                return;
+            }
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            // Set willReadFrequently to true for better performance
+            ctx.willReadFrequently = true;
+            ctx.drawImage(video, 0, 0);
+            
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            performScan(imageData);
+        };
+        
+        // Scanning Management
+        window.startScanning = function() {
+            if (!videoStream) {
+                showStatus('Please start camera first', 'error');
+                return;
+            }
+            
+            if (scanningInterval) {
+                showStatus('Scanning already active', 'info');
+                return;
+            }
+            
+            scanningInterval = setInterval(() => {
+                if (videoStream) {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    ctx.drawImage(video, 0, 0);
+                    
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    performScan(imageData);
+                }
+            }, 3000); // Scan every 3 seconds
+            
+            updateScanStatus('active');
+            showStatus('Scanning started', 'success');
+        };
+        
+        window.stopScanning = function() {
+            if (scanningInterval) {
+                clearInterval(scanningInterval);
+                scanningInterval = null;
+                updateScanStatus('inactive');
+                showStatus('Scanning stopped', 'success');
+            }
+        };
+        
+        window.singleScan = function() {
+            if (!videoStream) {
+                showStatus('Please start camera first', 'error');
+                return;
+            }
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0);
+            
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            performScan(imageData);
+        };
+        
+        window.clearResults = function() {
+            document.getElementById('latestResults').textContent = 'No results yet...';
+            scanCount = 0;
+            qrDetections = 0;
+            visionResults = 0;
+            updateStats();
+            showStatus('Results cleared', 'success');
+        };
+        
+        // Core scanning function
+        async function performScan(imageData) {
+            try {
+                scanCount++;
+                updateStats();
+                
+                const results = await openAIVisionScanner.scanWithOpenAI(imageData);
+                
+                if (results) {
+                    if (results.qrCode) {
+                        qrDetections++;
+                    }
+                    if (results.visionResult && !results.visionResult.error) {
+                        visionResults++;
+                    }
+                    
+                    updateStats();
+                    displayResults(results);
+                }
+            } catch (error) {
+                console.error('Scan error:', error);
+                showStatus(`Scan error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Display results
+        function displayResults(results) {
+            const resultsDiv = document.getElementById('latestResults');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            let displayText = `// Scan Results - ${timestamp}\n`;
+            displayText += JSON.stringify(results, null, 2);
+            
+            resultsDiv.textContent = displayText;
+        }
+        
+        // Status updates
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('apiKeyStatus');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+        
+        function updateCameraStatus(status) {
+            document.getElementById('cameraStatus').innerHTML = `<div class="status info">${status}</div>`;
+        }
+        
+        function updateScanStatus(status) {
+            const scanStatusDiv = document.getElementById('scanStatus');
+            scanStatusDiv.textContent = `Scanning: ${status === 'active' ? 'Active' : 'Inactive'}`;
+            scanStatusDiv.className = `scan-status ${status}`;
+        }
+        
+        function updateStats() {
+            const stats = openAIVisionScanner.getScanStats();
+            
+            document.getElementById('frameBufferSize').textContent = stats.frameBufferSize;
+            document.getElementById('scanCount').textContent = scanCount;
+            document.getElementById('qrDetections').textContent = qrDetections;
+            document.getElementById('visionResults').textContent = visionResults;
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('OpenAI Vision Test: Page loaded');
+            
+            try {
+                // Initialize secure storage with a default password for testing
+                await secureStorageUtils.initialize('test-password-123');
+                console.log('Secure storage initialized');
+                
+                // Initialize the API key manager
+                await apiKeyManager.init();
+                console.log('API Key Manager initialized');
+            } catch (error) {
+                console.error('Failed to initialize systems:', error);
+            }
+            
+            loadApiKey();
+            updateStats();
+        });
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (scanningInterval) {
+                clearInterval(scanningInterval);
+            }
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+            }
+        });
+        
+    </script>
+</body>
+</html> 

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear Cache - BTM Utility</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; }
+        .button { padding: 10px 20px; margin: 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .button:hover { background: #0056b3; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>Clear Cache - BTM Utility</h1>
+    
+    <div class="section">
+        <h3>Cache Clearing Instructions</h3>
+        <p>If you're seeing icon errors, try these steps:</p>
+        <ol>
+            <li>Click the "Clear Service Worker" button below</li>
+            <li>Hard refresh the page (Ctrl+F5 or Cmd+Shift+R)</li>
+            <li>Or clear browser cache manually:
+                <ul>
+                    <li><strong>Chrome:</strong> F12 → Application → Storage → Clear storage</li>
+                    <li><strong>Firefox:</strong> F12 → Storage → Clear storage</li>
+                    <li><strong>Safari:</strong> Develop → Empty Caches</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+    
+    <div class="section">
+        <h3>Quick Actions</h3>
+        <button class="button" onclick="clearServiceWorker()">Clear Service Worker</button>
+        <button class="button" onclick="clearCache()">Clear Cache</button>
+        <button class="button" onclick="reloadPage()">Reload Page</button>
+    </div>
+    
+    <div class="section">
+        <h3>Status</h3>
+        <div id="status">Ready to clear cache...</div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const status = document.getElementById('status');
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            status.appendChild(div);
+        }
+
+        async function clearServiceWorker() {
+            try {
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (const registration of registrations) {
+                        await registration.unregister();
+                        log(`Service worker unregistered: ${registration.scope}`, 'success');
+                    }
+                    log('All service workers cleared successfully', 'success');
+                } else {
+                    log('Service Worker not supported', 'error');
+                }
+            } catch (error) {
+                log(`Error clearing service worker: ${error.message}`, 'error');
+            }
+        }
+
+        async function clearCache() {
+            try {
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    for (const cacheName of cacheNames) {
+                        await caches.delete(cacheName);
+                        log(`Cache deleted: ${cacheName}`, 'success');
+                    }
+                    log('All caches cleared successfully', 'success');
+                } else {
+                    log('Cache API not supported', 'error');
+                }
+            } catch (error) {
+                log(`Error clearing cache: ${error.message}`, 'error');
+            }
+        }
+
+        function reloadPage() {
+            log('Reloading page...', 'info');
+            window.location.reload(true);
+        }
+
+        // Check current status
+        async function checkStatus() {
+            log('Checking current status...', 'info');
+            
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                log(`Found ${registrations.length} service worker(s)`, 'info');
+            }
+            
+            if ('caches' in window) {
+                const cacheNames = await caches.keys();
+                log(`Found ${cacheNames.length} cache(s)`, 'info');
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', checkStatus);
+    </script>
+</body>
+</html> 

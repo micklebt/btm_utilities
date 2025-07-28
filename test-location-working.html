@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Dropdown Test - Working</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        select, input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        .debug { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>Location Dropdown Test</h1>
+    
+    <div class="form-group">
+        <label for="location-select">Location</label>
+        <select id="location-select">
+            <option value="">Select Location</option>
+            <option value="peacock">Peacock</option>
+            <option value="dover">Dover</option>
+            <option value="massillon">Massillon</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="machine-select">Machine</label>
+        <select id="machine-select">
+            <option value="">Select Machine</option>
+        </select>
+    </div>
+    
+    <div class="debug" id="debug">
+        <h3>Debug Info:</h3>
+        <div id="debug-content"></div>
+    </div>
+
+    <script type="module">
+        function debug(message) {
+            const debugContent = document.getElementById('debug-content');
+            const div = document.createElement('div');
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            debugContent.appendChild(div);
+        }
+
+        async function initLocationDropdowns() {
+            try {
+                debug('Starting location dropdown initialization...');
+                
+                // Import location manager
+                const { locationManager } = await import('./js/location-config.js?v=1.0.1');
+                debug('Location manager imported successfully');
+                
+                const locationSelect = document.getElementById('location-select');
+                const machineSelect = document.getElementById('machine-select');
+                
+                debug(`Location select found: ${!!locationSelect}`);
+                debug(`Machine select found: ${!!machineSelect}`);
+                
+                if (locationSelect && machineSelect) {
+                    // Add change listener
+                    locationSelect.addEventListener('change', (e) => {
+                        const selectedLocation = e.target.value;
+                        debug(`Location changed to: ${selectedLocation}`);
+                        
+                        if (selectedLocation) {
+                            try {
+                                locationManager.populateMachineDropdown(machineSelect, selectedLocation);
+                                debug(`Machine dropdown populated for ${selectedLocation}`);
+                                
+                                // Log the machines
+                                const machines = locationManager.getMachines(selectedLocation);
+                                debug(`Available machines: ${machines.map(m => m.name).join(', ')}`);
+                            } catch (error) {
+                                debug(`Error populating machines: ${error.message}`);
+                            }
+                        } else {
+                            machineSelect.innerHTML = '<option value="">Select Machine</option>';
+                            debug('Machine dropdown cleared');
+                        }
+                    });
+                    
+                    debug('Location dropdown initialization complete');
+                } else {
+                    debug('Required select elements not found');
+                }
+                
+            } catch (error) {
+                debug(`Error: ${error.message}`);
+                console.error('Full error:', error);
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initLocationDropdowns);
+    </script>
+</body>
+</html> 

@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webcam Stable Digital Counter Scanner</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .scanner-section {
+            margin-bottom: 30px;
+        }
+        
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+            margin: 20px 0;
+        }
+        
+        #video {
+            width: 100%;
+            border: 2px solid #28a745;
+            border-radius: 8px;
+        }
+        
+        #canvas {
+            display: none;
+        }
+        
+        .controls {
+            margin: 20px 0;
+        }
+        
+        .btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        
+        .btn:hover {
+            background: #218838;
+        }
+        
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .status.warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .counter-value {
+            font-weight: bold;
+            color: #28a745;
+            font-size: 24px;
+        }
+        
+        .confidence {
+            color: #28a745;
+        }
+        
+        .confidence.low {
+            color: #ffc107;
+        }
+        
+        .confidence.very-low {
+            color: #dc3545;
+        }
+        
+        .stability-info {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        
+        .instructions {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .instructions h3 {
+            margin-top: 0;
+            color: #0056b3;
+        }
+        
+        .console-output {
+            background: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+        
+        .stats {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .target-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .target-info h3 {
+            margin-top: 0;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <h1>📹 Webcam Stable Digital Counter Scanner</h1>
+    
+    <div class="container">
+        <div class="target-info">
+            <h3>🎯 Target: 963373</h3>
+            <p><strong>Looking for:</strong> The 6-digit counter value <code>963373</code> displayed on the digital counter</p>
+            <p><strong>Challenge:</strong> Webcam stability - this scanner uses frame averaging to handle camera movement</p>
+        </div>
+        
+        <div class="instructions">
+            <h3>📋 Webcam Stable Scanner Features</h3>
+            <p>This version is specifically designed for webcam use:</p>
+            <ul>
+                <li><strong>Frame Averaging:</strong> Uses 5 consecutive frames to improve accuracy</li>
+                <li><strong>Stability Detection:</strong> Finds the most consistently detected value</li>
+                <li><strong>Weighted Regions:</strong> Prioritizes the primary display area where 963373 is located</li>
+                <li><strong>6-Digit Focus:</strong> Optimized for reading large counter values like 963373</li>
+                <li><strong>Webcam Optimization:</strong> Better handling of camera movement and focus issues</li>
+            </ul>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>📷 Webcam Stable Scanner</h2>
+            <div class="video-container">
+                <video id="video" autoplay playsinline></video>
+                <canvas id="canvas"></canvas>
+            </div>
+            
+            <div class="controls">
+                <button id="startBtn" class="btn">Start Stable Scanning</button>
+                <button id="stopBtn" class="btn btn-danger" disabled>Stop Scanning</button>
+                <button id="clearBufferBtn" class="btn btn-warning">Clear Frame Buffer</button>
+                <button id="testOCRBtn" class="btn">Test OCR</button>
+            </div>
+            
+            <div id="status" class="status info">
+                Ready to start stable digital counter scanning. This version handles webcam stability issues.
+            </div>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>📊 Scan Results</h2>
+            <div id="result" class="result">
+                <h3>Scan Result</h3>
+                <div id="resultContent"></div>
+            </div>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>📈 Scanner Statistics</h2>
+            <div class="stats">
+                <div id="statsContent">
+                    <p><strong>Frame Buffer:</strong> <span id="frameBufferSize">0</span> / <span id="maxFrameBuffer">5</span> frames</p>
+                    <p><strong>Scan Status:</strong> <span id="scanStatus">Ready</span></p>
+                    <p><strong>Last Result:</strong> <span id="lastResult">None</span></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>🎯 Scanning Strategy</h2>
+            <div class="stability-info">
+                <p><strong>Frame Averaging:</strong> The scanner captures 5 consecutive frames and averages the results</p>
+                <p><strong>Stability Detection:</strong> It looks for the most consistently detected value across frames</p>
+                <p><strong>Weighted Regions:</strong> The primary display area (where 963373 is located) gets 3x weight</p>
+                <p><strong>6-Digit Focus:</strong> Prioritizes numbers with 6 digits (like 963373) over shorter fragments</p>
+                <p><strong>Webcam Optimization:</strong> Better noise handling and focus on the target area</p>
+            </div>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>🖥️ Console Output</h2>
+            <p>Open your browser's developer console (F12) to see detailed logging information.</p>
+            <div class="console-output">
+                <div>Console output will appear here when scanning starts...</div>
+                <div>Look for messages starting with "Webcam Stable Scanner:"</div>
+                <div>This should show frame averaging and stability detection in action.</div>
+            </div>
+        </div>
+        
+        <div class="scanner-section">
+            <h2>🧪 Test Instructions</h2>
+            <p>To test the webcam stable scanner:</p>
+            <ol>
+                <li>Open browser developer console (F12)</li>
+                <li>Click "Start Stable Scanning"</li>
+                <li>Point camera at the digital counter display showing 963373</li>
+                <li>Try to keep the camera as steady as possible</li>
+                <li>The scanner will average over 5 frames for better accuracy</li>
+                <li>Watch for stability detection in the console</li>
+                <li>Results should show the complete 963373 value</li>
+            </ol>
+            <p><strong>Expected:</strong> More stable readings of the complete 963373 number despite webcam movement.</p>
+        </div>
+    </div>
+
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
+    
+    <!-- Application Scripts -->
+    <script type="module">
+        import { webcamStableScanner } from './js/webcam-stable-scanner.js';
+        
+        class WebcamStableTest {
+            constructor() {
+                this.video = document.getElementById('video');
+                this.canvas = document.getElementById('canvas');
+                this.startBtn = document.getElementById('startBtn');
+                this.stopBtn = document.getElementById('stopBtn');
+                this.clearBufferBtn = document.getElementById('clearBufferBtn');
+                this.testOCRBtn = document.getElementById('testOCRBtn');
+                this.status = document.getElementById('status');
+                this.result = document.getElementById('result');
+                this.resultContent = document.getElementById('resultContent');
+                this.frameBufferSize = document.getElementById('frameBufferSize');
+                this.maxFrameBuffer = document.getElementById('maxFrameBuffer');
+                this.scanStatus = document.getElementById('scanStatus');
+                this.lastResult = document.getElementById('lastResult');
+                
+                this.isScanning = false;
+                this.stream = null;
+                this.scanInterval = null;
+                this.lastScanTime = 0;
+                this.scanCooldown = 4000; // 4 seconds between scans (longer for stability)
+                
+                this.initializeEventListeners();
+                console.log('Webcam Stable Test: Initialized');
+            }
+            
+            initializeEventListeners() {
+                this.startBtn.addEventListener('click', () => this.startScanning());
+                this.stopBtn.addEventListener('click', () => this.stopScanning());
+                this.clearBufferBtn.addEventListener('click', () => this.clearBuffer());
+                this.testOCRBtn.addEventListener('click', () => this.testOCR());
+            }
+            
+            async testOCR() {
+                console.log('Webcam Stable Test: Testing OCR...');
+                this.updateStatus('Testing OCR...', 'info');
+                
+                try {
+                    if (typeof Tesseract === 'undefined') {
+                        console.error('Webcam Stable Test: Tesseract not loaded!');
+                        this.updateStatus('ERROR: Tesseract library not loaded!', 'error');
+                        return;
+                    }
+                    
+                    console.log('Webcam Stable Test: Tesseract available');
+                    this.updateStatus('Tesseract library loaded', 'info');
+                    
+                    // Test OCR worker
+                    const worker = await Tesseract.createWorker();
+                    console.log('Webcam Stable Test: OCR worker created');
+                    
+                    await worker.loadLanguage('eng');
+                    console.log('Webcam Stable Test: English language loaded');
+                    
+                    await worker.initialize('eng');
+                    console.log('Webcam Stable Test: OCR initialized');
+                    
+                    await worker.terminate();
+                    console.log('Webcam Stable Test: OCR worker terminated');
+                    
+                    this.updateStatus('OCR test completed successfully', 'info');
+                } catch (error) {
+                    console.error('Webcam Stable Test: OCR test failed:', error);
+                    this.updateStatus(`OCR test failed: ${error.message}`, 'error');
+                }
+            }
+            
+            clearBuffer() {
+                webcamStableScanner.clearFrameBuffer();
+                this.updateStats();
+                this.updateStatus('Frame buffer cleared', 'info');
+            }
+            
+            async startScanning() {
+                try {
+                    console.log('Webcam Stable Test: Requesting camera access...');
+                    this.updateStatus('Requesting camera access...', 'info');
+                    
+                    this.stream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: 'environment',
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        }
+                    });
+                    
+                    console.log('Webcam Stable Test: Camera access granted');
+                    this.video.srcObject = this.stream;
+                    
+                    this.video.addEventListener('loadedmetadata', () => {
+                        console.log(`Webcam Stable Test: Video dimensions: ${this.video.videoWidth}x${this.video.videoHeight}`);
+                        this.video.play();
+                        this.startStableScanning();
+                    });
+                    
+                } catch (error) {
+                    console.error('Webcam Stable Test: Camera access failed:', error);
+                    this.updateStatus(`Camera access failed: ${error.message}`, 'error');
+                }
+            }
+            
+            async startStableScanning() {
+                try {
+                    this.isScanning = true;
+                    this.startBtn.disabled = true;
+                    this.stopBtn.disabled = false;
+                    this.updateStatus('Webcam stable scanning active - averaging over 5 frames', 'success');
+                    console.log('Webcam Stable Test: Stable scanning started');
+                    
+                    // Start scanning loop
+                    this.scanInterval = setInterval(() => {
+                        this.performStableScan();
+                    }, 3000); // Scan every 3 seconds (longer for stability)
+                    
+                } catch (error) {
+                    console.error('Webcam Stable Test: Stable scanning error:', error);
+                    this.updateStatus(`Stable scanning error: ${error.message}`, 'error');
+                }
+            }
+            
+            async performStableScan() {
+                if (!this.isScanning || !this.video || !this.canvas) {
+                    console.log('Webcam Stable Test: Scanning stopped or video/canvas not available');
+                    return;
+                }
+                
+                // Check cooldown
+                const now = Date.now();
+                if (now - this.lastScanTime < this.scanCooldown) {
+                    return;
+                }
+                
+                console.log('Webcam Stable Test: Starting stable scan...');
+                this.updateStatus('Capturing frames for stable reading...', 'info');
+                
+                try {
+                    // Set canvas size to match video
+                    this.canvas.width = this.video.videoWidth;
+                    this.canvas.height = this.video.videoHeight;
+                    
+                    console.log(`Webcam Stable Test: Canvas size: ${this.canvas.width}x${this.canvas.height}`);
+                    
+                    // Draw current video frame to canvas
+                    const ctx = this.canvas.getContext('2d');
+                    ctx.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
+                    
+                    console.log('Webcam Stable Test: Video frame drawn to canvas');
+                    
+                    // Get image data for processing
+                    const imageData = ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+                    
+                    console.log(`Webcam Stable Test: Image data size: ${imageData.width}x${imageData.height}`);
+                    
+                    // Check if webcam stable scanner is available
+                    if (!webcamStableScanner) {
+                        console.error('Webcam Stable Test: Webcam stable scanner not available!');
+                        return;
+                    }
+                    
+                    console.log('Webcam Stable Test: Webcam stable scanner available, starting scan...');
+                    
+                    // Perform stable counter scan
+                    const result = await webcamStableScanner.scanStableCounter(imageData);
+                    
+                    if (result) {
+                        this.lastScanTime = now;
+                        console.log('Webcam Stable Test: Stable scan successful!', result);
+                        this.handleStableResult(result);
+                    } else {
+                        console.log('Webcam Stable Test: No stable counter value detected');
+                        this.updateStatus('No stable reading detected - try holding camera steadier', 'warning');
+                    }
+                    
+                    // Update statistics
+                    this.updateStats();
+                    
+                } catch (error) {
+                    console.error('Webcam Stable Test: Scan error:', error);
+                }
+            }
+            
+            stopScanning() {
+                this.isScanning = false;
+                
+                if (this.scanInterval) {
+                    clearInterval(this.scanInterval);
+                    this.scanInterval = null;
+                }
+                
+                if (this.stream) {
+                    this.stream.getTracks().forEach(track => track.stop());
+                    this.stream = null;
+                }
+                
+                this.startBtn.disabled = false;
+                this.stopBtn.disabled = true;
+                this.updateStatus('Webcam stable scanning stopped', 'info');
+                console.log('Webcam Stable Test: Scanning stopped');
+            }
+            
+            handleStableResult(result) {
+                this.showResult(result);
+            }
+            
+            showResult(result) {
+                this.result.style.display = 'block';
+                this.result.className = 'result success';
+                
+                const confidenceClass = this.getConfidenceClass(result.confidence);
+                const stabilityInfo = result.stability ? `
+                    <p><strong>Stability:</strong> Detected ${result.stability.occurrences} times across ${result.stability.totalFrames} frames</p>
+                    <p><strong>Weighted Score:</strong> ${result.stability.weightedScore.toFixed(1)}</p>
+                ` : '';
+                
+                const html = `
+                    <h3>✅ Stable Counter Detected!</h3>
+                    <p><strong>Counter Value:</strong> <span class="counter-value">${result.value}</span></p>
+                    <p><strong>Confidence:</strong> <span class="confidence ${confidenceClass}">${result.confidence}%</span></p>
+                    <p><strong>Region:</strong> ${result.region}</p>
+                    <p><strong>Raw OCR Text:</strong> <code>${result.rawText}</code></p>
+                    ${stabilityInfo}
+                    <p><strong>Timestamp:</strong> ${new Date(result.timestamp).toLocaleString()}</p>
+                `;
+                
+                this.resultContent.innerHTML = html;
+                
+                // Update last result
+                this.lastResult.textContent = result.value;
+                
+                // Check if we got the target number
+                if (result.value === 963373) {
+                    this.updateStatus('🎉 SUCCESS! Target number 963373 detected!', 'success');
+                } else {
+                    this.updateStatus(`Detected ${result.value} - keep trying for 963373`, 'info');
+                }
+            }
+            
+            getConfidenceClass(confidence) {
+                if (confidence >= 80) return '';
+                if (confidence >= 60) return 'low';
+                return 'very-low';
+            }
+            
+            updateStats() {
+                const stats = webcamStableScanner.getScanStats();
+                this.frameBufferSize.textContent = stats.frameBufferSize;
+                this.maxFrameBuffer.textContent = stats.maxFrameBuffer;
+                this.scanStatus.textContent = this.isScanning ? 'Active' : 'Stopped';
+            }
+            
+            updateStatus(message, type = 'info') {
+                this.status.textContent = message;
+                this.status.className = `status ${type}`;
+            }
+        }
+        
+        // Initialize the test when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new WebcamStableTest();
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dropdown Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        .debug { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>Dropdown Debug Test</h1>
+    
+    <div class="form-group">
+        <label for="location-select">Location</label>
+        <select id="location-select" class="form-select" required>
+            <option value="">Select Location</option>
+            <option value="peacock">Peacock</option>
+            <option value="dover">Dover</option>
+            <option value="massillon">Massillon</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="machine-select">Machine</label>
+        <select id="machine-select" class="form-select" required>
+            <option value="">Select Machine</option>
+        </select>
+    </div>
+    
+    <div class="debug" id="debug">
+        <h3>Debug Info:</h3>
+        <div id="debug-content"></div>
+    </div>
+
+    <script type="module">
+        function debug(message) {
+            const debugContent = document.getElementById('debug-content');
+            const div = document.createElement('div');
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            debugContent.appendChild(div);
+            console.log(message);
+        }
+
+        async function testDropdowns() {
+            try {
+                debug('Starting dropdown test...');
+                
+                // Check if elements exist
+                const locationSelect = document.getElementById('location-select');
+                const machineSelect = document.getElementById('machine-select');
+                
+                debug(`Location select found: ${!!locationSelect}`);
+                debug(`Machine select found: ${!!machineSelect}`);
+                
+                if (locationSelect) {
+                    debug(`Location options: ${locationSelect.options.length}`);
+                    for (let i = 0; i < locationSelect.options.length; i++) {
+                        const option = locationSelect.options[i];
+                        debug(`  Option ${i}: ${option.value} = "${option.textContent}"`);
+                    }
+                }
+                
+                if (machineSelect) {
+                    debug(`Machine options: ${machineSelect.options.length}`);
+                    for (let i = 0; i < machineSelect.options.length; i++) {
+                        const option = machineSelect.options[i];
+                        debug(`  Option ${i}: ${option.value} = "${option.textContent}"`);
+                    }
+                }
+                
+                // Test location manager import
+                debug('Testing location manager import...');
+                const { locationManager } = await import('./js/location-config.js?v=1.0.1');
+                debug('Location manager imported successfully');
+                
+                // Test getting locations
+                const locations = locationManager.getLocations();
+                debug(`Available locations: ${locations.length}`);
+                locations.forEach(location => {
+                    debug(`  - ${location.name} (${location.id})`);
+                });
+                
+                // Test machine population
+                debug('Testing machine population...');
+                locationManager.populateMachineDropdown(machineSelect, 'peacock');
+                debug(`Machine options after population: ${machineSelect.options.length}`);
+                
+                // Add change listener
+                locationSelect.addEventListener('change', (e) => {
+                    const selectedLocation = e.target.value;
+                    debug(`Location changed to: ${selectedLocation}`);
+                    
+                    if (selectedLocation) {
+                        locationManager.populateMachineDropdown(machineSelect, selectedLocation);
+                        debug(`Machine dropdown populated for ${selectedLocation}`);
+                        debug(`Machine options: ${machineSelect.options.length}`);
+                    } else {
+                        machineSelect.innerHTML = '<option value="">Select Machine</option>';
+                        debug('Machine dropdown cleared');
+                    }
+                });
+                
+                debug('Dropdown test complete');
+                
+            } catch (error) {
+                debug(`Error: ${error.message}`);
+                console.error('Full error:', error);
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', testDropdowns);
+    </script>
+</body>
+</html> 

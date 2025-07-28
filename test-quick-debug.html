@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        button { margin: 5px; padding: 8px 12px; }
+    </style>
+</head>
+<body>
+    <h1>Quick Debug Test</h1>
+    
+    <div class="test-section">
+        <h3>Test 1: Direct Location Manager Import</h3>
+        <button onclick="testDirectImport()">Test Import</button>
+        <div id="import-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test 2: Dropdown Elements</h3>
+        <button onclick="testDropdownElements()">Check Elements</button>
+        <div id="elements-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test 3: Location Data</h3>
+        <button onclick="testLocationData()">Get Location Data</button>
+        <div id="data-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test 4: Machine Population</h3>
+        <button onclick="testMachinePopulation()">Test Machine Population</button>
+        <div id="machine-result"></div>
+    </div>
+
+    <script type="module">
+        // Make functions available globally
+        window.testDirectImport = async () => {
+            const result = document.getElementById('import-result');
+            result.innerHTML = '<div class="info">Testing direct import...</div>';
+            
+            try {
+                const { locationManager } = await import('./js/location-config.js?v=1.0.1');
+                result.innerHTML = '<div class="success">✓ Location manager imported successfully!</div>';
+                console.log('Location manager:', locationManager);
+            } catch (error) {
+                result.innerHTML = `<div class="error">✗ Import failed: ${error.message}</div>`;
+                console.error('Import error:', error);
+            }
+        };
+        
+        window.testDropdownElements = () => {
+            const result = document.getElementById('elements-result');
+            const locationSelect = document.getElementById('location-select');
+            const machineSelect = document.getElementById('machine-select');
+            
+            let html = '<div class="info">Checking dropdown elements...</div>';
+            
+            if (locationSelect) {
+                html += `<div class="success">✓ Location select found (${locationSelect.options.length} options)</div>`;
+            } else {
+                html += '<div class="error">✗ Location select not found</div>';
+            }
+            
+            if (machineSelect) {
+                html += `<div class="success">✓ Machine select found (${machineSelect.options.length} options)</div>`;
+            } else {
+                html += '<div class="error">✗ Machine select not found</div>';
+            }
+            
+            result.innerHTML = html;
+        };
+        
+        window.testLocationData = async () => {
+            const result = document.getElementById('data-result');
+            result.innerHTML = '<div class="info">Getting location data...</div>';
+            
+            try {
+                const { locationManager } = await import('./js/location-config.js?v=1.0.1');
+                const locations = locationManager.getLocations();
+                
+                let html = `<div class="success">✓ Found ${locations.length} locations:</div>`;
+                locations.forEach(location => {
+                    html += `<div class="info">  - ${location.name} (${location.id})</div>`;
+                });
+                
+                result.innerHTML = html;
+            } catch (error) {
+                result.innerHTML = `<div class="error">✗ Error getting location data: ${error.message}</div>`;
+            }
+        };
+        
+        window.testMachinePopulation = async () => {
+            const result = document.getElementById('machine-result');
+            result.innerHTML = '<div class="info">Testing machine population...</div>';
+            
+            try {
+                const { locationManager } = await import('./js/location-config.js?v=1.0.1');
+                const machineSelect = document.getElementById('machine-select');
+                
+                if (!machineSelect) {
+                    result.innerHTML = '<div class="error">✗ Machine select not found</div>';
+                    return;
+                }
+                
+                // Test with peacock location
+                locationManager.populateMachineDropdown(machineSelect, 'peacock');
+                
+                const machineCount = machineSelect.options.length - 1; // -1 for the default option
+                result.innerHTML = `<div class="success">✓ Machine dropdown populated with ${machineCount} machines for Peacock</div>`;
+                
+                // Show the machines
+                let html = '<div class="info">Machines found:</div>';
+                for (let i = 1; i < machineSelect.options.length; i++) {
+                    const option = machineSelect.options[i];
+                    html += `<div class="info">  - ${option.textContent} (${option.value})</div>`;
+                }
+                result.innerHTML += html;
+                
+            } catch (error) {
+                result.innerHTML = `<div class="error">✗ Error testing machine population: ${error.message}</div>`;
+            }
+        };
+        
+        console.log('Quick debug test functions loaded');
+    </script>
+</body>
+</html> 

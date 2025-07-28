@@ -468,8 +468,8 @@ export class NotificationSystem {
         try {
             const desktopNotification = new Notification(notification.title, {
                 body: notification.message,
-                icon: '/data/icons/notification-icon.png',
-                badge: '/data/icons/badge-icon.png',
+                icon: '/images/icons/icon-96x96.svg',
+                badge: '/images/icons/icon-32x32.svg',
                 tag: notification.id,
                 requireInteraction: notification.priority === 'critical',
                 actions: notification.actions.map(action => ({

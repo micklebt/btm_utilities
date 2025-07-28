@@ -1,7 +1,7 @@
 /**
  * Security Camera Monitoring Interface
  * Handles live feeds, recording controls, and incident reporting
- * Version: 1.0.3 - Fixed storage issues
+ * Version: 1.0.9 - Fixed refresh functionality
  */
 
 import { config } from './config.js';
@@ -605,20 +605,9 @@ export class SecurityCameras {
 
     refreshCameraStreams() {
         try {
-            // Reload all camera streams
-            const streams = document.querySelectorAll('.camera-stream');
-            streams.forEach(stream => {
-                const currentSrc = stream.src;
-                if (currentSrc && currentSrc !== 'about:blank') {
-                    // Force reload by temporarily changing src
-                    stream.src = 'about:blank';
-                    setTimeout(() => {
-                        stream.src = currentSrc;
-                    }, 100);
-                }
-            });
-
-            // Reset placeholders
+            console.log('Refreshing camera streams...');
+            
+            // Reset all camera placeholders
             const placeholders = document.querySelectorAll('.camera-placeholder');
             placeholders.forEach(placeholder => {
                 placeholder.classList.remove('loaded');
@@ -629,16 +618,36 @@ export class SecurityCameras {
                 }
             });
 
-            // Reset streams
-            const loadedStreams = document.querySelectorAll('.camera-stream.loaded');
-            loadedStreams.forEach(stream => {
+            // Reset all camera streams
+            const streams = document.querySelectorAll('.camera-stream');
+            streams.forEach(stream => {
                 stream.classList.remove('loaded');
+                stream.style.opacity = '0';
+                
+                // Reset stream content
+                const streamPlaceholder = stream.querySelector('.stream-placeholder');
+                if (streamPlaceholder) {
+                    streamPlaceholder.innerHTML = `
+                        <p>📹 Live Stream</p>
+                        <p>Click to open in new tab</p>
+                    `;
+                }
             });
 
+            // Reset fallback displays
+            const fallbacks = document.querySelectorAll('.camera-fallback');
+            fallbacks.forEach(fallback => {
+                fallback.style.display = 'none';
+            });
+
+            // Re-initialize camera stream loading
+            this.setupCameraStreamLoading();
+
             this.showNotification('Camera streams refreshed', 'success');
-            logger.info('Camera streams refreshed');
+            logger.info('Camera streams refreshed successfully');
 
         } catch (error) {
+            console.error('Failed to refresh camera streams:', error);
             logger.error('Failed to refresh camera streams', null, error);
             this.showNotification('Failed to refresh camera streams', 'error');
         }

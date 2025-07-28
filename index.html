@@ -31,7 +31,7 @@
     <meta property="twitter:image" content="https://brianmickley.com/util/images/btm-utility-preview.png">
     
     <!-- PWA Manifest -->
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest.json?v=1.0.1">
     <meta name="theme-color" content="#0066cc">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -108,8 +108,12 @@
         <!-- Header -->
         <header class="app-header">
             <div class="header-content">
-                <h1 class="app-title">BTM Utility</h1>
+                <h1 class="app-title" id="home-button" title="Home - Refresh and return to main page">BTM Utility</h1>
                 <div class="header-actions">
+                    <button id="notification-bell" class="notification-button" title="Notifications">
+                        <span class="notification-icon">🔔</span>
+                        <span id="notification-badge" class="notification-badge hidden">0</span>
+                    </button>
                     <button id="sync-status" class="sync-button" title="Sync Status">
                         <span class="sync-icon">🔄</span>
                     </button>
@@ -120,8 +124,22 @@
             </div>
         </header>
 
+        <!-- Mobile Menu Button -->
+        <button id="mobile-menu-toggle" class="mobile-menu-toggle" title="Menu">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+
         <!-- Main Navigation -->
-        <nav class="main-nav">
+        <nav class="main-nav" id="main-nav">
+            <div class="mobile-nav-header">
+                <button class="mobile-nav-close" onclick="document.getElementById('main-nav').classList.remove('show'); document.getElementById('mobile-menu-toggle').classList.remove('active'); document.body.style.overflow = '';">
+                    <span>&times;</span>
+                </button>
+                <h2>📱 Navigation Menu</h2>
+                <p>Select a section to navigate</p>
+            </div>
             <div class="nav-container">
                 <button class="nav-item active" data-section="money-collection">
                     <span class="nav-icon">💰</span>
@@ -152,10 +170,6 @@
             <section id="money-collection" class="content-section active">
                 <div class="section-header">
                     <h2>Money Collection</h2>
-                    <button id="scan-qr" class="primary-button">
-                        <span class="button-icon">📱</span>
-                        Scan QR Code
-                    </button>
                 </div>
                 <div class="collection-form">
                     <div class="form-group">
@@ -175,7 +189,13 @@
                     </div>
                     <div class="form-group">
                         <label for="counter-value">Counter Value</label>
-                        <input type="number" id="counter-value" class="form-input" placeholder="Enter counter reading" required>
+                        <input type="text" id="counter-value" class="form-input" placeholder="Enter counter reading" required maxlength="6" pattern="[0-9]*" inputmode="numeric">
+                    </div>
+                    <div class="form-group">
+                        <button id="scan-qr" class="primary-button full-width">    
+                            <span class="button-icon">📱</span>
+                            Scan QR Code
+                        </button>
                     </div>
                     <div class="form-group">
                         <label for="collection-notes">Notes</label>
@@ -261,7 +281,7 @@
                 </div>
                 <div class="camera-grid">
                     <div class="camera-feed" id="camera-1">
-                        <h3>Massillon - Changer Room</h3>
+                        <h3>Massillon - Office Door</h3>
                         <div class="camera-container">
                             <div class="camera-placeholder" id="camera-1-placeholder">
                                 <span class="camera-icon">📹</span>
@@ -270,7 +290,7 @@
                                 <button class="test-stream-btn" data-camera="camera-1" style="margin-top: 8px; font-size: 12px; padding: 4px 8px;">Test Stream URL</button>
                             </div>
                             <div id="camera-1-stream" class="camera-stream" 
-                                 data-src="http://24.140.108.180:855/livestream.htm?cam=mass_changer">
+                                 data-src="http://24.140.108.180:855/livestream.htm?cam=MassOfficeDoor">
                                 <div class="stream-placeholder">
                                     <p>📹 Live Stream</p>
                                     <p>Click to open in new tab</p>
@@ -278,7 +298,7 @@
                             </div>
                             <div id="camera-1-fallback" class="camera-fallback" style="display: none;">
                                 <p>⚠️ Stream not available</p>
-                                <a href="http://24.140.108.180:855/livestream.htm?cam=mass_changer" target="_blank" rel="noopener noreferrer" class="fallback-link">
+                                <a href="http://24.140.108.180:855/livestream.htm?cam=MassOfficeDoor" target="_blank" rel="noopener noreferrer" class="fallback-link">
                                     Open Stream in New Tab
                                 </a>
                             </div>
@@ -455,6 +475,40 @@
                 </div>
             </div>
         </div>
+
+        <!-- Numeric Keypad Modal -->
+        <div id="numeric-keypad-modal" class="modal">
+            <div class="modal-content keypad-content">
+                <div class="modal-header">
+                    <h2>Enter Counter Value</h2>
+                    <button id="close-keypad" class="close-button">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="keypad-display">
+                        <label for="keypad-display" class="sr-only">Counter Value Display</label>
+                        <input type="text" id="keypad-display" class="keypad-input" readonly maxlength="6" aria-label="Counter Value Display">
+                    </div>
+                    <div class="numeric-keypad">
+                        <button class="keypad-btn number-btn" data-number="1">1</button>
+                        <button class="keypad-btn number-btn" data-number="2">2</button>
+                        <button class="keypad-btn number-btn" data-number="3">3</button>
+                        <button class="keypad-btn number-btn" data-number="4">4</button>
+                        <button class="keypad-btn number-btn" data-number="5">5</button>
+                        <button class="keypad-btn number-btn" data-number="6">6</button>
+                        <button class="keypad-btn number-btn" data-number="7">7</button>
+                        <button class="keypad-btn number-btn" data-number="8">8</button>
+                        <button class="keypad-btn number-btn" data-number="9">9</button>
+                        <button class="keypad-btn action-btn" id="keypad-clear">Clear</button>
+                        <button class="keypad-btn number-btn" data-number="0">0</button>
+                        <button class="keypad-btn action-btn" id="keypad-backspace">⌫</button>
+                    </div>
+                    <div class="keypad-actions">
+                        <button id="keypad-cancel" class="secondary-button">Cancel</button>
+                        <button id="keypad-done" class="primary-button">Done</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Notification Container -->
@@ -464,7 +518,7 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/sw.js')
+                navigator.serviceWorker.register('/sw.js?v=1.0.1')
                     .then(function(registration) {
                         console.log('ServiceWorker registration successful');
                     })
@@ -476,7 +530,11 @@
     </script>
 
             <!-- Application Scripts -->
-        <script type="module" src="js/app.js?v=1.0.5"></script>
+        <script type="module" src="js/app.js?v=1.0.13"></script>
+        <script src="js/simple-dropdown-fix.js"></script>
+        <!-- Temporarily disabled test files to debug keypad issue -->
+        <!-- <script src="test-all.js"></script> -->
+        <!-- <script src="test-simple.js"></script> -->
     
     <!-- QR Code Detection Library -->
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
