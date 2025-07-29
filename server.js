@@ -12,6 +12,20 @@ const url = require('url');
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || 'localhost';
 
+// Ensure data directory exists
+const DATA_DIR = path.join(__dirname, 'data');
+if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR);
+}
+
+// Path to shared tasks file
+const TASKS_FILE = path.join(DATA_DIR, 'shared-tasks.json');
+
+// Initialize empty tasks file if it doesn't exist
+if (!fs.existsSync(TASKS_FILE)) {
+    fs.writeFileSync(TASKS_FILE, '[]');
+}
+
 // MIME types
 const MIME_TYPES = {
     '.html': 'text/html',
@@ -60,6 +74,48 @@ const PWA_HEADERS = {
 const server = http.createServer((req, res) => {
     const parsedUrl = url.parse(req.url);
     let pathname = parsedUrl.pathname;
+
+    // Handle API endpoints
+    if (pathname === '/api/tasks') {
+        // Set CORS headers for API endpoints
+        Object.entries(CORS_HEADERS).forEach(([key, value]) => {
+            res.setHeader(key, value);
+        });
+        
+        // GET tasks
+        if (req.method === 'GET') {
+            try {
+                const tasks = fs.readFileSync(TASKS_FILE, 'utf8');
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(tasks);
+            } catch (error) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Failed to load tasks' }));
+            }
+            return;
+        }
+        
+        // POST tasks
+        if (req.method === 'POST') {
+            let body = '';
+            req.on('data', chunk => {
+                body += chunk.toString();
+            });
+            
+            req.on('end', () => {
+                try {
+                    const tasks = JSON.parse(body);
+                    fs.writeFileSync(TASKS_FILE, JSON.stringify(tasks));
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ success: true }));
+                } catch (error) {
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: 'Failed to save tasks' }));
+                }
+            });
+            return;
+        }
+    }
 
     // Handle root path
     if (pathname === '/') {

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+    <!-- Primary Meta Tags -->
+    <title>BTM Utility - TO-DO List</title>
+    <meta name="title" content="BTM Utility - TO-DO List">
+    <meta name="description" content="Task management system for BTM Inc laundromat operations.">
+    <meta name="keywords" content="laundromat, management, todo, task management, BTM Inc">
+    <meta name="author" content="BTM Inc">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://brianmickley.com/util/to-do.html">
+    <meta property="og:title" content="BTM Utility - TO-DO List">
+    <meta property="og:description" content="Task management system for BTM Inc laundromat operations.">
+    <meta property="og:image" content="https://brianmickley.com/util/images/btm-utility-preview.png">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://brianmickley.com/util/to-do.html">
+    <meta property="twitter:title" content="BTM Utility - TO-DO List">
+    <meta property="twitter:description" content="Task management system for BTM Inc laundromat operations.">
+    <meta property="twitter:image" content="https://brianmickley.com/util/images/btm-utility-preview.png">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json?v=1.0.1">
+    <meta name="theme-color" content="#0066cc">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="BTM Utility">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="images/icons/icon-192x192.svg">
+    <link rel="icon" type="image/svg+xml" sizes="32x32" href="images/icons/icon-32x32.svg">
+    <link rel="icon" type="image/svg+xml" sizes="16x16" href="images/icons/icon-16x16.svg">
+    
+    <!-- Preconnect to external domains for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/utilities.css">
+    
+    <!-- Security Headers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.twilio.com https://www.googleapis.com http://24.140.108.180:855/; frame-src 'self' http://24.140.108.180:855/;">
+    
+    <!-- Performance Optimizations -->
+    <link rel="dns-prefetch" href="//api.twilio.com">
+    <link rel="dns-prefetch" href="//www.googleapis.com">
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//24.140.108.180">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "BTM Utility - TO-DO List",
+        "description": "Task management system for BTM Inc laundromat operations",
+        "url": "https://brianmickley.com/util/to-do.html",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "author": {
+            "@type": "Organization",
+            "name": "BTM Inc"
+        }
+    }
+    </script>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h2>BTM Utility</h2>
+            <p>Loading TO-DO List...</p>
+        </div>
+    </div>
+
+    <!-- Offline Indicator -->
+    <div id="offline-indicator" class="offline-indicator hidden">
+        <span>⚠️ You're offline. Some features may be limited.</span>
+    </div>
+
+    <!-- Main Application Container -->
+    <div id="app" class="app-container hidden">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1 class="app-title">
+                    <a href="index.html" style="text-decoration: none; color: inherit;">BTM Utility</a>
+                </h1>
+                <h2 style="margin: 0; font-size: 1.2rem; color: var(--btm-secondary);">TO-DO List</h2>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- TO-DO List Section -->
+            <section id="todo-section" class="content-section active">
+                <div class="section-header">
+                    <h2>Task Management</h2>
+                    <button id="add-task-btn" class="secondary-button">
+                        <span class="button-icon">➕</span>
+                        Add Task
+                    </button>
+                </div>
+
+                <!-- Task Filters -->
+                <div class="todo-filters">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="pending">Pending</button>
+                    <button class="filter-btn" data-filter="completed">Completed</button>
+                    <button class="filter-btn" data-filter="urgent">Urgent</button>
+                </div>
+
+                <!-- Task Statistics -->
+                <div class="todo-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Total</span>
+                        <span class="stat-value" id="total-tasks">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Pending</span>
+                        <span class="stat-value" id="pending-tasks">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Completed</span>
+                        <span class="stat-value" id="completed-tasks">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Urgent</span>
+                        <span class="stat-value urgent" id="urgent-tasks">0</span>
+                    </div>
+                </div>
+
+                <!-- Task List -->
+                <div class="todo-list" id="todo-list">
+                    <!-- Tasks will be populated here -->
+                    <div class="no-tasks">
+                        <p>No tasks yet. Click "Add Task" to get started!</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Add Task Modal -->
+        <div id="add-task-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Add New Task</h2>
+                    <button id="close-task-modal" class="close-button">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="task-form" class="task-form">
+                        <div class="form-group">
+                            <label for="task-title">Task Title *</label>
+                            <input type="text" id="task-title" class="form-input" placeholder="Enter task title" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="task-description">Description</label>
+                            <textarea id="task-description" class="form-textarea" placeholder="Enter task description" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="task-category">Category</label>
+                            <select id="task-category" class="form-select">
+                                <option value="general">General</option>
+                                <option value="maintenance">Maintenance</option>
+                                <option value="cleaning">Cleaning</option>
+                                <option value="inventory">Inventory</option>
+                                <option value="customer-service">Customer Service</option>
+                                <option value="management">Management</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="task-priority">Priority</label>
+                            <select id="task-priority" class="form-select">
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="task-due-date">Due Date</label>
+                            <input type="date" id="task-due-date" class="form-input">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="task-assignee">Assignee</label>
+                            <select id="task-assignee" class="form-select">
+                                <option value="">Unassigned</option>
+                                <option value="BM">BM</option>
+                                <option value="JH">JH</option>
+                                <option value="BG1">BG1</option>
+                                <option value="BG2">BG2</option>
+                                <option value="RM">RM</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="primary-button">Add Task</button>
+                            <button type="button" class="secondary-button" id="cancel-task">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Task Detail Modal -->
+        <div id="task-detail-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="detail-task-title">Task Details</h2>
+                    <button id="close-detail-modal" class="close-button">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div id="task-detail-content">
+                        <!-- Task details will be populated here -->
+                    </div>
+                    <div class="task-actions">
+                        <button id="edit-task-btn" class="primary-button">Edit Task</button>
+                        <button id="delete-task-btn" class="secondary-button">Delete Task</button>
+                        <button id="mark-complete-btn" class="secondary-button">Mark Complete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container" class="notification-container"></div>
+
+    <!-- Application Scripts -->
+    <script type="module" src="js/todo-app.js?v=1.0.1"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js?v=1.0.2')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(function(err) {
+                        console.log('ServiceWorker registration failed');
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
