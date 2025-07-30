@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Counter Webhook Test</title>
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/utilities.css">
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 16px;
+            line-height: 1.5;
+            color: #212529;
+            background-color: #f8f9fa;
+        }
+        
+        .test-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        h1, h2, h3 {
+            color: #000;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        h1 {
+            font-size: 28px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        
+        h2 {
+            font-size: 22px;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 8px;
+        }
+        
+        h3 {
+            font-size: 18px;
+        }
+        
+        .test-section {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 1px solid #dee2e6;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #212529;
+            font-size: 16px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 16px;
+            color: #212529;
+        }
+        
+        .form-control:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+            outline: 0;
+        }
+        
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: background-color 0.2s;
+        }
+        
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0069d9;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        .result-container {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+            font-size: 15px;
+            color: #212529;
+        }
+        
+        .result-success {
+            border-color: #28a745;
+            background-color: rgba(40, 167, 69, 0.1);
+        }
+        
+        .result-error {
+            border-color: #dc3545;
+            background-color: rgba(220, 53, 69, 0.1);
+        }
+        
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background-color: #f1f1f1;
+            padding: 12px;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+            font-size: 14px;
+            color: #000;
+            line-height: 1.5;
+        }
+        
+        .mode-selector {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        
+        .mode-option {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #ced4da;
+            cursor: pointer;
+            font-weight: bold;
+            color: #212529;
+        }
+        
+        .mode-option.selected {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        
+        .mode-option:first-child {
+            border-radius: 4px 0 0 4px;
+        }
+        
+        .mode-option:last-child {
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .tab-container {
+            margin-bottom: 20px;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .tab-button {
+            padding: 12px 18px;
+            cursor: pointer;
+            background-color: #f8f9fa;
+            border: 1px solid transparent;
+            border-bottom: none;
+            margin-bottom: -1px;
+            font-weight: bold;
+            color: #495057;
+            font-size: 16px;
+        }
+        
+        .tab-button:hover {
+            background-color: #e9ecef;
+        }
+        
+        .tab-button.active {
+            background-color: #fff;
+            border-color: #dee2e6;
+            border-bottom-color: #fff;
+            color: #007bff;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-top: none;
+            background-color: #fff;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .webhook-url-input {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .webhook-url-input input {
+            flex: 1;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        table th, table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        table th {
+            font-weight: bold;
+            background-color: #f8f9fa;
+            color: #212529;
+        }
+        
+        table tr:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <header>
+            <h1>Counter Webhook Test</h1>
+            <p>Test the counter reading webhook integration with Google Sheets and Make.com</p>
+        </header>
+
+        <div class="tab-container">
+            <div class="tab-buttons">
+                <div class="tab-button active" data-tab="counter-form-tab">Counter Form</div>
+                <div class="tab-button" data-tab="webhook-settings-tab">Webhook Settings</div>
+                <div class="tab-button" data-tab="previous-readings-tab">Previous Readings</div>
+            </div>
+            
+            <div id="counter-form-tab" class="tab-content active">
+                <div class="test-section">
+                    <h2>Counter Reading Submission</h2>
+                    <form id="counter-form">
+                        <div class="form-group">
+                            <label for="location">Location</label>
+                            <select id="location" class="form-control" required>
+                                <option value="">Select Location</option>
+                                <option value="peacock">Peacock</option>
+                                <option value="dover">Dover</option>
+                                <option value="massillon">Massillon</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="machine">Machine</label>
+                            <select id="machine" class="form-control" required>
+                                <option value="">Select Machine</option>
+                                <!-- Will be populated based on location -->
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="counter-value">Counter Value</label>
+                            <input type="number" id="counter-value" class="form-control" min="0" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Counting Mode</label>
+                            <div class="mode-selector">
+                                <div class="mode-option selected" data-mode="dollars">Dollars (1 = $1)</div>
+                                <div class="mode-option" data-mode="quarters">Quarters (4 = $1)</div>
+                            </div>
+                            <input type="hidden" id="counting-mode" value="dollars">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="collector-name">Collector Name</label>
+                            <input type="text" id="collector-name" class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="comments">Comments (Optional)</label>
+                            <textarea id="comments" class="form-control" rows="3"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Submit To</label>
+                            <div class="mode-selector">
+                                <div class="mode-option selected" data-target="google-sheets">Google Sheets</div>
+                                <div class="mode-option" data-target="make-com">Make.com</div>
+                            </div>
+                            <input type="hidden" id="submit-target" value="google-sheets">
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Submit Reading</button>
+                            <button type="button" id="clear-form" class="btn btn-secondary">Clear Form</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="test-section">
+                    <h2>Test Results</h2>
+                    <div id="result-container" class="result-container">
+                        <p>Submit a counter reading to see results</p>
+                    </div>
+                </div>
+
+                <div class="test-section">
+                    <h2>Previous Submissions</h2>
+                    <div id="submissions-list">
+                        <p>No previous submissions</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="webhook-settings-tab" class="tab-content">
+                <div class="test-section">
+                    <h2>Make.com Webhook Settings</h2>
+                    
+                    <div class="form-group">
+                        <label for="counter-webhook-url">Counter Readings Webhook URL</label>
+                        <div class="webhook-url-input">
+                            <input type="text" id="counter-webhook-url" class="form-control" 
+                                value="https://hook.us1.make.com/wcm4q9426xxomcinbl1esqxfqmojeynh">
+                            <button type="button" id="save-counter-webhook" class="btn btn-primary">Save</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="alerts-webhook-url">Alerts Webhook URL</label>
+                        <div class="webhook-url-input">
+                            <input type="text" id="alerts-webhook-url" class="form-control" 
+                                placeholder="https://hook.make.com/your-alerts-webhook">
+                            <button type="button" id="save-alerts-webhook" class="btn btn-primary">Save</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="google-sheet-id">Google Sheet ID</label>
+                        <div class="webhook-url-input">
+                            <input type="text" id="google-sheet-id" class="form-control" 
+                                value="1K_Mc1lgoWw5iAvvCzyyuW6fCvY3gikcs8u42mOGMbDw">
+                            <button type="button" id="save-sheet-id" class="btn btn-primary">Save</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Test Make.com Connection</label>
+                        <button type="button" id="test-make-connection" class="btn btn-primary">Test Connection</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Test All Locations and Changers</label>
+                        <button type="button" id="test-all-locations" class="btn btn-primary">Test All Locations</button>
+                    </div>
+                    
+                    <div id="webhook-test-result" class="result-container">
+                        <p>Test Make.com connection to see results</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="previous-readings-tab" class="tab-content">
+                <div class="test-section">
+                    <h2>Previous Counter Readings</h2>
+                    <div class="form-actions">
+                        <button type="button" id="load-readings" class="btn btn-primary">Load Previous Readings</button>
+                        <button type="button" id="clear-readings" class="btn btn-secondary">Clear All Readings</button>
+                    </div>
+                    <div id="previous-readings-container" class="result-container">
+                        <p>Click "Load Previous Readings" to view stored counter values</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { locationManager } from './js/location-config.js';
+        import { googleSheetsWebhook } from './js/google-sheets-webhook.js';
+        import { makeWebhookHandler } from './js/make-webhook-handler.js';
+        import { logger } from './js/logger.js';
+
+        // Store submissions for this session
+        const submissions = [];
+
+        // DOM elements
+        const locationSelect = document.getElementById('location');
+        const machineSelect = document.getElementById('machine');
+        const counterValueInput = document.getElementById('counter-value');
+        const countingModeInput = document.getElementById('counting-mode');
+        const submitTargetInput = document.getElementById('submit-target');
+        const collectorNameInput = document.getElementById('collector-name');
+        const commentsInput = document.getElementById('comments');
+        const resultContainer = document.getElementById('result-container');
+        const submissionsList = document.getElementById('submissions-list');
+        const modeOptions = document.querySelectorAll('.mode-selector:first-of-type .mode-option');
+        const targetOptions = document.querySelectorAll('.mode-selector:last-of-type .mode-option');
+        const counterForm = document.getElementById('counter-form');
+        const clearFormBtn = document.getElementById('clear-form');
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize webhook handlers
+            googleSheetsWebhook.init();
+            makeWebhookHandler.init();
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Load webhook settings
+            loadWebhookSettings();
+        });
+
+        function setupEventListeners() {
+            // Tab navigation
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Update active tab button
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    
+                    // Show active tab content
+                    const tabId = button.dataset.tab;
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+            
+            // Location change
+            locationSelect.addEventListener('change', handleLocationChange);
+            
+            // Machine change - automatically set counting mode
+            machineSelect.addEventListener('change', function() {
+                if (!this.value) return;
+                
+                const selectedOption = this.options[this.selectedIndex];
+                const countingMode = selectedOption.dataset.countingMode;
+                
+                if (countingMode) {
+                    // Get the counting mode options
+                    const countingModeSelector = document.querySelector('.form-group:nth-of-type(4) .mode-selector');
+                    const countingModeOptions = countingModeSelector.querySelectorAll('.mode-option');
+                    
+                    // Update the UI based on the machine's counting mode
+                    countingModeOptions.forEach(option => {
+                        const isSelected = option.dataset.mode === countingMode;
+                        option.classList.toggle('selected', isSelected);
+                    });
+                    
+                    // Update the hidden input
+                    countingModeInput.value = countingMode;
+                }
+            });
+            
+            // Counting mode selection - Fix selector to be more specific
+            const countingModeSelector = document.querySelector('.form-group:nth-of-type(4) .mode-selector');
+            const countingModeOptions = countingModeSelector.querySelectorAll('.mode-option');
+            
+            countingModeOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    // Update UI
+                    countingModeOptions.forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                    
+                    // Update hidden input
+                    countingModeInput.value = option.dataset.mode;
+                });
+            });
+            
+            // Submit target selection - Fix selector to be more specific
+            const submitTargetSelector = document.querySelector('.form-group:nth-of-type(7) .mode-selector');
+            const submitTargetOptions = submitTargetSelector.querySelectorAll('.mode-option');
+            
+            submitTargetOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    // Update UI
+                    submitTargetOptions.forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                    
+                    // Update hidden input
+                    submitTargetInput.value = option.dataset.target;
+                });
+            });
+            
+            // Form submission
+            counterForm.addEventListener('submit', handleFormSubmit);
+            
+            // Clear form
+            clearFormBtn.addEventListener('click', clearForm);
+            
+            // Load previous readings
+            document.getElementById('load-readings').addEventListener('click', loadPreviousReadings);
+            
+            // Clear previous readings
+            document.getElementById('clear-readings').addEventListener('click', clearPreviousReadings);
+            
+            // Save webhook settings
+            document.getElementById('save-counter-webhook').addEventListener('click', () => {
+                const url = document.getElementById('counter-webhook-url').value.trim();
+                if (url) {
+                    makeWebhookHandler.setWebhookUrl('counterReadings', url);
+                    saveWebhookSettings();
+                    alert('Counter webhook URL saved!');
+                }
+            });
+            
+            document.getElementById('save-alerts-webhook').addEventListener('click', () => {
+                const url = document.getElementById('alerts-webhook-url').value.trim();
+                if (url) {
+                    makeWebhookHandler.setWebhookUrl('alerts', url);
+                    saveWebhookSettings();
+                    alert('Alerts webhook URL saved!');
+                }
+            });
+            
+            document.getElementById('save-sheet-id').addEventListener('click', () => {
+                const sheetId = document.getElementById('google-sheet-id').value.trim();
+                if (sheetId) {
+                    googleSheetsWebhook.setSheetId(sheetId);
+                    saveWebhookSettings();
+                    alert('Google Sheet ID saved!');
+                }
+            });
+            
+            // Test Make.com connection
+            document.getElementById('test-make-connection').addEventListener('click', testMakeConnection);
+
+            // Test all locations and changers
+            document.getElementById('test-all-locations').addEventListener('click', testAllLocations);
+
+            // Add a button to view all stored readings
+            const viewReadingsButton = document.createElement('button');
+            viewReadingsButton.className = 'btn btn-info';
+            viewReadingsButton.textContent = 'View All Readings';
+            viewReadingsButton.onclick = viewAllReadings;
+            document.querySelector('.webhook-settings-container').appendChild(viewReadingsButton);
+        }
+
+        function handleLocationChange() {
+            const locationId = locationSelect.value;
+            
+            // Clear machine dropdown
+            machineSelect.innerHTML = '<option value="">Select Machine</option>';
+            
+            if (!locationId) return;
+            
+            // Get machines for this location
+            const machines = locationManager.getMachines(locationId);
+            
+            // Populate machine dropdown
+            machines.forEach(machine => {
+                const option = document.createElement('option');
+                option.value = machine.id;
+                option.textContent = machine.name;
+                option.dataset.countingMode = machine.countingMode;
+                machineSelect.appendChild(option);
+            });
+        }
+        
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+            
+            // Get form values
+            const data = {
+                locationId: locationSelect.value,
+                machineId: machineSelect.value,
+                counterValue: parseInt(counterValueInput.value),
+                countingMode: countingModeInput.value,
+                collectorName: collectorNameInput.value,
+                comments: commentsInput.value
+            };
+            
+            try {
+                let result;
+                
+                // Submit to selected target
+                if (submitTargetInput.value === 'google-sheets') {
+                    result = await googleSheetsWebhook.submitCounterReading(data);
+                } else {
+                    result = await makeWebhookHandler.sendCounterReading(data);
+                }
+                
+                // Display result
+                displayResult(result);
+                
+                // Add to submissions list
+                if (result.status === 'success') {
+                    const submissionData = result.data;
+                    submissions.unshift(submissionData);
+                    updateSubmissionsList();
+                }
+            } catch (error) {
+                logger.error('Error submitting counter reading', null, error);
+                displayResult({
+                    status: 'error',
+                    error: error.message,
+                    timestamp: new Date().toISOString()
+                });
+            }
+        }
+
+        function displayResult(result) {
+            // Update result container
+            let resultHtml = `
+                <h3>${result.status === 'success' ? 'Success!' : 'Error!'}</h3>
+            `;
+            
+            // Add HTTP status code if available
+            if (result.status === 'success') {
+                resultHtml += `<p><strong>Status:</strong> Success</p>`;
+                if (result.httpStatus) {
+                    resultHtml += `<p><strong>HTTP Status:</strong> ${result.httpStatus}</p>`;
+                }
+            } else if (result.error) {
+                resultHtml += `<p><strong>Error:</strong> ${result.error}</p>`;
+            }
+            
+            resultHtml += `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+            
+            resultContainer.innerHTML = resultHtml;
+            
+            // Add appropriate class
+            resultContainer.className = 'result-container';
+            resultContainer.classList.add(result.status === 'success' ? 'result-success' : 'result-error');
+        }
+
+        function updateSubmissionsList() {
+            if (submissions.length === 0) {
+                submissionsList.innerHTML = '<p>No previous submissions</p>';
+                return;
+            }
+            
+            submissionsList.innerHTML = `
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Location</th>
+                            <th>Machine</th>
+                            <th>Counter</th>
+                            <th>Previous</th>
+                            <th>Difference</th>
+                            <th>Mode</th>
+                            <th>Amount ($)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${submissions.map(sub => `
+                            <tr>
+                                <td>${new Date(sub.timestamp).toLocaleTimeString()}</td>
+                                <td>${sub.location}</td>
+                                <td>Changer ${sub.changer}</td>
+                                <td>${sub.counterValue}</td>
+                                <td>${sub.previousValue !== undefined ? sub.previousValue : '-'}</td>
+                                <td>${sub.counterDifference !== undefined ? sub.counterDifference : '-'}</td>
+                                <td>${sub.countingMode === 'quarters' ? 'Quarters' : 'Dollars'}</td>
+                                <td>${sub.dollarDifference !== undefined ? sub.formattedDifference : '-'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function clearForm() {
+            counterForm.reset();
+            machineSelect.innerHTML = '<option value="">Select Machine</option>';
+            
+            // Reset counting mode - Fix selector to be more specific
+            const countingModeSelector = document.querySelector('.form-group:nth-of-type(4) .mode-selector');
+            const countingModeOptions = countingModeSelector.querySelectorAll('.mode-option');
+            countingModeOptions.forEach(opt => opt.classList.remove('selected'));
+            countingModeOptions[0].classList.add('selected');
+            countingModeInput.value = 'dollars';
+            
+            // Reset submit target - Fix selector to be more specific
+            const submitTargetSelector = document.querySelector('.form-group:nth-of-type(7) .mode-selector');
+            const submitTargetOptions = submitTargetSelector.querySelectorAll('.mode-option');
+            submitTargetOptions.forEach(opt => opt.classList.remove('selected'));
+            submitTargetOptions[0].classList.add('selected');
+            submitTargetInput.value = 'google-sheets';
+        }
+
+        async function loadPreviousReadings() {
+            const container = document.getElementById('previous-readings-container');
+            container.innerHTML = '<p>Loading previous readings from server...</p>';
+            
+            try {
+                const locationId = locationSelect.value || 'all';
+                let readings = [];
+                
+                // Fetch all readings from the server
+                const response = await fetch('/api/all-readings');
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch readings: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                if (result.status !== 'success') {
+                    throw new Error(result.error || 'Unknown error fetching readings');
+                }
+                
+                // Filter by location if needed
+                if (locationId !== 'all') {
+                    readings = result.data.filter(reading => reading.locationId === locationId);
+                } else {
+                    readings = result.data;
+                }
+                
+                if (readings.length === 0) {
+                    container.innerHTML = '<p>No previous readings found</p>';
+                    return;
+                }
+                
+                // Format readings for display
+                container.innerHTML = `
+                    <h3>Previous Counter Readings</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Location</th>
+                                <th>Machine</th>
+                                <th>Counter Value</th>
+                                <th>Dollar Amount</th>
+                                <th>Counting Mode</th>
+                                <th>Last Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${readings.map(reading => `
+                                <tr>
+                                    <td>${reading.locationId}</td>
+                                    <td>${reading.machineId}</td>
+                                    <td>${reading.counterValue}</td>
+                                    <td>$${reading.dollarAmount.toFixed(2)}</td>
+                                    <td>${reading.countingMode}</td>
+                                    <td>${new Date(reading.timestamp).toLocaleString()}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (error) {
+                container.innerHTML = `<p class="error">Error loading previous readings: ${error.message}</p>`;
+                console.error('Error loading previous readings:', error);
+            }
+        }
+
+        function clearPreviousReadings() {
+            if (confirm('Are you sure you want to clear all previous counter readings? This cannot be undone.')) {
+                // For now, just clear the local cache
+                // In the future, we could add a server endpoint to clear all readings
+                googleSheetsWebhook.clearPreviousReadings();
+                document.getElementById('previous-readings-container').innerHTML = 
+                    '<p>All previous readings cleared from local cache. Server data is still preserved.</p>';
+            }
+        }
+        
+        function loadWebhookSettings() {
+            try {
+                // Try to load settings from localStorage
+                const settings = JSON.parse(localStorage.getItem('webhookSettings') || '{}');
+                
+                // Update UI
+                if (settings.counterWebhook) {
+                    document.getElementById('counter-webhook-url').value = settings.counterWebhook;
+                    makeWebhookHandler.setWebhookUrl('counterReadings', settings.counterWebhook);
+                }
+                
+                if (settings.alertsWebhook) {
+                    document.getElementById('alerts-webhook-url').value = settings.alertsWebhook;
+                    makeWebhookHandler.setWebhookUrl('alerts', settings.alertsWebhook);
+                }
+                
+                if (settings.sheetId) {
+                    document.getElementById('google-sheet-id').value = settings.sheetId;
+                    googleSheetsWebhook.setSheetId(settings.sheetId);
+                }
+                
+                logger.info('Webhook settings loaded from localStorage');
+            } catch (error) {
+                logger.warn('Failed to load webhook settings', null, error);
+            }
+        }
+        
+        function saveWebhookSettings() {
+            try {
+                const settings = {
+                    counterWebhook: makeWebhookHandler.getWebhookUrl('counterReadings'),
+                    alertsWebhook: makeWebhookHandler.getWebhookUrl('alerts'),
+                    sheetId: googleSheetsWebhook.getSheetId()
+                };
+                
+                localStorage.setItem('webhookSettings', JSON.stringify(settings));
+                logger.info('Webhook settings saved to localStorage');
+            } catch (error) {
+                logger.warn('Failed to save webhook settings', null, error);
+            }
+        }
+        
+        async function testMakeConnection() {
+            const resultContainer = document.getElementById('webhook-test-result');
+            resultContainer.innerHTML = '<p>Testing connection to Make.com...</p>';
+            
+            try {
+                console.log('Starting Make.com connection test');
+                
+                // Check webhook URL
+                const webhookUrl = makeWebhookHandler.getWebhookUrl('alerts');
+                console.log('Using webhook URL:', webhookUrl);
+                
+                if (!webhookUrl || webhookUrl === 'https://hook.make.com/your-alerts-webhook') {
+                    resultContainer.innerHTML = '<p class="error">Please set a valid webhook URL first</p>';
+                    resultContainer.className = 'result-container result-error';
+                    return;
+                }
+                
+                // Send a test alert to Make.com
+                const result = await makeWebhookHandler.sendAlert({
+                    type: 'info',
+                    message: 'Test connection from BTM Utility',
+                    source: 'Webhook Test Page',
+                    details: {
+                        timestamp: new Date().toISOString(),
+                        test: true
+                    }
+                });
+                
+                console.log('Make.com test result:', result);
+                
+                if (result.status === 'success') {
+                    resultContainer.innerHTML = `
+                        <h3>Connection Successful!</h3>
+                        <p>Successfully connected to Make.com webhook.</p>
+                        ${result.httpStatus ? `<p><strong>HTTP Status:</strong> ${result.httpStatus}</p>` : ''}
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                    resultContainer.className = 'result-container result-success';
+                } else {
+                    resultContainer.innerHTML = `
+                        <h3>Connection Failed</h3>
+                        <p>Error: ${result.error || 'Unknown error'}</p>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                    resultContainer.className = 'result-container result-error';
+                }
+            } catch (error) {
+                console.error('Error testing Make.com connection:', error);
+                resultContainer.innerHTML = `
+                    <h3>Connection Error</h3>
+                    <p>${error.message}</p>
+                    <pre>${error.stack || 'No stack trace available'}</pre>
+                `;
+                resultContainer.className = 'result-container result-error';
+            }
+        }
+
+        /**
+         * Test all locations and changers
+         */
+        async function testAllLocations() {
+            const resultContainer = document.getElementById('webhook-test-result');
+            resultContainer.innerHTML = '<p>Testing all locations and changers...</p>';
+            
+            // Get webhook URL
+            const webhookUrl = makeWebhookHandler.getWebhookUrl('counterReadings');
+            if (!webhookUrl || webhookUrl === 'https://hook.make.com/your-scenario-webhook') {
+                resultContainer.innerHTML = '<p class="error">Please set a valid webhook URL first</p>';
+                resultContainer.className = 'result-container result-error';
+                return;
+            }
+            
+            // Results table
+            let results = [];
+            let resultsHtml = `
+                <h3>Testing All Locations and Changers</h3>
+                <p>Webhook URL: ${webhookUrl}</p>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Location</th>
+                            <th>Machine</th>
+                            <th>Counting Mode</th>
+                            <th>Status</th>
+                            <th>HTTP Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="test-results-body">
+                    </tbody>
+                </table>
+            `;
+            
+            resultContainer.innerHTML = resultsHtml;
+            const resultsBody = document.getElementById('test-results-body');
+            
+            // Get all locations
+            const locations = locationManager.getLocations();
+            
+            // Test counter value
+            const testCounterValue = 100;
+            
+            // Test each location and machine
+            for (const location of locations) {
+                const machines = locationManager.getMachines(location.id);
+                
+                for (const machine of machines) {
+                    // Add row to table
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${location.name}</td>
+                        <td>${machine.name}</td>
+                        <td>${machine.countingMode === 'quarters' ? 'Quarters (4 = $1)' : 'Dollars (1 = $1)'}</td>
+                        <td>Testing...</td>
+                        <td>-</td>
+                    `;
+                    resultsBody.appendChild(row);
+                    
+                    // Prepare test data
+                    const testData = {
+                        locationId: location.id,
+                        machineId: machine.id,
+                        counterValue: testCounterValue,
+                        countingMode: machine.countingMode,
+                        collectorName: 'Test User',
+                        comments: `Automated test for ${location.name} - ${machine.name}`
+                    };
+                    
+                    try {
+                        // Send test data
+                        const result = await makeWebhookHandler.sendCounterReading(testData);
+                        
+                        // Update row with result
+                        if (result.status === 'success') {
+                            row.cells[3].textContent = 'Success';
+                            row.cells[4].textContent = result.httpStatus || 'OK';
+                            row.className = 'success';
+                        } else {
+                            row.cells[3].textContent = 'Error';
+                            row.cells[4].textContent = result.error || 'Unknown error';
+                            row.className = 'error';
+                        }
+                    } catch (error) {
+                        row.cells[3].textContent = 'Failed';
+                        row.cells[4].textContent = error.message;
+                        row.className = 'error';
+                    }
+                    
+                    // Add a small delay between requests
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+            }
+            
+            // Update container class
+            resultContainer.className = 'result-container';
+        }
+
+        /**
+         * View all stored readings from the server
+         */
+        async function viewAllReadings() {
+            const resultContainer = document.getElementById('webhook-test-result');
+            resultContainer.innerHTML = '<p>Loading all counter readings from server...</p>';
+            
+            try {
+                const response = await fetch('/api/all-readings');
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch readings: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                if (result.status !== 'success') {
+                    throw new Error(result.error || 'Unknown error fetching readings');
+                }
+                
+                if (result.data.length === 0) {
+                    resultContainer.innerHTML = '<p>No readings found on the server.</p>';
+                    return;
+                }
+                
+                // Format readings for display
+                let html = `
+                    <h3>All Counter Readings</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Location</th>
+                                <th>Machine</th>
+                                <th>Counter Value</th>
+                                <th>Dollar Amount</th>
+                                <th>Counting Mode</th>
+                                <th>Last Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                result.data.forEach(reading => {
+                    html += `
+                        <tr>
+                            <td>${reading.locationId}</td>
+                            <td>${reading.machineId}</td>
+                            <td>${reading.counterValue}</td>
+                            <td>$${reading.dollarAmount.toFixed(2)}</td>
+                            <td>${reading.countingMode}</td>
+                            <td>${new Date(reading.timestamp).toLocaleString()}</td>
+                        </tr>
+                    `;
+                });
+                
+                html += `
+                        </tbody>
+                    </table>
+                `;
+                
+                resultContainer.innerHTML = html;
+            } catch (error) {
+                resultContainer.innerHTML = `<p class="error">Error loading readings: ${error.message}</p>`;
+                console.error('Error loading readings:', error);
+            }
+        }
+    </script>
+</body>
+</html>

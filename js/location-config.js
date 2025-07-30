@@ -36,42 +36,30 @@ export const locationConfig = {
     // Machine configurations by location (updated to match actual setup)
     machines: {
         peacock: [
-            // Changer 1 - 4 hoppers
-            { id: 'PEACOCK_CH1_H1', name: 'Changer 1 - Hopper 1', changer: 1, hopper: 1, amount: 1 },
-            { id: 'PEACOCK_CH1_H2', name: 'Changer 1 - Hopper 2', changer: 1, hopper: 2, amount: 1 },
-            { id: 'PEACOCK_CH1_H3', name: 'Changer 1 - Hopper 3', changer: 1, hopper: 3, amount: 1 },
-            { id: 'PEACOCK_CH1_H4', name: 'Changer 1 - Hopper 4', changer: 1, hopper: 4, amount: 1 },
-            // Changer 2 - 4 hoppers
-            { id: 'PEACOCK_CH2_H1', name: 'Changer 2 - Hopper 1', changer: 2, hopper: 1, amount: 1 },
-            { id: 'PEACOCK_CH2_H2', name: 'Changer 2 - Hopper 2', changer: 2, hopper: 2, amount: 1 },
-            { id: 'PEACOCK_CH2_H3', name: 'Changer 2 - Hopper 3', changer: 2, hopper: 3, amount: 1 },
-            { id: 'PEACOCK_CH2_H4', name: 'Changer 2 - Hopper 4', changer: 2, hopper: 4, amount: 1 },
-            // Changer 3 - 1 hopper
-            { id: 'PEACOCK_CH3_H1', name: 'Changer 3 - Hopper 1', changer: 3, hopper: 1, amount: 1 }
+            // Changer 1 - quarters mode (4 = $1)
+            { id: 'PEACOCK_CH1', name: 'Changer 1', changer: 1, countingMode: 'quarters' },
+            // Changer 2 - quarters mode (4 = $1)
+            { id: 'PEACOCK_CH2', name: 'Changer 2', changer: 2, countingMode: 'quarters' },
+            // Changer 3 - dollars mode (1 = $1)
+            { id: 'PEACOCK_CH3', name: 'Changer 3', changer: 3, countingMode: 'dollars' }
         ],
         dover: [
-            // Changer 1 - 1 hopper
-            { id: 'DOVER_CH1_H1', name: 'Changer 1 - Hopper 1', changer: 1, hopper: 1, amount: 1 },
-            // Changer 2 - 1 hopper
-            { id: 'DOVER_CH2_H1', name: 'Changer 2 - Hopper 1', changer: 2, hopper: 1, amount: 1 },
-            // Changer 3 - 1 hopper
-            { id: 'DOVER_CH3_H1', name: 'Changer 3 - Hopper 1', changer: 3, hopper: 1, amount: 1 }
+            // Changer 1 - dollars mode (1 = $1)
+            { id: 'DOVER_CH1', name: 'Changer 1', changer: 1, countingMode: 'dollars' },
+            // Changer 2 - dollars mode (1 = $1)
+            { id: 'DOVER_CH2', name: 'Changer 2', changer: 2, countingMode: 'dollars' },
+            // Changer 3 - dollars mode (1 = $1)
+            { id: 'DOVER_CH3', name: 'Changer 3', changer: 3, countingMode: 'dollars' }
         ],
         massillon: [
-            // Changer 1 - 4 hoppers
-            { id: 'MASSILLON_CH1_H1', name: 'Changer 1 - Hopper 1', changer: 1, hopper: 1, amount: 1 },
-            { id: 'MASSILLON_CH1_H2', name: 'Changer 1 - Hopper 2', changer: 1, hopper: 2, amount: 1 },
-            { id: 'MASSILLON_CH1_H3', name: 'Changer 1 - Hopper 3', changer: 1, hopper: 3, amount: 1 },
-            { id: 'MASSILLON_CH1_H4', name: 'Changer 1 - Hopper 4', changer: 1, hopper: 4, amount: 1 },
-            // Changer 2 - 4 hoppers
-            { id: 'MASSILLON_CH2_H1', name: 'Changer 2 - Hopper 1', changer: 2, hopper: 1, amount: 1 },
-            { id: 'MASSILLON_CH2_H2', name: 'Changer 2 - Hopper 2', changer: 2, hopper: 2, amount: 1 },
-            { id: 'MASSILLON_CH2_H3', name: 'Changer 2 - Hopper 3', changer: 2, hopper: 3, amount: 1 },
-            { id: 'MASSILLON_CH2_H4', name: 'Changer 2 - Hopper 4', changer: 2, hopper: 4, amount: 1 },
-            // Changer 3 - 1 hopper
-            { id: 'MASSILLON_CH3_H1', name: 'Changer 3 - Hopper 1', changer: 3, hopper: 1, amount: 1 },
-            // Changer 4 - 1 hopper
-            { id: 'MASSILLON_CH4_H1', name: 'Changer 4 - Hopper 1', changer: 4, hopper: 1, amount: 1 }
+            // Changer 1 - quarters mode (4 = $1)
+            { id: 'MASSILLON_CH1', name: 'Changer 1', changer: 1, countingMode: 'quarters' },
+            // Changer 2 - quarters mode (4 = $1)
+            { id: 'MASSILLON_CH2', name: 'Changer 2', changer: 2, countingMode: 'quarters' },
+            // Changer 3 - dollars mode (1 = $1)
+            { id: 'MASSILLON_CH3', name: 'Changer 3', changer: 3, countingMode: 'dollars' },
+            // Changer 4 - dollars mode (1 = $1)
+            { id: 'MASSILLON_CH4', name: 'Changer 4', changer: 4, countingMode: 'dollars' }
         ]
     },
 

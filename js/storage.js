@@ -320,7 +320,7 @@ export class DataManager {
 // Create data managers for different data types
 export const collectionsManager = new DataManager(config.storage.collections, true);
 export const contactsManager = new DataManager(config.storage.contacts, true);
-export const todosManager = new DataManager(config.storage.todos, false);
+
 export const settingsManager = new DataManager(config.storage.settings, true);
 export const credentialsManager = new DataManager(config.storage.apiCredentials, true);
 export const notificationsManager = new DataManager('btm_notifications', false);
@@ -384,7 +384,7 @@ export const storageUtils = {
             await Promise.all([
                 collectionsManager.load(),
                 contactsManager.load(),
-                todosManager.load(),
+
                 settingsManager.load(),
                 credentialsManager.load(),
                 notificationsManager.load(),
@@ -417,8 +417,9 @@ export const storageUtils = {
 
     // Data managers
     collections: collectionsManager,
+
     contacts: contactsManager,
-    todos: todosManager,
+
     settings: settingsManager,
     credentials: credentialsManager,
     notifications: notificationsManager,

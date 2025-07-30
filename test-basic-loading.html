@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic Loading Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background: #f0f0f0; 
+        }
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .loading-content {
+            text-align: center;
+            color: white;
+        }
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .hidden { display: none !important; }
+        .app-container {
+            padding: 20px;
+            background: white;
+            min-height: 100vh;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h2>BTM Utility</h2>
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <!-- Main Application Container -->
+    <div id="app" class="app-container hidden">
+        <h1>Basic Loading Test</h1>
+        <p>If you can see this, the basic loading is working!</p>
+        
+        <div class="status">
+            <strong>Status:</strong> <span id="status">Initializing...</span>
+        </div>
+        
+        <button class="test-button" onclick="testFunction()">Test Button</button>
+        <button class="test-button" onclick="showConsole()">Show Console Info</button>
+        
+        <div id="console-output" style="margin-top: 20px; padding: 10px; background: #f8f9fa; border-radius: 5px; font-family: monospace; font-size: 12px;"></div>
+    </div>
+
+    <script>
+        console.log('Basic loading test script starting...');
+        
+        // Track loading progress
+        let loadingSteps = [];
+        
+        function addStep(step) {
+            loadingSteps.push(step);
+            console.log(`Step ${loadingSteps.length}: ${step}`);
+            updateStatus();
+        }
+        
+        function updateStatus() {
+            const statusElement = document.getElementById('status');
+            if (statusElement) {
+                statusElement.textContent = `Step ${loadingSteps.length}: ${loadingSteps[loadingSteps.length - 1]}`;
+            }
+        }
+        
+        function showConsole() {
+            const output = document.getElementById('console-output');
+            if (output) {
+                output.innerHTML = `
+                    <strong>Loading Steps:</strong><br>
+                    ${loadingSteps.map((step, index) => `${index + 1}. ${step}`).join('<br>')}
+                    <br><br>
+                    <strong>Document Ready State:</strong> ${document.readyState}<br>
+                    <strong>Window Loaded:</strong> ${window.loaded || 'false'}<br>
+                    <strong>Current Time:</strong> ${new Date().toLocaleTimeString()}
+                `;
+            }
+        }
+        
+        function testFunction() {
+            alert('Test button works! Basic functionality is operational.');
+        }
+        
+        // Simple app initialization
+        function initBasicApp() {
+            addStep('DOM Content Loaded');
+            
+            // Simulate some initialization time
+            setTimeout(() => {
+                addStep('Initialization Complete');
+                
+                // Hide loading screen and show main app
+                const loadingScreen = document.getElementById('loading-screen');
+                const appContainer = document.getElementById('app');
+                
+                if (loadingScreen) {
+                    loadingScreen.classList.add('hidden');
+                    addStep('Loading Screen Hidden');
+                } else {
+                    addStep('ERROR: Loading Screen Not Found');
+                }
+                
+                if (appContainer) {
+                    appContainer.classList.remove('hidden');
+                    addStep('Main App Shown');
+                } else {
+                    addStep('ERROR: App Container Not Found');
+                }
+                
+                window.loaded = true;
+                addStep('App Ready');
+                
+            }, 1500);
+        }
+        
+        // Initialize when DOM is ready
+        addStep('Script Loaded');
+        
+        if (document.readyState === 'loading') {
+            addStep('Document Still Loading - Adding Event Listener');
+            document.addEventListener('DOMContentLoaded', initBasicApp);
+        } else {
+            addStep('Document Already Loaded - Initializing Immediately');
+            initBasicApp();
+        }
+        
+        // Also listen for window load
+        window.addEventListener('load', () => {
+            addStep('Window Load Event Fired');
+        });
+        
+        console.log('Basic loading test script loaded successfully');
+    </script>
+</body>
+</html>

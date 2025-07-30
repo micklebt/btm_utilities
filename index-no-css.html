@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTM Utility - No External CSS</title>
+    <link rel="stylesheet" href="css/todo.css">
+    <style>
+        /* Minimal inline styles only */
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background: #0066cc; 
+            color: white;
+        }
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .loading-content {
+            text-align: center;
+            color: white;
+        }
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .hidden { display: none !important; }
+        .app-container {
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .app-header {
+            background: #333;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .test-content {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .nav-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .nav-item {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+        .nav-item:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .nav-item.active {
+            background: rgba(255,255,255,0.3);
+        }
+        .content-section {
+            display: none;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        .form-select, .form-input, .form-textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background: white;
+            color: #333;
+        }
+        .qr-scan-button {
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .qr-scan-button:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h2>BTM Utility</h2>
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <!-- Main Application Container -->
+    <div id="app" class="app-container hidden">
+        <!-- Header -->
+        <header class="app-header">
+            <h1>BTM Utility</h1>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav-container">
+            <button class="nav-item active" data-section="money-collection">
+                💰 Money Collection
+            </button>
+            <button class="nav-item" data-section="contacts">
+                📞 Contacts
+            </button>
+            <button class="nav-item" data-section="security">
+                📹 Security
+            </button>
+            <button class="nav-item" data-section="climate">
+                🌡️ Climate
+            </button>
+            <button class="nav-item" data-section="todo">
+                📋 TO-DO LIST
+            </button>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main>
+            <!-- Money Collection Section -->
+            <section id="money-collection" class="content-section active">
+                <h2>Money Collection</h2>
+                <div class="form-group">
+                    <label for="location-select">Select Store Location</label>
+                    <select id="location-select" class="form-select">
+                        <option value="">Select Store</option>
+                        <option value="peacock">Peacock</option>
+                        <option value="dover">Dover</option>
+                        <option value="massillon">Massillon</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="machine-select">Select Machine</label>
+                    <select id="machine-select" class="form-select">
+                        <option value="">Select Changer</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="counter-value">Enter Reading</label>
+                    <input type="text" id="counter-value" class="form-input" placeholder="Enter reading" maxlength="6">
+                </div>
+                <div class="form-group">
+                    <button class="qr-scan-button">📱 Scan QR</button>
+                </div>
+                <div class="form-group">
+                    <label for="collector-select">Select Collector</label>
+                    <select id="collector-select" class="form-select">
+                        <option value="">Collector</option>
+                        <option value="BM">BM</option>
+                        <option value="JH">JH</option>
+                        <option value="BG1">BG1</option>
+                        <option value="BG2">BG2</option>
+                        <option value="RM">RM</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="collection-notes">Notes</label>
+                    <textarea id="collection-notes" class="form-textarea" placeholder="Add notes here"></textarea>
+                </div>
+                <div class="form-group">
+                    <button class="qr-scan-button">✅ Submit Info</button>
+                </div>
+            </section>
+
+            <!-- Contacts Section -->
+            <section id="contacts" class="content-section">
+                <h2>Emergency Contacts</h2>
+                <div class="test-content">
+                    <h3>Police Departments</h3>
+                    <p><strong>Massillon Police:</strong> 330-705-0427</p>
+                    <p><strong>Dover Police:</strong> 330-343-6726</p>
+                    <p><strong>Carrollton Police:</strong> 330-627-2858</p>
+                </div>
+            </section>
+
+            <!-- Security Section -->
+            <section id="security" class="content-section">
+                <h2>Security Cameras</h2>
+                <div class="test-content">
+                    <p>Security camera feeds would be displayed here.</p>
+                </div>
+            </section>
+
+            <!-- Climate Section -->
+            <section id="climate" class="content-section">
+                <h2>Climate Control</h2>
+                <div class="test-content">
+                    <p>Climate control interface would be displayed here.</p>
+                </div>
+            </section>
+
+            <!-- Todo Section -->
+            <section id="todo" class="content-section">
+                <div id="todo-app-container"></div>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/todo-app.js"></script>
+    <script>
+        console.log('No external CSS test starting...');
+        
+        let stepCount = 0;
+        let todoApp = null;
+        
+        function addStep(description) {
+            stepCount++;
+            console.log(`Step ${stepCount}: ${description}`);
+        }
+        
+        // Navigation functionality
+        function setupNavigation() {
+            const navItems = document.querySelectorAll('.nav-item');
+            const sections = document.querySelectorAll('.content-section');
+            
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const targetSection = item.getAttribute('data-section');
+                    
+                    // Update active nav item
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    item.classList.add('active');
+                    
+                    // Update active section
+                    sections.forEach(section => section.classList.remove('active'));
+                    const targetElement = document.getElementById(targetSection);
+                    if (targetElement) {
+                        targetElement.classList.add('active');
+                        
+                        // Initialize todo app when todo section is activated
+                        if (targetSection === 'todo' && !todoApp) {
+                            todoApp = new TodoApp('todo-app-container');
+                            addStep('Todo App Initialized');
+                        }
+                    }
+                });
+            });
+        }
+        
+        // Initialize the app
+        function initApp() {
+            addStep('DOM Content Loaded');
+            
+            // Simulate initialization
+            setTimeout(() => {
+                addStep('Initialization Complete');
+                
+                // Hide loading screen
+                const loadingScreen = document.getElementById('loading-screen');
+                if (loadingScreen) {
+                    loadingScreen.classList.add('hidden');
+                    addStep('Loading Screen Hidden');
+                }
+                
+                // Show main app
+                const appContainer = document.getElementById('app');
+                if (appContainer) {
+                    appContainer.classList.remove('hidden');
+                    addStep('Main App Shown');
+                }
+                
+                // Setup navigation
+                setupNavigation();
+                addStep('Navigation Setup Complete');
+                
+                // Initialize todo app if todo section is active
+                const todoSection = document.getElementById('todo');
+                if (todoSection && todoSection.classList.contains('active')) {
+                    todoApp = new TodoApp('todo-app-container');
+                    addStep('Todo App Initialized');
+                }
+                
+                addStep('App Ready');
+                
+            }, 2000);
+        }
+        
+        // Start initialization
+        addStep('Script Loaded');
+        
+        if (document.readyState === 'loading') {
+            addStep('Document Still Loading - Adding Event Listener');
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            addStep('Document Already Loaded - Initializing Immediately');
+            initApp();
+        }
+        
+        console.log('No external CSS test script loaded successfully');
+    </script>
+</body>
+</html>

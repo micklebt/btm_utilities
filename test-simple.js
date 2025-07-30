@@ -27,7 +27,7 @@ function testAppLoading() {
     // Check if main elements exist
     simpleTest(document.getElementById('app'), 'Main app container exists');
     simpleTest(document.getElementById('money-collection'), 'Money collection section exists');
-    simpleTest(document.getElementById('todo'), 'Todo section exists');
+
     simpleTest(document.getElementById('contacts'), 'Contacts section exists');
     simpleTest(document.getElementById('security'), 'Security section exists');
     simpleTest(document.getElementById('climate'), 'Climate section exists');
@@ -82,13 +82,7 @@ function testClimateControl() {
     simpleTest(document.getElementById('refresh-climate'), 'Climate refresh button exists');
 }
 
-// Test 5: Check todo functionality
-console.log('\n📝 Test 5: Todo Functionality');
-function testTodoFunctionality() {
-    simpleTest(document.getElementById('add-task'), 'Add task button exists');
-    simpleTest(document.querySelector('.todo-filters'), 'Todo filters exist');
-    simpleTest(document.getElementById('todo-items'), 'Todo items container exists');
-}
+
 
 // Test 6: Check contact functionality
 console.log('\n📞 Test 6: Contact Functionality');
@@ -156,7 +150,7 @@ function runSimpleTests() {
         testMobileNav();
         testCameraFunctionality();
         testClimateControl();
-        testTodoFunctionality();
+
         testContactFunctionality();
         testAppFunctions();
         testCSSClasses();

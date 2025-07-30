@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .loading { background-color: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <h1>BTM Utility Loading Debug Test</h1>
+    <div id="results"></div>
+
+    <script type="module">
+        const results = document.getElementById('results');
+        
+        function addResult(message, type = 'loading') {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            results.appendChild(div);
+        }
+
+        async function testModule(name, importFn) {
+            addResult(`Testing ${name}...`, 'loading');
+            try {
+                const module = await importFn();
+                addResult(`${name} loaded successfully`, 'success');
+                return true;
+            } catch (error) {
+                addResult(`${name} failed: ${error.message}`, 'error');
+                console.error(`Error loading ${name}:`, error);
+                return false;
+            }
+        }
+
+        async function runTests() {
+            addResult('Starting module tests...', 'loading');
+            
+            const tests = [
+                ['config.js', () => import('./js/config.js?v=1.0.2')],
+                ['storage.js', () => import('./js/storage.js?v=1.0.2')],
+                ['utils.js', () => import('./js/utils.js?v=1.0.2')],
+                ['logger.js', () => import('./js/logger.js?v=1.0.2')],
+                ['error-handler.js', () => import('./js/error-handler.js?v=1.0.2')],
+                ['secure-storage.js', () => import('./js/secure-storage.js?v=1.0.2')],
+                ['config-manager.js', () => import('./js/config-manager.js?v=1.0.2')],
+                ['environment-manager.js', () => import('./js/environment-manager.js?v=1.0.2')],
+                ['api-key-manager.js', () => import('./js/api-key-manager.js?v=1.0.2')],
+                ['qr-scanner.js', () => import('./js/qr-scanner.js?v=1.0.3')],
+                ['emergency-contacts.js', () => import('./js/emergency-contacts.js?v=1.0.2')],
+                ['security-cameras.js', () => import('./js/security-cameras.js?v=1.0.9')],
+                ['climate-control-fixed.js', () => import('./js/climate-control-fixed.js?v=1.0.1')],
+                ['location-config.js', () => import('./js/location-config.js?v=1.0.1')],
+                ['robust-qr-scanner.js', () => import('./js/robust-qr-scanner.js?v=1.0.1')]
+            ];
+
+            let successCount = 0;
+            let failCount = 0;
+
+            for (const [name, importFn] of tests) {
+                const success = await testModule(name, importFn);
+                if (success) {
+                    successCount++;
+                } else {
+                    failCount++;
+                }
+            }
+
+            addResult(`Tests complete. Success: ${successCount}, Failed: ${failCount}`, 
+                     failCount === 0 ? 'success' : 'error');
+        }
+
+        // Run tests when page loads
+        runTests();
+    </script>
+</body>
+</html>

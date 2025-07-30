@@ -96,22 +96,7 @@ export class NotificationSystem {
             document.body.appendChild(notificationCenter);
         }
 
-        // Create notification bell if it doesn't exist
-        if (!document.getElementById('notification-bell')) {
-            const notificationBell = document.createElement('div');
-            notificationBell.id = 'notification-bell';
-            notificationBell.className = 'notification-bell';
-            notificationBell.innerHTML = `
-                <button type="button" class="bell-btn" title="Notifications">
-                    🔔
-                    <span class="notification-count" id="notification-count">0</span>
-                </button>
-            `;
-            
-            // Add to header or navigation
-            const header = document.querySelector('header') || document.body;
-            header.appendChild(notificationBell);
-        }
+
 
         // Create notification settings modal
         if (!document.getElementById('notification-settings-modal')) {
@@ -254,10 +239,9 @@ export class NotificationSystem {
         // Close notification center when clicking outside
         document.addEventListener('click', (e) => {
             const center = document.getElementById('notification-center');
-            const bell = document.getElementById('notification-bell');
             
             if (center && center.classList.contains('active') && 
-                !center.contains(e.target) && !bell.contains(e.target)) {
+                !center.contains(e.target)) {
                 this.hideNotificationCenter();
             }
         });

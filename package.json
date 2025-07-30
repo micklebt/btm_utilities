@@ -50,5 +50,8 @@
   "config": {
     "port": 3000,
     "host": "localhost"
+  },
+  "dependencies": {
+    "node-fetch": "^2.7.0"
   }
-} 
+}

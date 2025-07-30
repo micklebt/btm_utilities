@@ -21,9 +21,17 @@ if (!fs.existsSync(DATA_DIR)) {
 // Path to shared tasks file
 const TASKS_FILE = path.join(DATA_DIR, 'shared-tasks.json');
 
+// Path to counter readings file
+const READINGS_FILE = path.join(DATA_DIR, 'counter-readings.json');
+
 // Initialize empty tasks file if it doesn't exist
 if (!fs.existsSync(TASKS_FILE)) {
     fs.writeFileSync(TASKS_FILE, '[]');
+}
+
+// Initialize empty readings file if it doesn't exist
+if (!fs.existsSync(READINGS_FILE)) {
+    fs.writeFileSync(READINGS_FILE, '{}');
 }
 
 // MIME types
@@ -115,6 +123,366 @@ const server = http.createServer((req, res) => {
             });
             return;
         }
+    }
+
+    // Add endpoint for getting previous counter readings
+    if (pathname === '/api/previous-reading') {
+        // Set CORS headers for API endpoints
+        Object.entries(CORS_HEADERS).forEach(([key, value]) => {
+            res.setHeader(key, value);
+        });
+        
+        // GET previous reading for a specific machine
+        if (req.method === 'GET') {
+            try {
+                const query = url.parse(req.url, true).query;
+                const { locationId, machineId } = query;
+                
+                if (!locationId || !machineId) {
+                    res.writeHead(400, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ 
+                        status: 'error', 
+                        error: 'Missing locationId or machineId parameter' 
+                    }));
+                    return;
+                }
+                
+                // Read the readings file
+                const readings = JSON.parse(fs.readFileSync(READINGS_FILE, 'utf8'));
+                const key = `${locationId}_${machineId}`;
+                const previousReading = readings[key] || null;
+                
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({
+                    status: 'success',
+                    data: previousReading
+                }));
+            } catch (error) {
+                console.error('Error retrieving previous reading:', error);
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ 
+                    status: 'error', 
+                    error: 'Failed to retrieve previous reading' 
+                }));
+            }
+            return;
+        }
+    }
+
+    // Add endpoint for submitting counter readings
+    if (pathname === '/api/counter-readings') {
+        // Set CORS headers for API endpoints
+        Object.entries(CORS_HEADERS).forEach(([key, value]) => {
+            res.setHeader(key, value);
+        });
+        
+        // POST a new counter reading
+        if (req.method === 'POST') {
+            let body = '';
+            req.on('data', chunk => {
+                body += chunk.toString();
+            });
+            
+            req.on('end', async () => {
+                try {
+                    const data = JSON.parse(body);
+                    const { locationId, machineId, counterValue, countingMode, collectorName, comments } = data;
+                    
+                    if (!locationId || !machineId || !counterValue) {
+                        res.writeHead(400, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({ 
+                            status: 'error', 
+                            error: 'Missing required parameters' 
+                        }));
+                        return;
+                    }
+                    
+                    // Read the current readings file
+                    const readings = JSON.parse(fs.readFileSync(READINGS_FILE, 'utf8'));
+                    const key = `${locationId}_${machineId}`;
+                    const previousReading = readings[key] || null;
+                    
+                    // Calculate differences and dollar amounts
+                    const conversionFactor = countingMode === 'quarters' ? 0.25 : 1.0;
+                    const dollarAmount = counterValue * conversionFactor;
+                    
+                    let counterDifference = null;
+                    let dollarDifference = null;
+                    
+                    if (previousReading && previousReading.counterValue) {
+                        counterDifference = counterValue - previousReading.counterValue;
+                        dollarDifference = counterDifference * conversionFactor;
+                    }
+                    
+                    // Create the new reading record
+                    const newReading = {
+                        locationId,
+                        machineId,
+                        counterValue: parseInt(counterValue),
+                        countingMode,
+                        conversionFactor,
+                        dollarAmount,
+                        previousValue: previousReading ? previousReading.counterValue : null,
+                        counterDifference,
+                        dollarDifference,
+                        collectorName,
+                        comments,
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    // Update the readings file
+                    readings[key] = {
+                        counterValue: parseInt(counterValue),
+                        countingMode,
+                        conversionFactor,
+                        dollarAmount,
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    fs.writeFileSync(READINGS_FILE, JSON.stringify(readings, null, 2));
+                    
+                    // Prepare payload for Make.com
+                    const payload = {
+                        ...newReading,
+                        date: new Date().toLocaleString(),
+                        location: data.location || locationId,
+                        changer: parseInt(machineId.split('_')[1]) || machineId,
+                        sheetId: data.sheetId || "1K_Mc1lgoWw5iAvvCzyyuW6fCvY3gikcs8u42mOGMbDw",
+                        sheetTab: locationId.charAt(0).toUpperCase() + locationId.slice(1) // Capitalize first letter
+                    };
+                    
+                    // Forward to Make.com if webhook URL is provided
+                    if (data.webhookUrl) {
+                        // Parse the webhook URL
+                        const webhookUrl = data.webhookUrl;
+                        const webhookUrlObj = new URL(webhookUrl);
+                        const isHttps = webhookUrlObj.protocol === 'https:';
+                        
+                        // Choose the appropriate module based on the protocol
+                        const httpModule = isHttps ? require('https') : require('http');
+                        
+                        // Prepare the request options
+                        const requestOptions = {
+                            hostname: webhookUrlObj.hostname,
+                            port: webhookUrlObj.port || (isHttps ? 443 : 80),
+                            path: webhookUrlObj.pathname + webhookUrlObj.search,
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Content-Length': Buffer.byteLength(JSON.stringify(payload))
+                            }
+                        };
+                        
+                        // Make the request to Make.com
+                        const makeRequest = httpModule.request(requestOptions, (makeResponse) => {
+                            const status = makeResponse.statusCode;
+                            console.log(`Make.com response status: ${status}`);
+                            
+                            res.writeHead(200, { 'Content-Type': 'application/json' });
+                            res.end(JSON.stringify({
+                                status: 'success',
+                                data: newReading,
+                                make: {
+                                    status: (status >= 200 && status < 300) ? 'success' : 'error',
+                                    httpStatus: status
+                                }
+                            }));
+                        });
+                        
+                        // Handle request errors
+                        makeRequest.on('error', (error) => {
+                            console.error('Error forwarding request to Make.com:', error);
+                            res.writeHead(200, { 'Content-Type': 'application/json' });
+                            res.end(JSON.stringify({
+                                status: 'partial_success',
+                                data: newReading,
+                                make: {
+                                    status: 'error',
+                                    error: error.message
+                                }
+                            }));
+                        });
+                        
+                        // Send the payload
+                        makeRequest.write(JSON.stringify(payload));
+                        makeRequest.end();
+                    } else {
+                        // Just return the new reading data
+                        res.writeHead(200, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({
+                            status: 'success',
+                            data: newReading
+                        }));
+                    }
+                } catch (error) {
+                    console.error('Error processing counter reading:', error);
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ 
+                        status: 'error', 
+                        error: `Failed to process counter reading: ${error.message}` 
+                    }));
+                }
+            });
+            return;
+        }
+    }
+
+    // Add endpoint to list all stored readings
+    if (pathname === '/api/all-readings') {
+        // Set CORS headers for API endpoints
+        Object.entries(CORS_HEADERS).forEach(([key, value]) => {
+            res.setHeader(key, value);
+        });
+        
+        if (req.method === 'GET') {
+            try {
+                const readings = JSON.parse(fs.readFileSync(READINGS_FILE, 'utf8'));
+                
+                // Format the readings for easier consumption
+                const formattedReadings = Object.entries(readings).map(([key, reading]) => {
+                    const [locationId, machineId] = key.split('_');
+                    return {
+                        locationId,
+                        machineId,
+                        ...reading
+                    };
+                });
+                
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({
+                    status: 'success',
+                    data: formattedReadings
+                }));
+            } catch (error) {
+                console.error('Error retrieving all readings:', error);
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ 
+                    status: 'error', 
+                    error: 'Failed to retrieve readings' 
+                }));
+            }
+            return;
+        }
+    }
+
+    // Add endpoint to clear all counter readings
+    if (pathname === '/api/clear-readings') {
+        // Set CORS headers for API endpoints
+        Object.entries(CORS_HEADERS).forEach(([key, value]) => {
+            res.setHeader(key, value);
+        });
+        
+        // DELETE all readings
+        if (req.method === 'DELETE') {
+            try {
+                // Reset to empty object
+                fs.writeFileSync(READINGS_FILE, '{}');
+                
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({
+                    status: 'success',
+                    message: 'All counter readings cleared',
+                    timestamp: new Date().toISOString()
+                }));
+            } catch (error) {
+                console.error('Error clearing counter readings:', error);
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ 
+                    status: 'error', 
+                    error: 'Failed to clear counter readings' 
+                }));
+            }
+            return;
+        }
+    }
+
+    // Add proxy endpoint for Make.com webhook requests
+    if (pathname === '/api/webhook-proxy') {
+        // Set CORS headers for API endpoints
+        Object.entries(CORS_HEADERS).forEach(([key, value]) => {
+            res.setHeader(key, value);
+        });
+
+        let body = '';
+        req.on('data', chunk => {
+            body += chunk.toString();
+        });
+
+        req.on('end', async () => {
+            try {
+                const { webhookUrl, payload } = JSON.parse(body);
+                
+                if (!webhookUrl) {
+                    res.writeHead(400, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ 
+                        status: 'error', 
+                        error: 'Missing webhook URL' 
+                    }));
+                    return;
+                }
+                
+                console.log(`Proxying request to: ${webhookUrl}`);
+                console.log(`Payload: ${JSON.stringify(payload)}`);
+                
+                // Parse the webhook URL
+                const webhookUrlObj = new URL(webhookUrl);
+                const isHttps = webhookUrlObj.protocol === 'https:';
+                
+                // Choose the appropriate module based on the protocol
+                const httpModule = isHttps ? require('https') : require('http');
+                
+                // Prepare the request options
+                const requestOptions = {
+                    hostname: webhookUrlObj.hostname,
+                    port: webhookUrlObj.port || (isHttps ? 443 : 80),
+                    path: webhookUrlObj.pathname + webhookUrlObj.search,
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Content-Length': Buffer.byteLength(JSON.stringify(payload))
+                    }
+                };
+                
+                // Make the request to Make.com
+                const makeRequest = httpModule.request(requestOptions, (makeResponse) => {
+                    const status = makeResponse.statusCode;
+                    console.log(`Make.com response status: ${status}`);
+                    
+                    // Don't try to read the response body - just return the status code
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({
+                        status: (status >= 200 && status < 300) ? 'success' : 'error',
+                        httpStatus: status,
+                        timestamp: new Date().toISOString()
+                    }));
+                });
+                
+                // Handle request errors
+                makeRequest.on('error', (error) => {
+                    console.error('Error forwarding request to Make.com:', error);
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({
+                        status: 'error',
+                        error: `Error forwarding request: ${error.message}`,
+                        timestamp: new Date().toISOString()
+                    }));
+                });
+                
+                // Send the payload
+                makeRequest.write(JSON.stringify(payload));
+                makeRequest.end();
+                
+            } catch (error) {
+                console.error('Webhook proxy error:', error);
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({
+                    status: 'error',
+                    error: `Proxy error: ${error.message}`,
+                    timestamp: new Date().toISOString()
+                }));
+            }
+        });
+        return;
     }
 
     // Handle root path

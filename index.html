@@ -57,10 +57,11 @@
     <link rel="stylesheet" href="css/layout.css">
     <link rel="stylesheet" href="css/utilities.css">
     <link rel="stylesheet" href="css/todo.css">
+    <link rel="stylesheet" href="css/links.css">
 
     
     <!-- Security Headers -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.twilio.com https://www.googleapis.com http://24.140.108.180:855/; frame-src 'self' http://24.140.108.180:855/;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' http://localhost:3000 http://localhost:3001 https://api.twilio.com https://www.googleapis.com http://24.140.108.180:855/; frame-src 'self' http://24.140.108.180:855/;">
     
     <!-- Performance Optimizations -->
     <link rel="dns-prefetch" href="//api.twilio.com">
@@ -143,7 +144,15 @@
                 </button>
                 <button class="nav-item" data-section="todo">
                     <span class="nav-icon">📋</span>
-                    <span class="nav-label">TO-DO LIST</span>
+                    <span class="nav-label">To Do</span>
+                </button>
+                <button class="nav-item" data-section="links">
+                    <span class="nav-icon">🔗</span>
+                    <span class="nav-label">Links</span>
+                </button>
+                <button class="nav-item" data-section="links-list">
+                    <span class="nav-icon">📑</span>
+                    <span class="nav-label">Links List</span>
                 </button>
             </div>
         </nav>
@@ -153,60 +162,138 @@
             <!-- Money Collection Section -->
             <section id="money-collection" class="content-section active">
                 <div class="section-header">
-
+                    <div class="tab-container">
+                        <button class="tab-button active" data-tab="general-collection">💰 General Collection</button>
+                        <button class="tab-button" data-tab="counter-readings">🔢 Counter Readings</button>
+                    </div>
                 </div>
-                <div class="collection-form">
-                    <div class="form-group">
+                
+                <!-- General Collection Tab -->
+                <div id="general-collection" class="tab-content active">
+                    <div class="collection-form">
+                        <div class="form-group">
+                            <label for="location-select" class="sr-only">Select Store Location</label>
+                            <select id="location-select" class="form-select" required aria-label="Select Store Location">
+                                <option value="">Select Store</option>
+                                <option value="peacock">Peacock</option>
+                                <option value="dover">Dover</option>
+                                <option value="massillon">Massillon</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="machine-select" class="sr-only">Select Machine</label>
+                            <select id="machine-select" class="form-select" required aria-label="Select Machine">
+                                <option value="">Select Changer</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="counter-value" class="form-input" placeholder="Enter reading" required maxlength="6" pattern="[0-9]*" inputmode="numeric">
+                        </div>
+                        <div class="form-group">
+                            <button id="scan-qr" class="qr-scan-button">    
+                                <span class="button-icon">📱</span>
+                                Scan QR
+                            </button>
+                        </div>
 
-                        <label for="location-select" class="sr-only">Select Store Location</label>
-                        <select id="location-select" class="form-select" required aria-label="Select Store Location">
-                            <option value="">Select Store</option>
-                            <option value="peacock">Peacock</option>
-                            <option value="dover">Dover</option>
-                            <option value="massillon">Massillon</option>
-                        </select>
+                        <div class="form-group">
+                            <label for="collector-select" class="sr-only">Select Collector</label>
+                            <select id="collector-select" class="form-select collector-dropdown" required aria-label="Select Collector">
+                                <option value="">Name</option>
+                                <option value="BM">BM</option>
+                                <option value="JH">JH</option>
+                                <option value="BG1">BG1</option>
+                                <option value="BG2">BG2</option>
+                                <option value="RM">RM</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <textarea id="collection-notes" class="form-textarea" placeholder="Add notes here"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <button id="submit-collection" class="qr-scan-button">
+                                <span class="button-icon">✅</span>
+                                Submit Info
+                            </button>
+                        </div>
                     </div>
-                    <div class="form-group">
-
-                        <label for="machine-select" class="sr-only">Select Machine</label>
-                        <select id="machine-select" class="form-select" required aria-label="Select Machine">
-                            <option value="">Select Changer</option>
-                        </select>
+                </div>
+                
+                <!-- Counter Readings Tab -->
+                <div id="counter-readings" class="tab-content">
+                    <div class="counter-readings-form">
+                        <div class="form-group">
+                            <label for="counter-location-select">Location</label>
+                            <select id="counter-location-select" class="form-select" required>
+                                <option value="">Select Store</option>
+                                <option value="peacock">Peacock</option>
+                                <option value="dover">Dover</option>
+                                <option value="massillon">Massillon</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="counter-machine-select">Machine</label>
+                            <select id="counter-machine-select" class="form-select" required>
+                                <option value="">Select Changer</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group filter-actions">
+                            <button id="clear-filters" class="action-button">
+                                <span class="button-icon">🔄</span>
+                                Clear Filters
+                            </button>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="counter-value-input">Counter Reading</label>
+                            <input type="number" id="counter-value-input" class="form-input" placeholder="Enter counter value" required min="0">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="counter-collector-select">Collector</label>
+                            <select id="counter-collector-select" class="form-select" required>
+                                <option value="">Name</option>
+                                <option value="BM">BM</option>
+                                <option value="JH">JH</option>
+                                <option value="BG1">BG1</option>
+                                <option value="BG2">BG2</option>
+                                <option value="RM">RM</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="counter-comments">Comments</label>
+                            <textarea id="counter-comments" class="form-textarea" placeholder="Add any comments or notes"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <button id="submit-counter-reading" class="submit-button">
+                                <span class="button-icon">✅</span>
+                                Submit Counter Reading
+                            </button>
+                        </div>
                     </div>
-                    <div class="form-group">
-
-                        <input type="text" id="counter-value" class="form-input" placeholder="Enter reading" required maxlength="6" pattern="[0-9]*" inputmode="numeric">
-                    </div>
-                    <div class="form-group">
-                        <button id="scan-qr" class="qr-scan-button">    
-                            <span class="button-icon">📱</span>
-                            Scan QR
-                        </button>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="collector-select" class="sr-only">Select Collector</label>
-                        <select id="collector-select" class="form-select collector-dropdown" required aria-label="Select Collector">
-                            <option value="">Collector</option>
-                            <option value="BM">BM</option>
-                            <option value="JH">JH</option>
-                            <option value="BG1">BG1</option>
-                            <option value="BG2">BG2</option>
-                            <option value="RM">RM</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-               
-                        <textarea id="collection-notes" class="form-textarea" placeholder="Add notes here"></textarea>
-                    </div>
-
-                    <div class="form-group">
-
-                        <button id="submit-collection" class="qr-scan-button">
-                            <span class="button-icon">✅</span>
-                            Submit Info
-                        </button>
+                    
+                    <div class="counter-readings-result">
+                        <h3>Previous Readings</h3>
+                        <div id="previous-readings-container" class="readings-container">
+                            <p>No previous readings found</p>
+                        </div>
+                        
+                        <div class="counter-actions">
+                            <button id="view-all-readings" class="action-button">
+                                <span class="button-icon">📊</span>
+                                View All Readings
+                            </button>
+                            <button id="clear-all-readings" class="action-button danger-button">
+                                <span class="button-icon">🗑️</span>
+                                Clear All Readings
+                            </button>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -351,6 +438,65 @@
             <!-- Todo Section -->
             <section id="todo" class="content-section">
                 <div id="todo-app-container"></div>
+            </section>
+
+            <!-- Links Section -->
+            <section id="links" class="content-section">
+                <div class="section-header">
+                    <h2>Links Manager</h2>
+                    <button id="refresh-links" class="secondary-button">
+                        <span class="button-icon">🔄</span>
+                        Refresh
+                    </button>
+                </div>
+                
+                <div class="links-container">
+                    <div class="links-list" id="linksList">
+                        <div class="empty-state">No links added yet. Create your first link below.</div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <form id="linkForm" class="link-form">
+                            <div class="form-group">
+                                <label for="title">Title</label>
+                                <input type="text" id="title" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="url">URL</label>
+                                <input type="text" id="url" class="form-input" placeholder="example.com" required>
+                            </div>
+                            <button type="submit" id="submitBtn" class="primary-button">
+                                <span class="button-icon">➕</span>
+                                Add Link
+                            </button>
+                            <button type="button" id="cancelBtn" class="secondary-button" style="display: none;">Cancel</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Links List Section -->
+            <section id="links-list" class="content-section">
+                <div class="section-header">
+                    <h2>Links List</h2>
+                    <button id="refresh-links-list" class="secondary-button">
+                        <span class="button-icon">🔄</span>
+                        Refresh
+                    </button>
+                </div>
+                
+                <div class="links-container">
+                    <div class="links-grid" id="linksGrid">
+                        <div class="empty-state">Loading links...</div>
+                    </div>
+                    
+                    <div class="links-actions">
+                        <a href="links.html" class="primary-button">
+                            <span class="button-icon">✏️</span>
+                            Manage Links
+                        </a>
+                    </div>
+                </div>
             </section>
         </main>
 
@@ -691,8 +837,103 @@
     </script>
 
     <!-- Temporarily disabled complex app initialization -->
-    <!-- <script type="module" src="js/app.js?v=1.0.13"></script> -->
+    <script type="module" src="js/app.js?v=1.0.14"></script>
     <!-- <script src="js/simple-dropdown-fix.js"></script> -->
+    <script src="js/links-manager.js"></script>
+    
+    <!-- Links List Script -->
+    <script>
+        // Load links from server for the links-list section
+        function loadLinksList() {
+            const linksGrid = document.getElementById('linksGrid');
+            if (!linksGrid) return;
+            
+            fetch('http://localhost:3001/api/links')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const links = data.links || [];
+                        renderLinksList(links);
+                    } else {
+                        showLinksNotification('Error loading links', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showLinksNotification('Error loading links from server', 'error');
+                    linksGrid.innerHTML = '<div class="empty-state">Failed to load links. Please try refreshing.</div>';
+                });
+        }
+        
+        // Render links in grid format
+        function renderLinksList(links) {
+            const linksGrid = document.getElementById('linksGrid');
+            if (!linksGrid) return;
+            
+            if (links.length === 0) {
+                linksGrid.innerHTML = '<div class="empty-state">No links available. Click "Manage Links" to add some.</div>';
+                return;
+            }
+            
+            // Sort links alphabetically by title
+            const sortedLinks = [...links].sort((a, b) => 
+                a.title.toLowerCase().localeCompare(b.title.toLowerCase())
+            );
+            
+            const html = sortedLinks.map(link => `
+                <div class="link-card">
+                    <a href="${escapeHtmlLinks(link.url)}" target="_blank" class="link-title">${escapeHtmlLinks(link.title)}</a>
+                    <div class="link-url">${escapeHtmlLinks(link.url)}</div>
+                </div>
+            `).join('');
+            
+            linksGrid.innerHTML = html;
+        }
+        
+        // Helper function to escape HTML
+        function escapeHtmlLinks(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Show notification
+        function showLinksNotification(message, type = 'info') {
+            const container = document.getElementById('notification-container');
+            if (!container) return;
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            container.appendChild(notification);
+            
+            // Remove notification after 3 seconds
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    container.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+        
+        // Setup refresh button for links list
+        document.addEventListener('DOMContentLoaded', () => {
+            const refreshBtn = document.getElementById('refresh-links-list');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', () => {
+                    refreshBtn.classList.add('rotating');
+                    loadLinksList();
+                    setTimeout(() => {
+                        refreshBtn.classList.remove('rotating');
+                    }, 1000);
+                });
+            }
+            
+            // Load links list
+            loadLinksList();
+        });
+    </script>
     
     <!-- QR Code Detection Library -->
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>

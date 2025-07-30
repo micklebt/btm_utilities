@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+    <!-- Primary Meta Tags -->
+    <title>BTM Utility - Links List</title>
+    <meta name="title" content="BTM Utility - Links List">
+    <meta name="description" content="View all hyperlinks for BTM Inc laundromat operations.">
+    <meta name="keywords" content="laundromat, management, links, hyperlinks, BTM Inc">
+    <meta name="author" content="BTM Inc">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://brianmickley.com/util/">
+    <meta property="og:title" content="BTM Utility - Links List">
+    <meta property="og:description" content="View all hyperlinks for BTM Inc laundromat operations.">
+    <meta property="og:image" content="https://brianmickley.com/util/images/btm-utility-preview.png">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://brianmickley.com/util/">
+    <meta property="twitter:title" content="BTM Utility - Links List">
+    <meta property="twitter:description" content="View all hyperlinks for BTM Inc laundromat operations.">
+    <meta property="twitter:image" content="https://brianmickley.com/util/images/btm-utility-preview.png">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json?v=1.0.1">
+    <meta name="theme-color" content="#0066cc">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="BTM Utility">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="images/icons/icon-192x192.svg">
+    <link rel="icon" type="image/svg+xml" sizes="32x32" href="images/icons/icon-32x32.svg">
+    <link rel="icon" type="image/svg+xml" sizes="16x16" href="images/icons/icon-16x16.svg">
+    
+    <!-- Preconnect to external domains for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/utilities.css">
+    <link rel="stylesheet" href="css/todo.css">
+    <link rel="stylesheet" href="css/links.css">
+    
+    <!-- Security Headers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' http://localhost:3000 http://localhost:3001 https://api.twilio.com https://www.googleapis.com http://24.140.108.180:855/; frame-src 'self' http://24.140.108.180:855/;">
+    
+    <!-- Performance Optimizations -->
+    <link rel="dns-prefetch" href="//api.twilio.com">
+    <link rel="dns-prefetch" href="//www.googleapis.com">
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//24.140.108.180">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h2>BTM Utility</h2>
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <!-- Offline Indicator -->
+    <div id="offline-indicator" class="offline-indicator hidden">
+        <span>⚠️ You're offline. Some features may be limited.</span>
+    </div>
+
+    <!-- Main Application Container -->
+    <div id="app" class="app-container hidden">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1 class="app-title" id="home-button" title="Home - Refresh and return to main page">BTM Utility</h1>
+            </div>
+        </header>
+
+        <!-- Mobile Menu Button -->
+        <button id="mobile-menu-toggle" class="mobile-menu-toggle" title="Menu">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+
+        <!-- Main Navigation -->
+        <nav class="main-nav" id="main-nav">
+            <div class="nav-container">
+                <button class="nav-item" data-section="money-collection">
+                    <span class="nav-icon">💰</span>
+                    <span class="nav-label">Money Collection</span>
+                </button>
+
+                <button class="nav-item" data-section="contacts">
+                    <span class="nav-icon">📞</span>
+                    <span class="nav-label">Contacts</span>
+                </button>
+                <button class="nav-item" data-section="security">
+                    <span class="nav-icon">📹</span>
+                    <span class="nav-label">Security</span>
+                </button>
+                <button class="nav-item" data-section="climate">
+                    <span class="nav-icon">🌡️</span>
+                    <span class="nav-label">Climate</span>
+                </button>
+                <button class="nav-item" data-section="todo">
+                    <span class="nav-icon">📋</span>
+                    <span class="nav-label">TO-DO LIST</span>
+                </button>
+                <button class="nav-item" data-section="links">
+                    <span class="nav-icon">🔗</span>
+                    <span class="nav-label">LINKS</span>
+                </button>
+                <button class="nav-item active" data-section="links-list">
+                    <span class="nav-icon">📑</span>
+                    <span class="nav-label">LINKS LIST</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Links List Section -->
+            <section id="links-list" class="content-section active">
+                <div class="section-header">
+                    <h2>Links List</h2>
+                    <button id="refresh-links-list" class="secondary-button">
+                        <span class="button-icon">🔄</span>
+                        Refresh
+                    </button>
+                </div>
+                
+                <div class="links-container">
+                    <div class="links-grid" id="linksGrid">
+                        <div class="empty-state">Loading links...</div>
+                    </div>
+                    
+                    <div class="links-actions">
+                        <a href="links.html" class="primary-button">
+                            <span class="button-icon">✏️</span>
+                            Manage Links
+                        </a>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Settings Button (Fixed Position) -->
+        <button id="settings-button" class="settings-button" title="Settings">
+            <span class="settings-icon">⚙️</span>
+        </button>
+
+        <!-- Notification Container -->
+        <div id="notification-container" class="notification-container"></div>
+    </div>
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('sw.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(function(err) {
+                        console.log('ServiceWorker registration failed:', err);
+                    });
+            });
+        }
+    </script>
+
+    <!-- Navigation and App Functionality -->
+    <script>
+        console.log('Starting app initialization...');
+        
+        // Navigation functionality
+        function setupNavigation() {
+            const navItems = document.querySelectorAll('.nav-item');
+            const sections = document.querySelectorAll('.content-section');
+            
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const targetSection = item.getAttribute('data-section');
+                    
+                    // Update active nav item
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    item.classList.add('active');
+                    
+                    // Update active section
+                    sections.forEach(section => section.classList.remove('active'));
+                    const targetElement = document.getElementById(targetSection);
+                    if (targetElement) {
+                        targetElement.classList.add('active');
+                    }
+                    
+                    // Close mobile menu if open
+                    const mainNav = document.getElementById('main-nav');
+                    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+                    if (mainNav && mainNav.classList.contains('show')) {
+                        mainNav.classList.remove('show');
+                        if (mobileMenuToggle) {
+                            mobileMenuToggle.classList.remove('active');
+                        }
+                    }
+                });
+            });
+        }
+        
+        // Mobile menu toggle
+        function setupMobileMenu() {
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            const mainNav = document.getElementById('main-nav');
+            
+            if (mobileMenuToggle && mainNav) {
+                mobileMenuToggle.addEventListener('click', () => {
+                    mainNav.classList.toggle('show');
+                    mobileMenuToggle.classList.toggle('active');
+                    console.log('Mobile menu toggled:', mainNav.classList.contains('show'));
+                });
+            }
+        }
+        
+        // Home button functionality
+        function setupHomeButton() {
+            const homeButton = document.getElementById('home-button');
+            if (homeButton) {
+                homeButton.addEventListener('click', () => {
+                    window.location.href = 'index.html';
+                });
+            }
+        }
+        
+        // Initialize the app
+        function initApp() {
+            console.log('Initializing app...');
+            
+            // Hide loading screen and show main app after a short delay
+            setTimeout(() => {
+                const loadingScreen = document.getElementById('loading-screen');
+                const appContainer = document.getElementById('app');
+                
+                if (loadingScreen) {
+                    loadingScreen.classList.add('hidden');
+                    console.log('Loading screen hidden');
+                }
+                
+                if (appContainer) {
+                    appContainer.classList.remove('hidden');
+                    console.log('Main app shown');
+                }
+                
+                // Setup navigation
+                setupNavigation();
+                setupMobileMenu();
+                setupHomeButton();
+                
+                // Load links
+                loadLinks();
+                
+                // Setup refresh button
+                const refreshBtn = document.getElementById('refresh-links-list');
+                if (refreshBtn) {
+                    refreshBtn.addEventListener('click', () => {
+                        refreshBtn.classList.add('rotating');
+                        loadLinks();
+                        setTimeout(() => {
+                            refreshBtn.classList.remove('rotating');
+                        }, 1000);
+                    });
+                }
+                
+                console.log('App initialization complete!');
+            }, 1000);
+        }
+        
+        // Load links from server
+        function loadLinks() {
+            const linksGrid = document.getElementById('linksGrid');
+            if (!linksGrid) return;
+            
+            fetch('http://localhost:3001/api/links')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const links = data.links || [];
+                        renderLinks(links);
+                    } else {
+                        showNotification('Error loading links', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Error loading links from server', 'error');
+                    linksGrid.innerHTML = '<div class="empty-state">Failed to load links. Please try refreshing.</div>';
+                });
+        }
+        
+        // Render links in grid format
+        function renderLinks(links) {
+            const linksGrid = document.getElementById('linksGrid');
+            if (!linksGrid) return;
+            
+            if (links.length === 0) {
+                linksGrid.innerHTML = '<div class="empty-state">No links available. Click "Manage Links" to add some.</div>';
+                return;
+            }
+            
+            // Sort links alphabetically by title
+            const sortedLinks = [...links].sort((a, b) => 
+                a.title.toLowerCase().localeCompare(b.title.toLowerCase())
+            );
+            
+            const html = sortedLinks.map(link => `
+                <div class="link-card">
+                    <a href="${escapeHtml(link.url)}" target="_blank" class="link-title">${escapeHtml(link.title)}</a>
+                    <div class="link-url">${escapeHtml(link.url)}</div>
+                </div>
+            `).join('');
+            
+            linksGrid.innerHTML = html;
+        }
+        
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('notification-container');
+            if (!container) return;
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            container.appendChild(notification);
+            
+            // Remove notification after 3 seconds
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    container.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+        
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
+        }
+    </script>
+</body>
+</html> 

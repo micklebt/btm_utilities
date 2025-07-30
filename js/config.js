@@ -16,7 +16,7 @@ export const config = {
     storage: {
         collections: 'btm_collections',
         contacts: 'btm_contacts',
-        todos: 'btm_todos',
+
         settings: 'btm_settings',
         apiCredentials: 'btm_api_credentials'
     },
@@ -59,7 +59,7 @@ export function validateConfig() {
         'app.version',
         'storage.collections',
         'storage.contacts',
-        'storage.todos',
+
         'storage.settings',
         'storage.apiCredentials'
     ];

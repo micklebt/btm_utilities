@@ -62,7 +62,7 @@ function testBasicStructure() {
     
     // Test sections
     testElementExists('#money-collection', 'Money collection section');
-    testElementExists('#todo', 'Todo section');
+
     testElementExists('#contacts', 'Contacts section');
     testElementExists('#security', 'Security section');
     testElementExists('#climate', 'Climate section');
@@ -144,18 +144,7 @@ function testClimateControl() {
     const refreshButton = testElementExists('#refresh-climate', 'Climate refresh button');
 }
 
-// Test 5: Todo Functionality
-console.log('\n📝 Test 5: Todo Functionality');
-function testTodoFunctionality() {
-    // Test add task button
-    const addTaskButton = testElementExists('#add-task', 'Add task button');
-    
-    // Test todo filters
-    const todoFilters = testElementExists('.todo-filters', 'Todo filters');
-    
-    // Test todo items container
-    const todoItems = testElementExists('#todo-items', 'Todo items container');
-}
+
 
 // Test 6: Contact Functionality
 console.log('\n📞 Test 6: Contact Functionality');
@@ -296,7 +285,7 @@ function testModuleLoading() {
         'storageUtils', 
         'logger',
         'errorHandler',
-        'todoManager',
+    
         'emergencyContacts'
     ];
     
@@ -318,7 +307,7 @@ function runAllTests() {
         testMobileNavigation();
         testCameraFunctionality();
         testClimateControl();
-        testTodoFunctionality();
+    
         testContactFunctionality();
         testAppFunctions();
         testCSSClasses();

@@ -13,12 +13,14 @@ import { configManager } from './config-manager.js?v=1.0.2';
 import { environmentManager } from './environment-manager.js?v=1.0.2';
 import { apiKeyManager } from './api-key-manager.js?v=1.0.2';
 import { qrScanner } from './qr-scanner.js?v=1.0.3';
-import todoManager from './todo-manager.js?v=1.0.3';
+
 import emergencyContacts from './emergency-contacts.js?v=1.0.2';
 import { SecurityCameras } from './security-cameras.js?v=1.0.9';
 import { ClimateControl } from './climate-control-fixed.js?v=1.0.1';
 import { locationManager } from './location-config.js?v=1.0.1';
+import { counterWebhookHandler } from './counter-webhook-handler.js?v=1.0.0';
 console.log('BTM Utility: Location manager imported:', !!locationManager);
+console.log('BTM Utility: Counter webhook handler imported:', !!counterWebhookHandler);
 
 // Import the robust QR scanner for integrated scanning
 import { RobustQRScanner } from './robust-qr-scanner.js?v=1.0.1';
@@ -103,167 +105,91 @@ class BTMUtility {
     // Initialize application
     async init() {
         try {
-            console.log('BTM Utility: Starting initialization...');
-            logger.info('Initializing BTM Utility...');
+            console.log('BTM Utility: Initializing application...');
             
-            // Validate configuration
-            console.log('BTM Utility: Validating configuration...');
-            if (!validateConfig()) {
-                throw new Error('Invalid configuration');
-            }
-
             // Show loading screen
-            console.log('BTM Utility: Showing loading screen...');
             this.showLoadingScreen();
-
-            // Initialize core modules
-            console.log('BTM Utility: Initializing modules...');
+            
+            // Initialize modules
             await this.initializeModules();
-
+            
             // Load settings
-            console.log('BTM Utility: Loading settings...');
             await this.loadSettings();
-
+            
             // Set up event listeners
             console.log('BTM Utility: Setting up event listeners...');
             this.setupEventListeners();
-            this.setupNavigationListeners();
             
             // Initialize notification system
-            console.log('BTM Utility: Initializing notification system...');
             await this.initializeNotifications();
-
-            // Check online status
-            console.log('BTM Utility: Checking online status...');
-            this.updateOnlineStatus();
-
-            // Hide loading screen and show main app
-            console.log('BTM Utility: Hiding loading screen and showing main app...');
-            this.hideLoadingScreen();
-            this.showMainApp();
-
+            
             // Mark as initialized
             this.state.set('isInitialized', true);
-            this.isInitialized = true;
-
-            console.log('BTM Utility: Initialization complete!');
-            logger.info('BTM Utility initialized successfully');
-            playSuccessBeep();
+            console.log('BTM Utility: Application initialized successfully');
             
-            // Trigger initialization event
-            this.triggerEvent('app:initialized');
-
+            // Hide loading screen and show main app
+            this.hideLoadingScreen();
+            this.showMainApp();
+            
+            return true;
         } catch (error) {
-            console.error('BTM Utility: Initialization failed!', error);
-            logger.error('Failed to initialize BTM Utility', null, error);
-            this.handleError(error);
+            console.error('BTM Utility: Failed to initialize application:', error);
+            
+            // Ensure loading screen is hidden even if there's an error
+            this.hideLoadingScreen();
+            this.showMainApp();
+            
+            // Show error message
+            const errorMessage = document.createElement('div');
+            errorMessage.className = 'error-message';
+            errorMessage.textContent = 'Failed to initialize application. Please try refreshing the page.';
+            document.body.appendChild(errorMessage);
+            
+            return false;
         }
     }
 
     // Initialize core modules
     async initializeModules() {
         try {
-            logger.info('Initializing application modules...');
+            logger.info('Initializing modules...');
             
-            // Initialize core modules
-            await storageUtils.init();
-            await errorHandler.init();
-            await logger.init();
+            // Initialize location manager
+            if (locationManager) {
+                await locationManager.init();
+                logger.info('Location manager initialized');
+            }
             
-            // Initialize feature modules
-            await environmentManager.init();
-            await apiKeyManager.init();
-            await configManager.init();
-            await qrScanner.init();
-            await todoManager.init();
-            await emergencyContacts.init();
+            // Initialize counter webhook handler
+            if (counterWebhookHandler) {
+                await counterWebhookHandler.init();
+                logger.info('Counter webhook handler initialized');
+            }
             
             // Initialize security cameras module
-            this.securityCameras = new SecurityCameras();
-            await this.securityCameras.init();
+            const securityCameras = new SecurityCameras();
+            if (await securityCameras.init()) {
+                this.modules.set('security-cameras', securityCameras);
+                logger.info('Security cameras module initialized');
+            }
             
             // Initialize climate control module
-            this.climateControl = new ClimateControl();
-            await this.climateControl.init();
+            const climateControl = new ClimateControl();
+            if (await climateControl.init()) {
+                this.modules.set('climate-control', climateControl);
+                logger.info('Climate control module initialized');
+            }
             
-            // Initialize robust QR scanner for integrated scanning
-            this.robustQRScanner = new RobustQRScanner();
-            // RobustQRScanner initializes automatically in constructor
-            
-            // Add test function to window for debugging
-            window.testApp = () => {
-                console.log('Testing BTM Utility app...');
-                console.log('Security cameras module:', this.securityCameras);
-                if (this.securityCameras) {
-                    console.log('Security cameras module loaded successfully');
-                    window.testSecurityCameras();
-                } else {
-                    console.error('Security cameras module not loaded');
-                }
-            };
-
-            // Add location manager test function
-            window.testLocationManager = async () => {
-                console.log('Testing location manager...');
-                try {
-                    const { locationManager } = await import('./location-config.js?v=1.0.1');
-                    console.log('Location manager imported successfully');
-                    
-                    const locations = locationManager.getLocations();
-                    console.log('Available locations:', locations);
-                    
-                    const locationSelect = document.getElementById('location-select');
-                    if (locationSelect) {
-                        console.log('Location select found, current options:', Array.from(locationSelect.options).map(opt => opt.textContent));
-                    } else {
-                        console.error('Location select not found');
-                    }
-                } catch (error) {
-                    console.error('Error testing location manager:', error);
-                }
-            };
-
-            // Add dropdown test function
-            window.testDropdowns = () => {
-                console.log('Testing dropdowns...');
-                const locationSelect = document.getElementById('location-select');
-                const machineSelect = document.getElementById('machine-select');
-                
-                console.log('Location select:', locationSelect);
-                console.log('Machine select:', machineSelect);
-                
-                if (locationSelect) {
-                    console.log('Location options:', locationSelect.options.length);
-                    for (let i = 0; i < locationSelect.options.length; i++) {
-                        console.log(`  Option ${i}:`, locationSelect.options[i].value, '=', locationSelect.options[i].textContent);
-                    }
-                }
-                
-                if (machineSelect) {
-                    console.log('Machine options:', machineSelect.options.length);
-                    for (let i = 0; i < machineSelect.options.length; i++) {
-                        console.log(`  Option ${i}:`, machineSelect.options[i].value, '=', machineSelect.options[i].textContent);
-                    }
-                }
-            };
-
-            // Add manual initialization test function
-            window.initDropdowns = () => {
-                console.log('Manually initializing dropdowns...');
-                if (app && typeof app.initializeLocationDropdowns === 'function') {
-                    app.initializeLocationDropdowns();
-                    console.log('Dropdown initialization called');
-                } else {
-                    console.error('App or initializeLocationDropdowns not available');
-                }
-            };
+            // Initialize location dropdowns
+            this.initializeLocationDropdowns();
             
             logger.info('All modules initialized successfully');
         } catch (error) {
+            logger.error('Failed to initialize modules', null, error);
             errorHandler.handleError(error, {
                 type: 'client',
                 severity: 'high',
-                context: 'app-module-init'
+                context: 'app-init-modules'
             });
         }
     }
@@ -334,38 +260,116 @@ class BTMUtility {
 
     // Set up event listeners
     setupEventListeners() {
-        // Online/offline status
+        // Network status
         window.addEventListener('online', () => this.updateOnlineStatus());
         window.addEventListener('offline', () => this.updateOnlineStatus());
-
-        // Visibility change
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                this.triggerEvent('app:background');
-            } else {
-                this.triggerEvent('app:foreground');
-            }
-        });
-
-        // Before unload
-        window.addEventListener('beforeunload', (event) => {
-            this.triggerEvent('app:beforeunload');
-        });
-
-        // Error handling
-        window.addEventListener('error', (event) => {
-            this.handleError(event.error);
-        });
-
-        window.addEventListener('unhandledrejection', (event) => {
-            this.handleError(event.reason);
-        });
-
+        
         // Navigation
         this.setupNavigationListeners();
         
-        // Form interactions
+        // Form listeners
         this.setupFormListeners();
+        
+        // QR Scanner
+        this.setupQRScannerListeners();
+        
+        // Counter input validation
+        this.setupCounterInputValidation();
+        
+        // Numeric keypad for mobile
+        if (isMobile()) {
+            this.setupNumericKeypad();
+        }
+        
+        // Home button
+        const homeButton = document.getElementById('home-button');
+        if (homeButton) {
+            homeButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.goHome();
+            });
+        }
+        
+        // Mobile menu toggle
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', () => {
+                this.toggleMobileMenu();
+            });
+        }
+        
+        // Tab navigation
+        const tabButtons = document.querySelectorAll('.tab-button');
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tabId = button.getAttribute('data-tab');
+                this.switchTab(tabId);
+            });
+        });
+        
+        // Counter readings form submission
+        const submitCounterReadingButton = document.getElementById('submit-counter-reading');
+        if (submitCounterReadingButton) {
+            submitCounterReadingButton.addEventListener('click', () => {
+                this.handleCounterReadingSubmit();
+            });
+        }
+        
+        // View all readings button
+        const viewAllReadingsButton = document.getElementById('view-all-readings');
+        if (viewAllReadingsButton) {
+            viewAllReadingsButton.addEventListener('click', () => {
+                this.viewAllCounterReadings();
+            });
+        }
+
+        // Clear all readings button
+        const clearAllReadingsButton = document.getElementById('clear-all-readings');
+        if (clearAllReadingsButton) {
+            clearAllReadingsButton.addEventListener('click', () => {
+                this.clearAllCounterReadings();
+            });
+        }
+        
+        // Counter location dropdown change
+        const counterLocationSelect = document.getElementById('counter-location-select');
+        if (counterLocationSelect) {
+            counterLocationSelect.addEventListener('change', () => {
+                this.updateCounterMachineDropdown();
+                // Reload readings with the new filter
+                this.loadPreviousCounterReadings();
+            });
+        }
+
+        // Counter machine dropdown change
+        const counterMachineSelect = document.getElementById('counter-machine-select');
+        if (counterMachineSelect) {
+            counterMachineSelect.addEventListener('change', () => {
+                // Reload readings with the new filter
+                this.loadPreviousCounterReadings();
+            });
+        }
+
+        // Clear filters button
+        const clearFiltersButton = document.getElementById('clear-filters');
+        if (clearFiltersButton) {
+            clearFiltersButton.addEventListener('click', () => {
+                // Reset location and machine dropdowns
+                const locationSelect = document.getElementById('counter-location-select');
+                const machineSelect = document.getElementById('counter-machine-select');
+                
+                if (locationSelect) locationSelect.value = '';
+                if (machineSelect) machineSelect.value = '';
+                
+                // Reset machine dropdown options
+                if (machineSelect) {
+                    machineSelect.innerHTML = '<option value="">Select Changer</option>';
+                }
+                
+                // Reload readings without filters
+                this.loadPreviousCounterReadings();
+            });
+        }
     }
 
     // Set up navigation listeners
@@ -399,7 +403,8 @@ class BTMUtility {
         const addTaskBtn = document.getElementById('add-task');
         if (addTaskBtn) {
             addTaskBtn.addEventListener('click', () => {
-                this.handleAddTask();
+                // Add task functionality removed
+                console.log('Add task functionality has been removed');
             });
         }
 
@@ -760,6 +765,8 @@ class BTMUtility {
                             <button class="keypad-btn number-btn" data-number="7">7</button>
                             <button class="keypad-btn number-btn" data-number="8">8</button>
                             <button class="keypad-btn number-btn" data-number="9">9</button>
+                        </div>
+                        <div class="keypad-controls">
                             <button class="keypad-btn action-btn" id="keypad-clear">Clear</button>
                             <button class="keypad-btn number-btn" data-number="0">0</button>
                             <button class="keypad-btn action-btn" id="keypad-backspace">⌫</button>
@@ -1072,21 +1079,37 @@ class BTMUtility {
         }
     }
 
-    // Hide loading screen
+    /**
+     * Hide loading screen
+     */
     hideLoadingScreen() {
-        const loadingScreen = document.getElementById('loading-screen');
-        if (loadingScreen) {
-            setTimeout(() => {
+        try {
+            const loadingScreen = document.getElementById('loading-screen');
+            if (loadingScreen) {
                 loadingScreen.classList.add('hidden');
-            }, 500); // Small delay for smooth transition
+                console.log('BTM Utility: Loading screen hidden');
+            } else {
+                console.warn('BTM Utility: Loading screen element not found');
+            }
+        } catch (error) {
+            console.error('BTM Utility: Error hiding loading screen:', error);
         }
     }
 
-    // Show main application
+    /**
+     * Show main app
+     */
     showMainApp() {
-        const appContainer = document.getElementById('app');
-        if (appContainer) {
-            appContainer.classList.remove('hidden');
+        try {
+            const appContainer = document.getElementById('app');
+            if (appContainer) {
+                appContainer.classList.remove('hidden');
+                console.log('BTM Utility: Main app shown');
+            } else {
+                console.warn('BTM Utility: App container element not found');
+            }
+        } catch (error) {
+            console.error('BTM Utility: Error showing main app:', error);
         }
     }
 
@@ -1150,9 +1173,9 @@ class BTMUtility {
         const machineSelect = document.getElementById('machine-select');
         const counterValue = document.getElementById('counter-value');
         const notes = document.getElementById('collection-notes');
-        const coinsToOffice = document.getElementById('coins-to-office');
+        const collectorSelect = document.getElementById('collector-select');
 
-        if (!locationSelect.value || !machineSelect.value || !counterValue.value) {
+        if (!locationSelect.value || !machineSelect.value || !counterValue.value || !collectorSelect.value) {
             alert('Please fill in all required fields');
             return;
         }
@@ -1184,42 +1207,42 @@ class BTMUtility {
             machineName: machine ? machine.name : machineId,
             counterValue: parseInt(counterValue.value),
             notes: notes.value,
-            coinsToOffice: coinsToOffice.checked,
+            collector: collectorSelect.value,
             timestamp: new Date().toISOString()
         };
 
         logger.info('Collection submitted', collection);
-        alert('Collection submitted successfully!');
         
-        // Clear form
-        locationSelect.value = '';
-        machineSelect.value = '';
-        counterValue.value = '';
-        notes.value = '';
-        coinsToOffice.checked = false;
-    }
 
-    // Handle add task
-    handleAddTask() {
-        // Use the todo manager to show the add task modal
-        if (todoManager && typeof todoManager.showAddTaskModal === 'function') {
-            todoManager.showAddTaskModal();
-        } else {
-            // Fallback to simple prompt
-            const taskText = prompt('Enter task description:');
-            if (taskText) {
-                const task = {
-                    id: generateId('task'),
-                    text: taskText,
-                    completed: false,
-                    timestamp: new Date().toISOString()
-                };
+        
+        // Simulate webhook submission (replace with actual webhook URL)
+        try {
+            // This is a placeholder for the actual webhook call
+            // In a real implementation, you would send the data to your webhook
+            console.log('Sending to webhook:', collection);
+            
+            // Simulate successful webhook response
+            setTimeout(() => {
+                // Show success message
+                alert('Collection submitted successfully!');
                 
-                logger.info('Task added', task);
-                alert('Task added successfully!');
-            }
+                // Clear form after a brief delay
+                setTimeout(() => {
+                    locationSelect.value = '';
+                    machineSelect.value = '';
+                    counterValue.value = '';
+                    notes.value = '';
+                    collectorSelect.value = '';
+                }, 2000);
+            }, 1000);
+            
+        } catch (error) {
+            logger.error('Webhook submission failed', null, error);
+            alert('Submission failed. Please try again.');
         }
     }
+
+
 
     handleSearchContacts() {
         // Use the emergency contacts module to handle search
@@ -1337,15 +1360,7 @@ class BTMUtility {
             this.notificationSystem = new NotificationSystem();
             await this.notificationSystem.init();
             
-            // Set up notification bell event listener
-            const notificationBell = document.getElementById('notification-bell');
-            if (notificationBell) {
-                notificationBell.addEventListener('click', () => {
-                    if (this.notificationSystem) {
-                        this.notificationSystem.toggleNotificationCenter();
-                    }
-                });
-            }
+
             
             logger.info('Notification system initialized successfully');
         } catch (error) {
@@ -1509,6 +1524,387 @@ class BTMUtility {
             logger.error('Cleanup error', null, error);
         }
     }
+
+/**
+ * Switch between tabs in a tabbed interface
+ * @param {string} tabId - ID of the tab to switch to
+ */
+switchTab(tabId) {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    // Deactivate all tabs
+    tabButtons.forEach(button => {
+        button.classList.remove('active');
+    });
+    
+    tabContents.forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    // Activate the selected tab
+    const selectedButton = document.querySelector(`.tab-button[data-tab="${tabId}"]`);
+    const selectedContent = document.getElementById(tabId);
+    
+    if (selectedButton && selectedContent) {
+        selectedButton.classList.add('active');
+        selectedContent.classList.add('active');
+        
+        // If switching to counter readings tab, load previous readings
+        if (tabId === 'counter-readings') {
+            this.loadPreviousCounterReadings();
+        }
+    }
+}
+
+/**
+ * Load previous counter readings from server
+ */
+async loadPreviousCounterReadings() {
+    try {
+        const container = document.getElementById('previous-readings-container');
+        if (!container) return;
+        
+        container.innerHTML = '<p>Loading previous readings...</p>';
+        
+        // Initialize counter webhook handler if needed
+        if (!counterWebhookHandler.initialized) {
+            await counterWebhookHandler.init();
+        }
+        
+        // Get filter values
+        const locationSelect = document.getElementById('counter-location-select');
+        const machineSelect = document.getElementById('counter-machine-select');
+        
+        const locationId = locationSelect ? locationSelect.value : '';
+        const machineId = machineSelect ? machineSelect.value : '';
+        
+        // Get all readings
+        const allReadings = await counterWebhookHandler.getAllReadings();
+        
+        // Apply filters
+        let filteredReadings = allReadings;
+        
+        // Filter by location if selected
+        if (locationId) {
+            filteredReadings = filteredReadings.filter(reading => reading.locationId === locationId);
+            
+            // Filter by machine if selected and location is selected
+            if (machineId) {
+                filteredReadings = filteredReadings.filter(reading => reading.machineId === machineId);
+            }
+        }
+        
+        if (filteredReadings.length === 0) {
+            container.innerHTML = '<p>No readings found for the selected filters</p>';
+            return;
+        }
+        
+        // Sort readings by timestamp (newest first)
+        filteredReadings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        
+        // Display readings
+        let html = `
+            <table class="readings-table">
+                <thead>
+                    <tr>
+                        <th>Location</th>
+                        <th>Machine</th>
+                        <th>Counter Value</th>
+                        <th>Dollar Amount</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        
+        filteredReadings.slice(0, 10).forEach(reading => {
+            html += `
+                <tr>
+                    <td>${reading.locationId}</td>
+                    <td>${reading.machineId}</td>
+                    <td>${reading.counterValue}</td>
+                    <td>$${reading.dollarAmount.toFixed(2)}</td>
+                    <td>${new Date(reading.timestamp).toLocaleString()}</td>
+                </tr>
+            `;
+        });
+        
+        html += `
+                </tbody>
+            </table>
+        `;
+        
+        if (filteredReadings.length > 10) {
+            html += `<p>Showing 10 of ${filteredReadings.length} readings. Click "View All Readings" to see more.</p>`;
+        }
+        
+        container.innerHTML = html;
+    } catch (error) {
+        console.error('Error loading previous readings:', error);
+        const container = document.getElementById('previous-readings-container');
+        if (container) {
+            container.innerHTML = `<p class="error">Error loading previous readings: ${error.message}</p>`;
+        }
+    }
+}
+
+/**
+ * Update the counter machine dropdown based on selected location
+ */
+updateCounterMachineDropdown() {
+    const locationSelect = document.getElementById('counter-location-select');
+    const machineSelect = document.getElementById('counter-machine-select');
+    
+    if (!locationSelect || !machineSelect) return;
+    
+    const locationId = locationSelect.value;
+    
+    // Clear existing options
+    machineSelect.innerHTML = '<option value="">Select Changer</option>';
+    
+    if (!locationId) return;
+    
+    // Get machines for the selected location
+    const machines = locationManager.getMachines(locationId);
+    
+    // Add options for each machine
+    machines.forEach(machine => {
+        const option = document.createElement('option');
+        option.value = machine.id;
+        option.textContent = machine.name;
+        machineSelect.appendChild(option);
+    });
+}
+
+/**
+ * Handle counter reading submission
+ */
+async handleCounterReadingSubmit() {
+    try {
+        // Get form values
+        const locationSelect = document.getElementById('counter-location-select');
+        const machineSelect = document.getElementById('counter-machine-select');
+        const counterValueInput = document.getElementById('counter-value-input');
+        const collectorSelect = document.getElementById('counter-collector-select');
+        const commentsTextarea = document.getElementById('counter-comments');
+        
+        // Validate form
+        if (!locationSelect || !machineSelect || !counterValueInput || !collectorSelect) {
+            throw new Error('Form elements not found');
+        }
+        
+        const locationId = locationSelect.value;
+        const machineId = machineSelect.value;
+        const counterValue = counterValueInput.value;
+        const collectorName = collectorSelect.value;
+        const comments = commentsTextarea ? commentsTextarea.value : '';
+        
+        if (!locationId) {
+            alert('Please select a location');
+            locationSelect.focus();
+            return;
+        }
+        
+        if (!machineId) {
+            alert('Please select a machine');
+            machineSelect.focus();
+            return;
+        }
+        
+        if (!counterValue) {
+            alert('Please enter a counter value');
+            counterValueInput.focus();
+            return;
+        }
+        
+        if (!collectorName) {
+            alert('Please select a collector');
+            collectorSelect.focus();
+            return;
+        }
+        
+        // Get machine details and counting mode
+        const machine = locationManager.getMachineById(machineId);
+        const countingMode = machine && machine.countingMode ? machine.countingMode : 'dollars';
+        
+        // Show loading indicator
+        const submitButton = document.getElementById('submit-counter-reading');
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="button-icon">⏳</span> Submitting...';
+        }
+        
+        // Submit the reading
+        const result = await counterWebhookHandler.submitCounterReading({
+            locationId,
+            machineId,
+            counterValue: parseInt(counterValue),
+            countingMode,
+            collectorName,
+            comments
+        });
+        
+        // Restore button state
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.innerHTML = '<span class="button-icon">✅</span> Submit Counter Reading';
+        }
+        
+        if (result.status === 'success') {
+            // Show success message
+            alert('Counter reading submitted successfully!');
+            
+            // Clear form
+            counterValueInput.value = '';
+            if (commentsTextarea) commentsTextarea.value = '';
+            
+            // Reload previous readings
+            this.loadPreviousCounterReadings();
+            
+            // Play success sound
+            playSuccessBeep();
+        } else {
+            // Show error message
+            alert(`Error: ${result.error || 'Failed to submit counter reading'}`);
+        }
+    } catch (error) {
+        console.error('Error submitting counter reading:', error);
+        alert(`Error: ${error.message}`);
+        
+        // Restore button state
+        const submitButton = document.getElementById('submit-counter-reading');
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.innerHTML = '<span class="button-icon">✅</span> Submit Counter Reading';
+        }
+    }
+}
+
+/**
+ * View all counter readings
+ */
+async viewAllCounterReadings() {
+    try {
+        const container = document.getElementById('previous-readings-container');
+        if (!container) return;
+        
+        container.innerHTML = '<p>Loading all readings...</p>';
+        
+        // Initialize counter webhook handler if needed
+        if (!counterWebhookHandler.initialized) {
+            await counterWebhookHandler.init();
+        }
+        
+        // Get filter values
+        const locationSelect = document.getElementById('counter-location-select');
+        const machineSelect = document.getElementById('counter-machine-select');
+        
+        const locationId = locationSelect ? locationSelect.value : '';
+        const machineId = machineSelect ? machineSelect.value : '';
+        
+        // Get all readings
+        const allReadings = await counterWebhookHandler.getAllReadings();
+        
+        // Apply filters
+        let filteredReadings = allReadings;
+        
+        // Filter by location if selected
+        if (locationId) {
+            filteredReadings = filteredReadings.filter(reading => reading.locationId === locationId);
+            
+            // Filter by machine if selected and location is selected
+            if (machineId) {
+                filteredReadings = filteredReadings.filter(reading => reading.machineId === machineId);
+            }
+        }
+        
+        if (filteredReadings.length === 0) {
+            container.innerHTML = '<p>No readings found for the selected filters</p>';
+            return;
+        }
+        
+        // Sort readings by timestamp (newest first)
+        filteredReadings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        
+        // Display readings
+        let html = `
+            <h3>All Counter Readings${locationId ? ` for ${locationId}` : ''}${machineId ? ` - ${machineId}` : ''}</h3>
+            <table class="readings-table">
+                <thead>
+                    <tr>
+                        <th>Location</th>
+                        <th>Machine</th>
+                        <th>Counter Value</th>
+                        <th>Dollar Amount</th>
+                        <th>Difference</th>
+                        <th>Collector</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        
+        filteredReadings.forEach(reading => {
+            html += `
+                <tr>
+                    <td>${reading.locationId}</td>
+                    <td>${reading.machineId}</td>
+                    <td>${reading.counterValue}</td>
+                    <td>$${reading.dollarAmount.toFixed(2)}</td>
+                    <td>${reading.dollarDifference ? '$' + reading.dollarDifference.toFixed(2) : '-'}</td>
+                    <td>${reading.collectorName || '-'}</td>
+                    <td>${new Date(reading.timestamp).toLocaleString()}</td>
+                </tr>
+            `;
+        });
+        
+        html += `
+                </tbody>
+            </table>
+        `;
+        
+        container.innerHTML = html;
+    } catch (error) {
+        console.error('Error loading all readings:', error);
+        const container = document.getElementById('previous-readings-container');
+        if (container) {
+            container.innerHTML = `<p class="error">Error loading readings: ${error.message}</p>`;
+        }
+    }
+}
+
+/**
+ * Clear all counter readings
+ */
+async clearAllCounterReadings() {
+    try {
+        // Confirm with the user
+        if (!confirm('Are you sure you want to clear all counter readings? This cannot be undone.')) {
+            return;
+        }
+        
+        // Initialize counter webhook handler if needed
+        if (!counterWebhookHandler.initialized) {
+            await counterWebhookHandler.init();
+        }
+        
+        // Clear all readings
+        const result = await counterWebhookHandler.clearAllReadings();
+        
+        if (result.status === 'success') {
+            alert('All counter readings cleared successfully!');
+            
+            // Reload previous readings
+            this.loadPreviousCounterReadings();
+        } else {
+            alert(`Error: ${result.error || 'Failed to clear counter readings'}`);
+        }
+    } catch (error) {
+        console.error('Error clearing counter readings:', error);
+        alert(`Error: ${error.message}`);
+    }
+}
 }
 
 // Create global application instance

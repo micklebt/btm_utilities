@@ -1,0 +1,3 @@
+@echo off
+echo Opening BTM Utility Links Manager...
+start http://localhost:3001/links.html 
