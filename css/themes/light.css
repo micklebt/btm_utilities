@@ -1,0 +1,42 @@
+/**
+ * Light Theme
+ * Light color theme for the application
+ */
+
+:root[data-theme="light"] {
+  /* Colors */
+  --color-primary: #3498db;
+  --color-primary-light: #5dade2;
+  --color-primary-dark: #2980b9;
+  
+  --color-secondary: #2ecc71;
+  --color-secondary-light: #58d68d;
+  --color-secondary-dark: #27ae60;
+  
+  --color-accent: #e74c3c;
+  --color-accent-light: #ec7063;
+  --color-accent-dark: #c0392b;
+  
+  --color-neutral-100: #f8f9fa;
+  --color-neutral-200: #e9ecef;
+  --color-neutral-300: #dee2e6;
+  --color-neutral-400: #ced4da;
+  --color-neutral-500: #adb5bd;
+  --color-neutral-600: #6c757d;
+  --color-neutral-700: #495057;
+  --color-neutral-800: #343a40;
+  --color-neutral-900: #212529;
+  
+  --color-success: #28a745;
+  --color-info: #17a2b8;
+  --color-warning: #ffc107;
+  --color-danger: #dc3545;
+  
+  /* Background and Text Colors */
+  --color-bg: var(--color-neutral-100);
+  --color-bg-offset: var(--color-neutral-200);
+  --color-text: var(--color-neutral-900);
+  --color-text-muted: var(--color-neutral-600);
+  --color-text-inverse: var(--color-neutral-100);
+  --color-border: var(--color-neutral-300);
+} 
