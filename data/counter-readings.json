@@ -1,0 +1,72 @@
+{
+  "massillon_MASSILLON_CH2": {
+    "counterValue": 100,
+    "countingMode": "quarters",
+    "conversionFactor": 0.25,
+    "dollarAmount": 25,
+    "timestamp": "2025-07-29T17:51:38.265Z"
+  },
+  "massillon_MASSILLON_CH3": {
+    "counterValue": 100,
+    "countingMode": "dollars",
+    "conversionFactor": 1,
+    "dollarAmount": 100,
+    "timestamp": "2025-07-29T17:51:40.262Z"
+  },
+  "massillon_MASSILLON_CH4": {
+    "counterValue": 100,
+    "countingMode": "dollars",
+    "conversionFactor": 1,
+    "dollarAmount": 100,
+    "timestamp": "2025-07-29T17:51:42.275Z"
+  },
+  "peacock_PEACOCK_CH1": {
+    "counterValue": 100,
+    "countingMode": "quarters",
+    "conversionFactor": 0.25,
+    "dollarAmount": 25,
+    "timestamp": "2025-07-29T17:51:26.284Z"
+  },
+  "peacock_PEACOCK_CH2": {
+    "counterValue": 100,
+    "countingMode": "quarters",
+    "conversionFactor": 0.25,
+    "dollarAmount": 25,
+    "timestamp": "2025-07-29T17:51:27.864Z"
+  },
+  "peacock_PEACOCK_CH3": {
+    "counterValue": 100,
+    "countingMode": "dollars",
+    "conversionFactor": 1,
+    "dollarAmount": 100,
+    "timestamp": "2025-07-29T17:51:29.452Z"
+  },
+  "dover_DOVER_CH1": {
+    "counterValue": 100,
+    "countingMode": "dollars",
+    "conversionFactor": 1,
+    "dollarAmount": 100,
+    "timestamp": "2025-07-29T17:51:31.064Z"
+  },
+  "dover_DOVER_CH2": {
+    "counterValue": 100,
+    "countingMode": "dollars",
+    "conversionFactor": 1,
+    "dollarAmount": 100,
+    "timestamp": "2025-07-29T17:51:32.666Z"
+  },
+  "dover_DOVER_CH3": {
+    "counterValue": 100,
+    "countingMode": "dollars",
+    "conversionFactor": 1,
+    "dollarAmount": 100,
+    "timestamp": "2025-07-29T17:51:34.199Z"
+  },
+  "massillon_MASSILLON_CH1": {
+    "counterValue": 100,
+    "countingMode": "quarters",
+    "conversionFactor": 0.25,
+    "dollarAmount": 25,
+    "timestamp": "2025-07-29T17:51:36.275Z"
+  }
+}

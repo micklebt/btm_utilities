@@ -1,0 +1,173 @@
+/**
+ * Error Handling Component Styles
+ * Styles for error messages, loading indicators, and error recovery UI
+ */
+
+/* Application Error Styles */
+.application-error {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 20px;
+    max-width: 90%;
+    width: 400px;
+    text-align: center;
+    z-index: 1000;
+}
+
+.application-error.hidden {
+    display: none;
+}
+
+.application-error h3 {
+    color: #dc3545;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.application-error p {
+    margin-bottom: 20px;
+    color: #555;
+}
+
+.application-error button {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.application-error button:hover {
+    background-color: #0069d9;
+}
+
+/* Loading indicator for content sections */
+.loading-indicator {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    color: #666;
+}
+
+.loading-indicator:before {
+    content: '';
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    border: 2px solid #ccc;
+    border-top-color: #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Section-specific error handling */
+.section-error {
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 4px;
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    color: #856404;
+}
+
+.section-error h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.section-error .retry-button {
+    background-color: #ffc107;
+    color: #212529;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+/* Contact item styling */
+.contact-item {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    background-color: #fff;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+}
+
+.contact-item:hover {
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.contact-info {
+    flex: 1;
+}
+
+.contact-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.contact-actions .call-button,
+.contact-actions .edit-button,
+.contact-actions .delete-button {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s ease;
+}
+
+.contact-actions .call-button {
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+}
+
+.contact-actions .edit-button {
+    background-color: #007bff;
+    color: white;
+}
+
+.contact-actions .delete-button {
+    background-color: #dc3545;
+    color: white;
+}
+
+.contact-actions .call-button:hover {
+    background-color: #218838;
+}
+
+.contact-actions .edit-button:hover {
+    background-color: #0069d9;
+}
+
+.contact-actions .delete-button:hover {
+    background-color: #c82333;
+}
+
+.section-error .retry-button:hover {
+    background-color: #e0a800;
+}

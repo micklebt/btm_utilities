@@ -1385,8 +1385,26 @@ class BTMUtility {
             
             if (targetSection) {
                 targetSection.classList.add('active');
+                
+                // Handle section-specific initialization
+                this.initializeSection(sectionName, targetSection);
             } else {
                 logger.warn(`Section not found: ${sectionName}`);
+                // Show error message in the UI
+                const errorContainer = document.querySelector('.application-error') || 
+                                      document.createElement('div');
+                errorContainer.className = 'application-error';
+                errorContainer.innerHTML = `
+                    <h3>Section Not Found</h3>
+                    <p>The requested section "${sectionName}" could not be found.</p>
+                    <button class="btn-primary" onclick="window.btmUtility.goHome()">Return Home</button>
+                `;
+                
+                // Add to DOM if not already there
+                if (!document.querySelector('.application-error')) {
+                    document.querySelector('.main-content').appendChild(errorContainer);
+                }
+                return;
             }
 
             // Update navigation
@@ -1405,9 +1423,45 @@ class BTMUtility {
 
             // Trigger event
             this.triggerEvent('app:navigationChanged', { section: sectionName });
+            
+            // Remove any application error messages
+            const errorContainer = document.querySelector('.application-error');
+            if (errorContainer) {
+                errorContainer.remove();
+            }
 
         } catch (error) {
             logger.error('Navigation error', null, error);
+            // Show user-friendly error
+            this.handleError(error, {
+                userMessage: 'There was a problem navigating to the requested section.',
+                recoveryAction: () => this.goHome()
+            });
+        }
+    }
+    
+    // Initialize section-specific functionality
+    initializeSection(sectionName, sectionElement) {
+        try {
+            switch(sectionName) {
+                case 'contacts':
+                    // Make sure emergency contacts are loaded
+                    if (window.emergencyContacts) {
+                        window.emergencyContacts.updateContactsDisplay();
+                    }
+                    break;
+                    
+                case 'links':
+                    // Make sure links are loaded
+                    if (window.linksManager) {
+                        window.linksManager.loadLinks();
+                    }
+                    break;
+                    
+                // Add other sections as needed
+            }
+        } catch (error) {
+            logger.error(`Error initializing section: ${sectionName}`, null, error);
         }
     }
 
@@ -1455,7 +1509,7 @@ class BTMUtility {
     }
 
     // Handle errors
-    handleError(error) {
+    handleError(error, options = {}) {
         logger.error('Application error', null, error);
         
         this.state.set('error', {
@@ -1464,15 +1518,28 @@ class BTMUtility {
             stack: error.stack,
         });
 
+        // Show application error UI for fatal errors
+        if (options.severity === 'fatal' || options.severity === 'high') {
+            const appError = document.getElementById('application-error');
+            const errorMsg = document.getElementById('error-message');
+            
+            if (appError && errorMsg) {
+                errorMsg.textContent = options.userMessage || error.message || 'An error occurred';
+                appError.classList.remove('hidden');
+            }
+        }
+
         // Use error handler for user-friendly error display
         errorHandler.handleError(error, {
             type: 'client',
-            severity: 'medium',
-            context: 'application',
+            severity: options.severity || 'medium',
+            context: options.context || 'application',
+            userMessage: options.userMessage,
+            recoveryAction: options.recoveryAction
         });
 
         // Trigger error event
-        this.triggerEvent('app:error', error);
+        this.triggerEvent('app:error', { error, options });
     }
 
     // Get application info

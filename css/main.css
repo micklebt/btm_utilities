@@ -14,6 +14,7 @@
 /* Components */
 @import 'components/buttons.css';
 @import 'components/forms.css';
+@import 'components/error-handling.css';
 
 /* Pages */
 @import 'pages/links.css';

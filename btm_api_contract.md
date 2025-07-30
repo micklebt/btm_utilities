@@ -3,6 +3,7 @@
 ## **1. API Architecture Overview**
 
 ### **1.1 Base Configuration**
+
 ```
 Base URL: https://brianmickley.com/util/api/v1
 Authentication: Bearer tokens for external APIs, OAuth 2.0 for Google services
@@ -11,6 +12,7 @@ Rate Limiting: 100 requests/minute per user
 ```
 
 ### **1.2 Response Format Standards**
+
 ```json
 {
   "status": "success|error",
@@ -22,6 +24,7 @@ Rate Limiting: 100 requests/minute per user
 ```
 
 ### **1.3 Error Response Format**
+
 ```json
 {
   "status": "error",
@@ -42,6 +45,7 @@ Rate Limiting: 100 requests/minute per user
 ## **2. Authentication & Configuration**
 
 ### **2.1 Configuration Management**
+
 ```
 POST /config/auth
 Description: Store encrypted API credentials
@@ -67,6 +71,7 @@ Response:
 ```
 
 ### **2.2 Health Check**
+
 ```
 GET /health
 Description: System status and service connectivity
@@ -92,6 +97,7 @@ Response:
 ## **3. Money Collection API**
 
 ### **3.1 QR Code Recognition**
+
 ```
 POST /collection/scan-qr
 Description: Process QR code and identify machine
@@ -117,6 +123,7 @@ Response:
 ```
 
 ### **3.2 Counter Value Processing**
+
 ```
 POST /collection/ocr-reading
 Description: Extract counter value from camera image
@@ -140,6 +147,7 @@ Response:
 ```
 
 ### **3.3 Collection Submission**
+
 ```
 POST /collection/submit
 Description: Submit money collection data
@@ -173,6 +181,7 @@ Response:
 ```
 
 ### **3.4 Collection History**
+
 ```
 GET /collection/history
 Query Parameters:
@@ -210,6 +219,7 @@ Response:
 ## **4. To-Do List & Task Management**
 
 ### **4.1 Voice-to-Text Processing**
+
 ```
 POST /tasks/voice-to-text
 Description: Convert voice recording to text and parse task
@@ -238,6 +248,7 @@ Response:
 ```
 
 ### **4.2 Task Creation**
+
 ```
 POST /tasks
 Description: Create new task
@@ -268,6 +279,7 @@ Response:
 ```
 
 ### **4.3 Task Management**
+
 ```
 GET /tasks
 Query Parameters:
@@ -293,6 +305,7 @@ Description: Delete task (soft delete)
 ```
 
 ### **4.4 Google Calendar Integration**
+
 ```
 POST /tasks/{task_id}/sync-calendar
 Description: Sync task with Google Calendar
@@ -312,6 +325,7 @@ Response:
 ## **5. Parts & Inventory Management**
 
 ### **5.1 Gmail Purchase Monitoring**
+
 ```
 POST /parts/monitor-email
 Description: Parse purchase email and extract part information
@@ -346,6 +360,7 @@ Response:
 ```
 
 ### **5.2 Inventory Management**
+
 ```
 GET /parts/inventory
 Query Parameters:
@@ -380,6 +395,7 @@ Request Body:
 ```
 
 ### **5.3 Parts Lookup & Compatibility**
+
 ```
 GET /parts/lookup/{part_number}
 Response:
@@ -413,6 +429,7 @@ Description: Get all compatible parts for a machine model
 ## **6. Equipment & Troubleshooting**
 
 ### **6.1 Equipment Database**
+
 ```
 GET /equipment/machines
 Response:
@@ -443,6 +460,7 @@ Response:
 ```
 
 ### **6.2 Troubleshooting Guides**
+
 ```
 GET /equipment/troubleshooting
 Query Parameters:
@@ -471,6 +489,7 @@ Response:
 ```
 
 ### **6.3 Maintenance Scheduling**
+
 ```
 POST /equipment/maintenance-schedule
 Description: Schedule routine maintenance
@@ -493,6 +512,7 @@ Description: Get overdue and upcoming maintenance tasks
 ## **7. Communications & VOIP**
 
 ### **7.1 VOIP Trigger System**
+
 ```
 POST /communications/trigger-audio
 Description: Trigger store audio announcement
@@ -519,6 +539,7 @@ Response:
 ```
 
 ### **7.2 Available Audio Messages**
+
 ```
 GET /communications/messages
 Response:
@@ -560,6 +581,7 @@ Response:
 ## **8. Business Directory & Contacts**
 
 ### **8.1 Contact Management**
+
 ```
 GET /contacts
 Query Parameters:
@@ -594,6 +616,7 @@ Response:
 ```
 
 ### **8.2 Emergency Contacts**
+
 ```
 GET /contacts/emergency
 Response:
@@ -625,6 +648,7 @@ Response:
 ## **9. Notifications & SMS**
 
 ### **9.1 SMS Notifications**
+
 ```
 POST /notifications/sms
 Description: Send SMS notification
@@ -657,6 +681,7 @@ Response:
 ```
 
 ### **9.2 Notification Templates**
+
 ```
 GET /notifications/templates
 Response:
@@ -678,6 +703,7 @@ Response:
 ## **10. Data Synchronization**
 
 ### **10.1 Google Sheets Integration**
+
 ```
 POST /sync/google-sheets
 Description: Sync data to Google Sheets
@@ -718,6 +744,7 @@ Response:
 ```
 
 ### **10.2 Make.com Webhook Integration**
+
 ```
 POST /webhooks/make-com
 Description: Trigger Make.com workflow
@@ -749,6 +776,7 @@ Response:
 ```
 
 ### **10.3 Data Export**
+
 ```
 GET /export/collections
 Query Parameters:
@@ -775,6 +803,7 @@ Response:
 ## **11. Analytics & Reporting**
 
 ### **11.1 Collection Analytics**
+
 ```
 GET /analytics/collections
 Query Parameters:
@@ -820,6 +849,7 @@ Response:
 ```
 
 ### **11.2 Parts Usage Analytics**
+
 ```
 GET /analytics/parts-usage
 Query Parameters:
@@ -862,6 +892,7 @@ Response:
 ## **12. File Upload & Processing**
 
 ### **12.1 Image Upload**
+
 ```
 POST /upload/image
 Description: Upload images for QR scanning or OCR processing
@@ -897,6 +928,7 @@ Response:
 ```
 
 ### **12.2 Audio Upload (Voice Recording)**
+
 ```
 POST /upload/audio
 Description: Upload voice recordings for transcription
@@ -938,6 +970,7 @@ Response:
 ## **13. User Management & Preferences**
 
 ### **13.1 User Profiles**
+
 ```
 GET /users/profile
 Response:
@@ -976,6 +1009,7 @@ Request Body:
 ```
 
 ### **13.2 Activity Logging**
+
 ```
 GET /users/activity
 Query Parameters:
@@ -1013,6 +1047,7 @@ Response:
 ## **14. System Administration**
 
 ### **14.1 System Configuration**
+
 ```
 GET /admin/config
 Description: Get system configuration (admin only)
@@ -1063,6 +1098,7 @@ Request Body:
 ```
 
 ### **14.2 System Logs**
+
 ```
 GET /admin/logs
 Query Parameters:
@@ -1106,6 +1142,7 @@ Response:
 ## **15. Error Codes & Status Responses**
 
 ### **15.1 HTTP Status Codes**
+
 ```
 200 OK - Request successful
 201 Created - Resource created successfully
@@ -1122,6 +1159,7 @@ Response:
 ```
 
 ### **15.2 Application Error Codes**
+
 ```
 AUTH_001 - Invalid API key
 AUTH_002 - Expired token
@@ -1147,6 +1185,7 @@ SYSTEM_004 - Voice recognition failed
 ```
 
 ### **15.3 Rate Limiting**
+
 ```
 Response Headers:
 X-RateLimit-Limit: 100
@@ -1169,6 +1208,7 @@ Rate Limit Exceeded Response:
 ## **16. Webhook Specifications**
 
 ### **16.1 Outgoing Webhooks (to Make.com)**
+
 ```
 Collection Submitted Webhook:
 POST {make_com_webhook_url}
@@ -1203,6 +1243,7 @@ POST {make_com_webhook_url}
 ```
 
 ### **16.2 Incoming Webhooks (from External Services)**
+
 ```
 Gmail Push Notification:
 POST /webhooks/gmail
@@ -1232,6 +1273,7 @@ POST /webhooks/calendar
 ## **17. API Versioning & Backward Compatibility**
 
 ### **17.1 Version Management**
+
 ```
 Current Version: v1
 API Base URL: https://brianmickley.com/util/api/v1
@@ -1249,6 +1291,7 @@ Sunset: date="Sun, 01 Jul 2026 00:00:00 GMT"
 ```
 
 ### **17.2 Future API Expansion**
+
 ```
 Planned v2 Features:
 - Multi-tenant support for multiple companies
@@ -1266,6 +1309,7 @@ Planned v2 Features:
 ## **19. Security Camera Portal**
 
 ### **19.1 Camera Feed Access**
+
 ```
 GET /security/cameras
 Query Parameters:
@@ -1300,6 +1344,7 @@ Response:
 ```
 
 ### **19.2 Camera Recording Access**
+
 ```
 GET /security/recordings
 Query Parameters:
@@ -1330,6 +1375,7 @@ Response:
 ```
 
 ### **19.3 Motion Detection Alerts**
+
 ```
 POST /security/motion-alerts
 Description: Configure motion detection settings
@@ -1367,6 +1413,7 @@ Response:
 ## **20. Climate Control & Temperature Management**
 
 ### **20.1 Temperature Monitoring**
+
 ```
 GET /climate/temperature
 Query Parameters:
@@ -1397,6 +1444,7 @@ Response:
 ```
 
 ### **20.2 Thermostat Control**
+
 ```
 POST /climate/thermostat
 Description: Adjust thermostat settings
@@ -1428,6 +1476,7 @@ Response:
 ```
 
 ### **20.3 Temperature Scheduling**
+
 ```
 PUT /climate/schedule
 Description: Configure temperature schedules
@@ -1479,6 +1528,7 @@ Response:
 ```
 
 ### **20.4 Climate Alerts & Notifications**
+
 ```
 POST /climate/alerts
 Description: Configure temperature alerts
@@ -1522,6 +1572,7 @@ Response:
 ```
 
 ### **20.5 Energy Usage Tracking**
+
 ```
 GET /climate/energy-usage
 Query Parameters:
@@ -1560,6 +1611,7 @@ Response:
 ```
 
 ### **18.1 API Key Management**
+
 ```
 API Key Format: btm_live_1234567890abcdef
 Environment Prefixes:
@@ -1578,6 +1630,7 @@ POST /admin/api-keys/rotate
 ```
 
 ### **18.2 OAuth 2.0 (Google Services)**
+
 ```
 Authorization Flow:
 1. GET /auth/google/authorize

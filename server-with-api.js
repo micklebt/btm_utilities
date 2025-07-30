@@ -1,7 +1,7 @@
 /**
  * Development Server for BTM Utility with API Extensions
  * Custom Node.js server with PWA support and proper headers
- * Includes API endpoints for tasks and links
+ * Includes API endpoints for tasks, links, and contacts
  */
 
 const http = require('http');
@@ -28,6 +28,9 @@ const READINGS_FILE = path.join(DATA_DIR, 'counter-readings.json');
 // Path to links file
 const LINKS_FILE = path.join(DATA_DIR, 'links.json');
 
+// Path to contacts file
+const CONTACTS_FILE = path.join(DATA_DIR, 'contacts.json');
+
 // Initialize empty tasks file if it doesn't exist
 if (!fs.existsSync(TASKS_FILE)) {
     fs.writeFileSync(TASKS_FILE, '[]');
@@ -36,6 +39,11 @@ if (!fs.existsSync(TASKS_FILE)) {
 // Initialize empty links file if it doesn't exist
 if (!fs.existsSync(LINKS_FILE)) {
     fs.writeFileSync(LINKS_FILE, '[]');
+}
+
+// Initialize empty contacts file if it doesn't exist
+if (!fs.existsSync(CONTACTS_FILE)) {
+    fs.writeFileSync(CONTACTS_FILE, '[]');
 }
 
 // MIME types for different file extensions
@@ -168,6 +176,51 @@ const server = http.createServer((req, res) => {
                     return;
                 }
             }
+        }
+        
+        // GET, PUT, DELETE single link by ID
+        if (pathname.match(/^\/api\/links\/[a-zA-Z0-9_-]+$/)) {
+            // Set CORS headers for API endpoints
+            Object.entries(CORS_HEADERS).forEach(([key, value]) => {
+                res.setHeader(key, value);
+            });
+            
+            const linkId = pathname.split('/').pop();
+            
+            // GET a single link
+            if (req.method === 'GET') {
+                try {
+                    let links = [];
+                    if (fs.existsSync(LINKS_FILE)) {
+                        links = JSON.parse(fs.readFileSync(LINKS_FILE, 'utf8'));
+                    }
+                    
+                    const link = links.find(l => l.id === linkId);
+                    
+                    if (link) {
+                        res.writeHead(200, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({ 
+                            success: true,
+                            link: link
+                        }));
+                    } else {
+                        res.writeHead(404, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({ 
+                            success: false,
+                            error: 'Link not found'
+                        }));
+                    }
+                    return;
+                } catch (error) {
+                    console.error('Error reading link:', error);
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ 
+                        success: false,
+                        error: 'Failed to read link'
+                    }));
+                    return;
+                }
+            }
             
             // POST links (add, update, delete)
             if (req.method === 'POST') {
@@ -296,6 +349,302 @@ const server = http.createServer((req, res) => {
                 });
                 return;
             }
+        }
+        
+        // Handle contacts API
+        if (pathname === '/api/contacts') {
+            // Set CORS headers for API endpoints
+            Object.entries(CORS_HEADERS).forEach(([key, value]) => {
+                res.setHeader(key, value);
+            });
+            
+            // GET all contacts
+            if (req.method === 'GET') {
+                try {
+                    let contacts = [];
+                    if (fs.existsSync(CONTACTS_FILE)) {
+                        contacts = JSON.parse(fs.readFileSync(CONTACTS_FILE, 'utf8'));
+                    }
+                    
+                    // Parse query parameters for filtering
+                    const queryParams = new URLSearchParams(parsedUrl.query);
+                    const category = queryParams.get('category');
+                    const search = queryParams.get('search');
+                    
+                    // Apply filters if provided
+                    if (category) {
+                        contacts = contacts.filter(contact => contact.category === category);
+                    }
+                    
+                    if (search) {
+                        const searchLower = search.toLowerCase();
+                        contacts = contacts.filter(contact => 
+                            contact.name.toLowerCase().includes(searchLower) || 
+                            (contact.organization && contact.organization.toLowerCase().includes(searchLower)) ||
+                            contact.phone.includes(search)
+                        );
+                    }
+                    
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ 
+                        success: true,
+                        contacts: contacts
+                    }));
+                    return;
+                } catch (error) {
+                    console.error('Error reading contacts:', error);
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ 
+                        success: false,
+                        error: 'Failed to read contacts'
+                    }));
+                    return;
+                }
+            }
+        }
+        
+        // GET a single contact by ID
+        if (req.method === 'GET' && pathname.match(/^\/api\/contacts\/[a-zA-Z0-9_-]+$/)) {
+            // Set CORS headers for API endpoints
+            Object.entries(CORS_HEADERS).forEach(([key, value]) => {
+                res.setHeader(key, value);
+            });
+            
+            try {
+                const contactId = pathname.split('/').pop();
+                
+                let contacts = [];
+                if (fs.existsSync(CONTACTS_FILE)) {
+                    contacts = JSON.parse(fs.readFileSync(CONTACTS_FILE, 'utf8'));
+                }
+                
+                const contact = contacts.find(c => c.id === contactId);
+                
+                if (contact) {
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ 
+                        success: true,
+                        contact: contact
+                    }));
+                } else {
+                    res.writeHead(404, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ 
+                        success: false,
+                        error: 'Contact not found'
+                    }));
+                }
+                return;
+            } catch (error) {
+                console.error('Error reading contact:', error);
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ 
+                    success: false,
+                    error: 'Failed to read contact'
+                }));
+                return;
+            }
+        }
+            
+            // POST - Create a new contact
+            if (req.method === 'POST') {
+                let body = '';
+                req.on('data', chunk => {
+                    body += chunk.toString();
+                });
+                
+                req.on('end', () => {
+                    try {
+                        const contactData = JSON.parse(body);
+                        
+                        // Validate required fields
+                        if (!contactData.name || !contactData.phone || !contactData.category) {
+                            res.writeHead(400, { 'Content-Type': 'application/json' });
+                            res.end(JSON.stringify({ 
+                                success: false,
+                                error: 'Name, phone, and category are required'
+                            }));
+                            return;
+                        }
+                        
+                        // Read existing contacts
+                        let contacts = [];
+                        if (fs.existsSync(CONTACTS_FILE)) {
+                            contacts = JSON.parse(fs.readFileSync(CONTACTS_FILE, 'utf8'));
+                        }
+                        
+                        // Generate unique ID if not provided
+                        if (!contactData.id) {
+                            contactData.id = 'contact_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+                        }
+                        
+                        // Add timestamps
+                        contactData.createdAt = new Date().toISOString();
+                        contactData.updatedAt = new Date().toISOString();
+                        
+                        // If this is a primary contact, unset other primary contacts in the same category
+                        if (contactData.primary) {
+                            contacts.forEach(contact => {
+                                if (contact.category === contactData.category) {
+                                    contact.primary = false;
+                                }
+                            });
+                        }
+                        
+                        // Add new contact
+                        contacts.push(contactData);
+                        
+                        // Save to file
+                        fs.writeFileSync(CONTACTS_FILE, JSON.stringify(contacts, null, 2));
+                        
+                        res.writeHead(201, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({ 
+                            success: true,
+                            contact: contactData
+                        }));
+                    } catch (error) {
+                        console.error('Error creating contact:', error);
+                        res.writeHead(500, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({ 
+                            success: false,
+                            error: 'Failed to create contact'
+                        }));
+                    }
+                });
+                return;
+            }
+            
+        // PUT - Update an existing contact
+        if (req.method === 'PUT' && pathname.match(/^\/api\/contacts\/[a-zA-Z0-9_-]+$/)) {
+            // Set CORS headers for API endpoints
+            Object.entries(CORS_HEADERS).forEach(([key, value]) => {
+                res.setHeader(key, value);
+            });
+            
+            const contactId = pathname.split('/').pop();
+            
+            let body = '';
+            req.on('data', chunk => {
+                body += chunk.toString();
+            });
+            
+            req.on('end', () => {
+                try {
+                    const contactData = JSON.parse(body);
+                    
+                    // Validate required fields
+                    if (!contactData.name || !contactData.phone || !contactData.category) {
+                        res.writeHead(400, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({ 
+                            success: false,
+                            error: 'Name, phone, and category are required'
+                        }));
+                        return;
+                    }
+                    
+                    // Read existing contacts
+                    let contacts = [];
+                    if (fs.existsSync(CONTACTS_FILE)) {
+                        contacts = JSON.parse(fs.readFileSync(CONTACTS_FILE, 'utf8'));
+                    }
+                    
+                    // Find contact index
+                    const contactIndex = contacts.findIndex(c => c.id === contactId);
+                    
+                    if (contactIndex === -1) {
+                        res.writeHead(404, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({ 
+                            success: false,
+                            error: 'Contact not found'
+                        }));
+                        return;
+                    }
+                    
+                    // Update timestamp
+                    contactData.updatedAt = new Date().toISOString();
+                    
+                    // If this is a primary contact, unset other primary contacts in the same category
+                    if (contactData.primary) {
+                        contacts.forEach((contact, index) => {
+                            if (contact.category === contactData.category && index !== contactIndex) {
+                                contact.primary = false;
+                            }
+                        });
+                    }
+                    
+                    // Preserve creation date
+                    contactData.createdAt = contacts[contactIndex].createdAt;
+                    
+                    // Update contact
+                    contacts[contactIndex] = contactData;
+                    
+                    // Save to file
+                    fs.writeFileSync(CONTACTS_FILE, JSON.stringify(contacts, null, 2));
+                    
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ 
+                        success: true,
+                        contact: contactData
+                    }));
+                } catch (error) {
+                    console.error('Error updating contact:', error);
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ 
+                        success: false,
+                        error: 'Failed to update contact'
+                    }));
+                }
+            });
+            return;
+        }
+        
+        // DELETE - Remove a contact
+        if (req.method === 'DELETE' && pathname.match(/^\/api\/contacts\/[a-zA-Z0-9_-]+$/)) {
+            // Set CORS headers for API endpoints
+            Object.entries(CORS_HEADERS).forEach(([key, value]) => {
+                res.setHeader(key, value);
+            });
+            
+            try {
+                const contactId = pathname.split('/').pop();
+                
+                // Read existing contacts
+                let contacts = [];
+                if (fs.existsSync(CONTACTS_FILE)) {
+                    contacts = JSON.parse(fs.readFileSync(CONTACTS_FILE, 'utf8'));
+                }
+                
+                // Find contact index
+                const contactIndex = contacts.findIndex(c => c.id === contactId);
+                
+                if (contactIndex === -1) {
+                    res.writeHead(404, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ 
+                        success: false,
+                        error: 'Contact not found'
+                    }));
+                    return;
+                }
+                
+                // Remove contact
+                contacts.splice(contactIndex, 1);
+                
+                // Save to file
+                fs.writeFileSync(CONTACTS_FILE, JSON.stringify(contacts, null, 2));
+                
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ 
+                    success: true,
+                    message: 'Contact deleted successfully'
+                }));
+            } catch (error) {
+                console.error('Error deleting contact:', error);
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ 
+                    success: false,
+                    error: 'Failed to delete contact'
+                }));
+            }
+            return;
         }
         
         // Handle counter readings API

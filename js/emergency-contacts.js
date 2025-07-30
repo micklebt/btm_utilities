@@ -12,6 +12,8 @@ import { generateId, formatPhoneNumber, validatePhone, debounce } from './utils.
 export class EmergencyContacts {
     constructor() {
         this.contacts = [];
+        // Ensure we have a valid base URL that works with both localhost and 127.0.0.1
+        this.baseUrl = `${window.location.protocol}//${window.location.hostname === '127.0.0.1' ? '127.0.0.1' : 'localhost'}:3001`;
         this.categories = [
             { id: 'police', name: 'Police', icon: '🚔', color: '#007bff', priority: 1 },
             { id: 'fire', name: 'Fire Department', icon: '🚒', color: '#dc3545', priority: 1 },
@@ -99,159 +101,158 @@ export class EmergencyContacts {
         }
     }
 
-    async loadContacts() {
+    async loadContacts(retryCount = 0) {
         try {
+            // Maximum number of retries
+            const MAX_RETRIES = 3;
+            
+            // Try to load from API first
+            try {
+                const response = await fetch(`${this.baseUrl}/api/contacts`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && Array.isArray(data.contacts)) {
+                        this.contacts = data.contacts;
+                        logger.info(`Loaded ${this.contacts.length} emergency contacts from API`);
+                        
+                        // Cache contacts in local storage for offline use
+                        try {
+                            await storageUtils.contacts.save(this.contacts);
+                            logger.info('Cached contacts to local storage');
+                        } catch (cacheError) {
+                            logger.warn('Failed to cache contacts', null, cacheError);
+                        }
+                        
+                        // Clear any error notifications
+                        const errorNotification = document.querySelector('.notification.error');
+                        if (errorNotification) {
+                            errorNotification.remove();
+                        }
+                        
+                        return;
+                    }
+                }
+                
+                // If we get here, the response wasn't successful
+                throw new Error('API response was not successful');
+                
+            } catch (apiError) {
+                logger.warn('Failed to load contacts from API', null, apiError);
+                
+                // Retry with exponential backoff if not at max retries
+                if (retryCount < MAX_RETRIES) {
+                    const delay = Math.pow(2, retryCount) * 1000;
+                    logger.info(`Retrying API in ${delay}ms... (Attempt ${retryCount + 1}/${MAX_RETRIES})`);
+                    
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    return this.loadContacts(retryCount + 1);
+                }
+                
+                // If max retries reached or other error, fall back to local storage
+                logger.warn('Max retries reached or error occurred, falling back to local storage');
+            }
+            
+            // Fall back to local storage if API fails
             const savedContacts = await storageUtils.contacts.load();
             this.contacts = savedContacts || [];
-            logger.info(`Loaded ${this.contacts.length} emergency contacts`);
+            logger.info(`Loaded ${this.contacts.length} emergency contacts from local storage`);
+            
+            // Show notification that we're using cached data
+            if (this.contacts.length > 0) {
+                this.showNotification('Using cached contacts. Some information may not be up to date.', 'warning');
+            }
+            
         } catch (error) {
             logger.error('Failed to load contacts', null, error);
             this.contacts = [];
+            this.showNotification('Error loading contacts. Please try again later.', 'error');
         }
     }
 
     initializeUI() {
-        const container = document.getElementById('emergency-contacts-container');
-        if (!container) return;
-
-        container.innerHTML = `
-            <div class="emergency-header">
-                <h2>🚨 Emergency Contacts</h2>
-                <button type="button" id="add-contact-btn" class="btn btn-primary">
-                    ➕ Add Contact
-                </button>
-            </div>
-
-            <div class="emergency-quick-actions">
-                <h3>Quick Actions</h3>
-                <div class="quick-actions-grid">
-                    <button type="button" class="emergency-btn police" data-protocol="fire">
-                        🚔 Police (911)
-                    </button>
-                    <button type="button" class="emergency-btn fire" data-protocol="fire">
-                        🚒 Fire (911)
-                    </button>
-                    <button type="button" class="emergency-btn medical" data-protocol="medical">
-                        🚑 Ambulance (911)
-                    </button>
-                    <button type="button" class="emergency-btn security" data-protocol="security">
-                        🛡️ Security
-                    </button>
-                </div>
-            </div>
-
-            <div class="contacts-categories">
-                ${this.categories.map(category => `
-                    <div class="contact-category" data-category="${category.id}">
-                        <div class="category-header" style="border-left-color: ${category.color}">
-                            <h3>${category.icon} ${category.name}</h3>
-                            <span class="contact-count" id="count-${category.id}">0</span>
-                        </div>
-                        <div class="category-contacts" id="contacts-${category.id}">
-                            <!-- Contacts will be populated here -->
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-
-            <!-- Add Contact Modal -->
-            <div id="contact-modal" class="modal" style="display: none;">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h3 id="contact-modal-title">Add Emergency Contact</h3>
-                        <button type="button" class="modal-close">&times;</button>
-                    </div>
-                    
-                    <form id="contact-form" class="contact-form">
-                        <div class="form-section">
-                            <label for="contact-name">Contact Name *</label>
-                            <input type="text" id="contact-name" required 
-                                   placeholder="Enter contact name...">
-                        </div>
-                        
-                        <div class="form-section">
-                            <label for="contact-phone">Phone Number *</label>
-                            <input type="tel" id="contact-phone" required 
-                                   placeholder="(555) 123-4567">
-                        </div>
-                        
-                        <div class="form-section">
-                            <label for="contact-category">Category *</label>
-                            <select id="contact-category" required>
-                                ${this.categories.map(cat => `
-                                    <option value="${cat.id}">${cat.icon} ${cat.name}</option>
-                                `).join('')}
-                            </select>
-                        </div>
-                        
-                        <div class="form-section">
-                            <label for="contact-organization">Organization</label>
-                            <input type="text" id="contact-organization" 
-                                   placeholder="Company or organization name...">
-                        </div>
-                        
-                        <div class="form-section">
-                            <label for="contact-notes">Notes</label>
-                            <textarea id="contact-notes" rows="3" 
-                                      placeholder="Additional notes about this contact..."></textarea>
-                        </div>
-                        
-                        <div class="form-section">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="contact-primary">
-                                Primary contact for this category
-                            </label>
-                        </div>
-                        
-                        <div class="form-actions">
-                            <button type="submit" class="btn btn-primary">
-                                💾 Save Contact
-                            </button>
-                            <button type="button" class="btn btn-secondary" id="cancel-contact-btn">
-                                ❌ Cancel
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Emergency Protocol Modal -->
-            <div id="protocol-modal" class="modal" style="display: none;">
-                <div class="modal-content emergency-protocol">
-                    <div class="modal-header">
-                        <h3 id="protocol-title">Emergency Protocol</h3>
-                        <button type="button" class="modal-close">&times;</button>
-                    </div>
-                    
-                    <div class="protocol-content">
-                        <div class="protocol-steps" id="protocol-steps">
-                            <!-- Protocol steps will be populated here -->
-                        </div>
-                        
-                        <div class="protocol-contacts" id="protocol-contacts">
-                            <h4>Quick Contact Buttons</h4>
-                            <div class="protocol-contact-buttons">
-                                <!-- Contact buttons will be populated here -->
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-danger" id="call-911-btn">
-                            🚨 Call 911
-                        </button>
-                        <button type="button" class="btn btn-secondary" id="close-protocol-btn">
-                            Close
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
+        // The UI is now defined in index.html
+        // This method will now just initialize event handlers for the contacts UI
+        this.setupContactsUI();
+    }
+    
+    setupContactsUI() {
+        // Add contact button
+        const addContactBtn = document.getElementById('add-contact');
+        if (addContactBtn) {
+            addContactBtn.addEventListener('click', () => this.showAddContactModal());
+        }
+        
+        // Filter buttons
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // Remove active class from all buttons
+                filterBtns.forEach(b => b.classList.remove('active'));
+                
+                // Add active class to clicked button
+                e.target.classList.add('active');
+                
+                // Filter contacts
+                const category = e.target.dataset.category;
+                this.filterContacts(category);
+            });
+        });
+        
+        // Contact form
+        const contactForm = document.getElementById('contact-form');
+        if (contactForm) {
+            contactForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.saveContact();
+            });
+        }
+        
+        // Modal close buttons
+        const closeButtons = document.querySelectorAll('.close-modal, .cancel-btn');
+        closeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('contact-modal').style.display = 'none';
+                document.getElementById('contact-details-modal').style.display = 'none';
+            });
+        });
+        
+        // Contact details modal buttons
+        const callContactBtn = document.getElementById('call-contact');
+        if (callContactBtn) {
+            callContactBtn.addEventListener('click', () => {
+                const phone = callContactBtn.dataset.phone;
+                if (phone) {
+                    this.callContact(phone);
+                }
+            });
+        }
+        
+        const editContactBtn = document.getElementById('edit-contact');
+        if (editContactBtn) {
+            editContactBtn.addEventListener('click', () => {
+                const contactId = editContactBtn.dataset.contactId;
+                if (contactId) {
+                    document.getElementById('contact-details-modal').style.display = 'none';
+                    this.showAddContactModal(contactId);
+                }
+            });
+        }
+        
+        const deleteContactBtn = document.getElementById('delete-contact');
+        if (deleteContactBtn) {
+            deleteContactBtn.addEventListener('click', () => {
+                const contactId = deleteContactBtn.dataset.contactId;
+                if (contactId) {
+                    document.getElementById('contact-details-modal').style.display = 'none';
+                    this.deleteContact(contactId);
+                }
+            });
+        }
     }
 
     setupEventListeners() {
         // Add contact button
-        const addContactBtn = document.getElementById('add-contact-btn');
+        const addContactBtn = document.getElementById('add-contact');
         if (addContactBtn) {
             addContactBtn.addEventListener('click', () => this.showAddContactModal());
         }
@@ -332,20 +333,21 @@ export class EmergencyContacts {
         const modal = document.getElementById('contact-modal');
         const modalTitle = document.getElementById('contact-modal-title');
         const contactForm = document.getElementById('contact-form');
+        const contactIdInput = document.getElementById('contact-id');
 
         if (contactId) {
             // Edit existing contact
             const contact = this.contacts.find(c => c.id === contactId);
             if (contact) {
                 this.populateContactForm(contact);
-                modalTitle.textContent = 'Edit Emergency Contact';
-                contactForm.dataset.contactId = contactId;
+                modalTitle.textContent = 'Edit Contact';
+                contactIdInput.value = contactId;
             }
         } else {
             // Add new contact
             this.clearContactForm();
-            modalTitle.textContent = 'Add Emergency Contact';
-            delete contactForm.dataset.contactId;
+            modalTitle.textContent = 'Add New Contact';
+            contactIdInput.value = '';
         }
 
         modal.style.display = 'block';
@@ -361,7 +363,7 @@ export class EmergencyContacts {
         const form = document.getElementById('contact-form');
         if (form) {
             form.reset();
-            delete form.dataset.contactId;
+            document.getElementById('contact-id').value = '';
         }
     }
 
@@ -372,6 +374,7 @@ export class EmergencyContacts {
         const orgInput = document.getElementById('contact-organization');
         const notesInput = document.getElementById('contact-notes');
         const primaryCheckbox = document.getElementById('contact-primary');
+        const contactIdInput = document.getElementById('contact-id');
 
         if (nameInput) nameInput.value = contact.name;
         if (phoneInput) phoneInput.value = contact.phone;
@@ -379,6 +382,7 @@ export class EmergencyContacts {
         if (orgInput) orgInput.value = contact.organization || '';
         if (notesInput) notesInput.value = contact.notes || '';
         if (primaryCheckbox) primaryCheckbox.checked = contact.primary || false;
+        if (contactIdInput) contactIdInput.value = contact.id;
     }
 
     validatePhoneNumber(phone) {
@@ -396,8 +400,7 @@ export class EmergencyContacts {
 
     async saveContact() {
         try {
-            const form = document.getElementById('contact-form');
-            const contactId = form.dataset.contactId;
+            const contactId = document.getElementById('contact-id').value;
 
             const contactData = {
                 name: document.getElementById('contact-name').value.trim(),
@@ -406,7 +409,6 @@ export class EmergencyContacts {
                 organization: document.getElementById('contact-organization').value.trim(),
                 notes: document.getElementById('contact-notes').value.trim(),
                 primary: document.getElementById('contact-primary').checked,
-                createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             };
 
@@ -421,6 +423,56 @@ export class EmergencyContacts {
                 return;
             }
 
+            let success = false;
+            let savedContact = null;
+
+            // Try to save via API first
+            try {
+                if (contactId) {
+                    // Update existing contact
+                    contactData.id = contactId;
+                    const response = await fetch(`${this.baseUrl}/api/contacts/${contactId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(contactData)
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.success) {
+                            success = true;
+                            savedContact = result.contact;
+                            logger.info('Contact updated via API', { contactId, contactData });
+                        }
+                    }
+                } else {
+                    // Create new contact
+                    contactData.id = generateId('contact');
+                    const response = await fetch(`${this.baseUrl}/api/contacts`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(contactData)
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.success) {
+                            success = true;
+                            savedContact = result.contact;
+                            logger.info('Contact created via API', savedContact);
+                        }
+                    }
+                }
+            } catch (apiError) {
+                logger.warn('Failed to save contact via API, falling back to local storage', null, apiError);
+            }
+
+            // Fall back to local storage if API fails
+            if (!success) {
             // If this is a primary contact, unset other primary contacts in the same category
             if (contactData.primary) {
                 this.contacts.forEach(contact => {
@@ -435,20 +487,27 @@ export class EmergencyContacts {
                 const contactIndex = this.contacts.findIndex(c => c.id === contactId);
                 if (contactIndex !== -1) {
                     this.contacts[contactIndex] = { ...this.contacts[contactIndex], ...contactData };
-                    logger.info('Contact updated', { contactId, contactData });
+                        savedContact = this.contacts[contactIndex];
+                        logger.info('Contact updated in local storage', { contactId, contactData });
                 }
             } else {
                 // Create new contact
                 const newContact = {
-                    id: generateId('contact'),
-                    ...contactData
+                        id: contactData.id,
+                        ...contactData,
+                        createdAt: new Date().toISOString()
                 };
                 this.contacts.push(newContact);
-                logger.info('Contact created', newContact);
+                    savedContact = newContact;
+                    logger.info('Contact created in local storage', newContact);
             }
 
             // Save to storage
             await storageUtils.contacts.save(this.contacts);
+            } else {
+                // If API save was successful, update the local contacts array
+                await this.loadContacts();
+            }
 
             // Update display
             this.updateContactsDisplay();
@@ -477,10 +536,37 @@ export class EmergencyContacts {
                 return;
             }
 
+            let success = false;
+
+            // Try to delete via API first
+            try {
+                const response = await fetch(`${this.baseUrl}/api/contacts/${contactId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        success = true;
+                        logger.info('Contact deleted via API', { contactId });
+                    }
+                }
+            } catch (apiError) {
+                logger.warn('Failed to delete contact via API, falling back to local storage', null, apiError);
+            }
+
+            // Fall back to local storage if API fails
+            if (!success) {
             this.contacts = this.contacts.filter(c => c.id !== contactId);
 
             // Save to storage
             await storageUtils.contacts.save(this.contacts);
+                
+                logger.info('Contact deleted from local storage', { contactId });
+            } else {
+                // If API delete was successful, update the local contacts array
+                await this.loadContacts();
+            }
 
             // Update display
             this.updateContactsDisplay();
@@ -488,61 +574,97 @@ export class EmergencyContacts {
             // Show notification
             this.showNotification('Contact deleted', 'success');
 
-            logger.info('Contact deleted', { contactId });
-
         } catch (error) {
             logger.error('Error deleting contact', null, error);
+            this.showNotification('Failed to delete contact', 'error');
         }
     }
 
     updateContactsDisplay() {
+        const contactsContainer = document.getElementById('contacts-container');
+        if (!contactsContainer) return;
+        
+        // Sort contacts: primary first, then by name
+        const sortedContacts = [...this.contacts].sort((a, b) => {
+            // Primary contacts first
+            if (a.primary && !b.primary) return -1;
+            if (!a.primary && b.primary) return 1;
+            
+            // Then by category
+            if (a.category !== b.category) {
+                const catA = this.categories.find(c => c.id === a.category);
+                const catB = this.categories.find(c => c.id === b.category);
+                return (catA?.priority || 999) - (catB?.priority || 999);
+            }
+            
+            // Then by name
+            return a.name.localeCompare(b.name);
+        });
+        
+        // Get active filter
+        const activeFilter = document.querySelector('.filter-btn.active');
+        const filterCategory = activeFilter ? activeFilter.dataset.category : 'all';
+        
+        // Apply filter
+        const filteredContacts = filterCategory === 'all' 
+            ? sortedContacts 
+            : sortedContacts.filter(c => c.category === filterCategory);
+        
         // Group contacts by category
         const contactsByCategory = {};
         this.categories.forEach(category => {
-            contactsByCategory[category.id] = this.contacts.filter(c => c.category === category.id);
+            contactsByCategory[category.id] = filteredContacts.filter(c => c.category === category.id);
         });
-
-        // Update each category
-        this.categories.forEach(category => {
-            const countElement = document.getElementById(`count-${category.id}`);
-            const contactsContainer = document.getElementById(`contacts-${category.id}`);
-            
-            const categoryContacts = contactsByCategory[category.id];
-            
-            // Update count
-            if (countElement) {
-                countElement.textContent = categoryContacts.length;
-            }
-
-            // Update contacts list
-            if (contactsContainer) {
-                if (categoryContacts.length === 0) {
+        
+        // Clear container
+        contactsContainer.innerHTML = '';
+        
+        if (filteredContacts.length === 0) {
                     contactsContainer.innerHTML = `
                         <div class="no-contacts">
-                            <p>No contacts in this category</p>
-                            <button type="button" class="btn btn-sm btn-primary" 
-                                    onclick="window.emergencyContacts.showAddContactModal()">
-                                ➕ Add Contact
+                    <p>No contacts found</p>
+                    <button type="button" class="primary-button" id="add-contact-empty">
+                        <span class="button-icon">➕</span>
+                        Add Contact
                             </button>
                         </div>
                     `;
-                } else {
-                    contactsContainer.innerHTML = categoryContacts
-                        .sort((a, b) => {
-                            // Primary contacts first
-                            if (a.primary && !b.primary) return -1;
-                            if (!a.primary && b.primary) return 1;
-                            // Then by name
-                            return a.name.localeCompare(b.name);
-                        })
-                        .map(contact => this.renderContact(contact))
-                        .join('');
-                }
+            
+            // Add event listener to the new button
+            const addContactEmptyBtn = document.getElementById('add-contact-empty');
+            if (addContactEmptyBtn) {
+                addContactEmptyBtn.addEventListener('click', () => this.showAddContactModal());
             }
+            
+            return;
+        }
+        
+        // Create contact categories
+        this.categories.forEach(category => {
+            const categoryContacts = contactsByCategory[category.id];
+            
+            // Skip empty categories
+            if (categoryContacts.length === 0) return;
+            
+            const categoryElement = document.createElement('div');
+            categoryElement.className = 'contact-category';
+            categoryElement.innerHTML = `
+                <h3>${category.icon} ${category.name}</h3>
+                <div class="category-contacts">
+                    ${categoryContacts.map(contact => this.renderContact(contact)).join('')}
+                </div>
+            `;
+            
+            contactsContainer.appendChild(categoryElement);
         });
 
         // Set up contact event listeners
         this.setupContactEventListeners();
+    }
+    
+    filterContacts(category) {
+        // Update the display with the filtered contacts
+        this.updateContactsDisplay();
     }
 
     renderContact(contact) {
@@ -552,68 +674,141 @@ export class EmergencyContacts {
         return `
             <div class="contact-item ${contact.primary ? 'primary' : ''}" data-contact-id="${contact.id}">
                 <div class="contact-info">
-                    <div class="contact-name">
+                    <h4>
                         ${contact.name}
                         ${contact.primary ? '<span class="primary-badge">Primary</span>' : ''}
-                    </div>
+                    </h4>
                     
-                    <div class="contact-phone">
-                        <a href="tel:${contact.phone}" class="phone-link">
+                    <p>
                             📞 ${formattedPhone}
-                        </a>
-                    </div>
+                    </p>
                     
                     ${contact.organization ? `
                         <div class="contact-organization">🏢 ${contact.organization}</div>
                     ` : ''}
-                    
-                    ${contact.notes ? `
-                        <div class="contact-notes">📝 ${contact.notes}</div>
-                    ` : ''}
                 </div>
                 
                 <div class="contact-actions">
-                    <button type="button" class="btn btn-icon call-btn" 
-                            data-phone="${contact.phone}" title="Call Contact">
-                        📞
-                    </button>
-                    <button type="button" class="btn btn-icon edit-contact-btn" 
-                            data-contact-id="${contact.id}" title="Edit Contact">
-                        ✏️
-                    </button>
-                    <button type="button" class="btn btn-icon delete-contact-btn" 
-                            data-contact-id="${contact.id}" title="Delete Contact">
-                        🗑️
-                    </button>
+                    <a href="tel:${contact.phone}" class="call-button">📞</a>
+                    <button class="edit-button" onclick="window.emergencyContacts.showAddContactModal('${contact.id}')">✏️</button>
+                    <button class="delete-button" onclick="window.emergencyContacts.deleteContact('${contact.id}')">🗑️</button>
                 </div>
             </div>
         `;
     }
+    
+    showContactDetails(contactId) {
+        const contact = this.contacts.find(c => c.id === contactId);
+        if (!contact) return;
+        
+        const category = this.categories.find(c => c.id === contact.category);
+        const formattedPhone = formatPhoneNumber(contact.phone);
+        
+        const detailsContent = document.getElementById('contact-details-content');
+        const detailsTitle = document.getElementById('contact-details-title');
+        
+        detailsTitle.textContent = contact.name;
+        
+        detailsContent.innerHTML = `
+            <div class="contact-detail-item">
+                <div class="contact-detail-label">Phone Number</div>
+                <div class="contact-detail-value">
+                    <a href="tel:${contact.phone}">${formattedPhone}</a>
+                </div>
+            </div>
+            
+            <div class="contact-detail-item">
+                <div class="contact-detail-label">Category</div>
+                <div class="contact-detail-value">
+                    ${category ? `${category.icon} ${category.name}` : contact.category}
+                    ${contact.primary ? '<span class="primary-badge">Primary</span>' : ''}
+                </div>
+            </div>
+            
+            ${contact.organization ? `
+                <div class="contact-detail-item">
+                    <div class="contact-detail-label">Organization</div>
+                    <div class="contact-detail-value">${contact.organization}</div>
+                </div>
+                    ` : ''}
+            
+            ${contact.notes ? `
+                <div class="contact-detail-item">
+                    <div class="contact-detail-label">Notes</div>
+                    <div class="contact-detail-value">${contact.notes}</div>
+                </div>
+            ` : ''}
+            
+            <div class="contact-detail-item">
+                <div class="contact-detail-label">Last Updated</div>
+                <div class="contact-detail-value">
+                    ${new Date(contact.updatedAt).toLocaleString()}
+                </div>
+            </div>
+        `;
+        
+        // Set up action buttons
+        const callContactBtn = document.getElementById('call-contact');
+        const editContactBtn = document.getElementById('edit-contact');
+        const deleteContactBtn = document.getElementById('delete-contact');
+        
+        if (callContactBtn) callContactBtn.dataset.phone = contact.phone;
+        if (editContactBtn) editContactBtn.dataset.contactId = contact.id;
+        if (deleteContactBtn) deleteContactBtn.dataset.contactId = contact.id;
+        
+        // Show modal
+        document.getElementById('contact-details-modal').style.display = 'block';
+    }
 
     setupContactEventListeners() {
-        // Call buttons
-        const callButtons = document.querySelectorAll('.call-btn');
-        callButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                this.callContact(e.target.dataset.phone);
+        // Contact items - click to view details
+        const contactItems = document.querySelectorAll('.contact-item');
+        contactItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                // Don't trigger if clicking on any of the action buttons
+                if (e.target.classList.contains('call-button') || 
+                    e.target.classList.contains('edit-button') ||
+                    e.target.classList.contains('delete-button') ||
+                    e.target.closest('.call-button') ||
+                    e.target.closest('.edit-button') ||
+                    e.target.closest('.delete-button')) {
+                    return;
+                }
+                
+                const contactId = item.dataset.contactId;
+                if (contactId) {
+                    this.showContactDetails(contactId);
+                }
             });
         });
-
-        // Edit buttons
-        const editButtons = document.querySelectorAll('.edit-contact-btn');
-        editButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                this.showAddContactModal(e.target.dataset.contactId);
+        
+        // Set up delete contact button in the details modal
+        const deleteContactBtn = document.getElementById('delete-contact');
+        if (deleteContactBtn) {
+            deleteContactBtn.addEventListener('click', () => {
+                const contactId = deleteContactBtn.dataset.contactId;
+                if (contactId) {
+                    // Hide the modal first
+                    document.getElementById('contact-details-modal').style.display = 'none';
+                    // Then delete the contact
+                    this.deleteContact(contactId);
+                }
             });
-        });
-
-        // Delete buttons
-        const deleteButtons = document.querySelectorAll('.delete-contact-btn');
-        deleteButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                this.deleteContact(e.target.dataset.contactId);
+        }
+        
+        // Set up edit contact button in the details modal
+        const editContactBtn = document.getElementById('edit-contact');
+        if (editContactBtn) {
+            editContactBtn.addEventListener('click', () => {
+                const contactId = editContactBtn.dataset.contactId;
+                if (contactId) {
+                    // Hide the details modal first
+                    document.getElementById('contact-details-modal').style.display = 'none';
+                    // Then show the edit modal
+                    this.showAddContactModal(contactId);
+                }
             });
-        });
+        }
     }
 
     showEmergencyProtocol(protocolType) {

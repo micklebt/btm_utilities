@@ -58,10 +58,11 @@
     <link rel="stylesheet" href="css/utilities.css">
     <link rel="stylesheet" href="css/todo.css">
     <link rel="stylesheet" href="css/links.css">
+    <link rel="stylesheet" href="css/main.css">
 
     
     <!-- Security Headers -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' http://localhost:3000 http://localhost:3001 https://api.twilio.com https://www.googleapis.com http://24.140.108.180:855/; frame-src 'self' http://24.140.108.180:855/;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: https:; connect-src 'self' https://api.twilio.com https://www.googleapis.com http://24.140.108.180:855/ http://localhost:3000 http://localhost:3001 http://127.0.0.1:3001;">
     
     <!-- Performance Optimizations -->
     <link rel="dns-prefetch" href="//api.twilio.com">
@@ -125,38 +126,17 @@
         <!-- Main Navigation -->
         <nav class="main-nav" id="main-nav">
             <div class="nav-container">
-                <button class="nav-item active" data-section="money-collection">
-                    <span class="nav-icon">💰</span>
-                    <span class="nav-label">Money Collection</span>
-                </button>
-
-                <button class="nav-item" data-section="contacts">
-                    <span class="nav-icon">📞</span>
-                    <span class="nav-label">Contacts</span>
-                </button>
-                <button class="nav-item" data-section="security">
-                    <span class="nav-icon">📹</span>
-                    <span class="nav-label">Security</span>
-                </button>
-                <button class="nav-item" data-section="climate">
-                    <span class="nav-icon">🌡️</span>
-                    <span class="nav-label">Climate</span>
-                </button>
-                <button class="nav-item" data-section="todo">
-                    <span class="nav-icon">📋</span>
-                    <span class="nav-label">To Do</span>
-                </button>
-                <button class="nav-item" data-section="links">
-                    <span class="nav-icon">🔗</span>
-                    <span class="nav-label">Links</span>
-                </button>
-                <button class="nav-item" data-section="links-list">
-                    <span class="nav-icon">📑</span>
-                    <span class="nav-label">Links List</span>
-                </button>
+                <!-- Menu items will be populated by shared-menu.js -->
             </div>
         </nav>
 
+        <!-- Application Error Container -->
+        <div id="application-error" class="application-error hidden">
+            <h3>Application Error</h3>
+            <p id="error-message">Something went wrong. Please refresh the page and try again.</p>
+            <button class="btn-primary" onclick="window.location.reload()">Refresh Page</button>
+        </div>
+        
         <!-- Main Content Area -->
         <main class="main-content">
             <!-- Money Collection Section -->
@@ -304,37 +284,127 @@
             <section id="contacts" class="content-section">
                 <div class="section-header">
                     <h2>Emergency Contacts</h2>
-                    <button id="search-contacts" class="secondary-button">
-                        <span class="button-icon">🔍</span>
-                        Search
-                    </button>
+                    <div class="section-actions">
+                        <button id="add-contact" class="secondary-button">
+                            <span class="button-icon">➕</span>
+                            Add Contact
+                        </button>
+                        <button id="search-contacts" class="secondary-button">
+                            <span class="button-icon">🔍</span>
+                            Search
+                        </button>
+                    </div>
                 </div>
-                <div class="contacts-list">
-                    <div class="contact-category">
-                        <h3>Police Departments</h3>
-                        <div class="contact-item">
-                            <div class="contact-info">
-                                <h4>Massillon Police</h4>
-                                <p>330-705-0427</p>
-                            </div>
-                            <a href="tel:3307050427" style="background-color: #28a745; color: white; border: none; border-radius: 50%; width: 44px; height: 44px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none;">📞</a>
+                
+                <!-- Contact Categories -->
+                <div class="contacts-filter">
+                    <div class="filter-label">Filter by category:</div>
+                    <div class="filter-options">
+                        <button class="filter-btn active" data-category="all">All</button>
+                        <button class="filter-btn" data-category="police">Police</button>
+                        <button class="filter-btn" data-category="fire">Fire</button>
+                        <button class="filter-btn" data-category="ambulance">Medical</button>
+                        <button class="filter-btn" data-category="maintenance">Maintenance</button>
+                        <button class="filter-btn" data-category="management">Management</button>
+                        <button class="filter-btn" data-category="suppliers">Suppliers</button>
+                    </div>
+                </div>
+                
+                <!-- Contacts List -->
+                <div class="contacts-list" id="contacts-container">
+                    <!-- Contact items will be loaded dynamically -->
+                    <div class="loading-indicator">
+                        <div class="spinner"></div>
+                        <p>Loading contacts...</p>
+                    </div>
+                </div>
+                
+                <!-- Contact Modal -->
+                <div id="contact-modal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 id="contact-modal-title">Add New Contact</h3>
+                            <button class="close-modal">&times;</button>
                         </div>
-                        <div class="contact-item">
-                            <div class="contact-info">
-                                <h4>Dover Police</h4>
-                                <p>330-343-6726</p>
-                            </div>
-                            <a href="tel:3303436726" style="background-color: #28a745; color: white; border: none; border-radius: 50%; width: 44px; height: 44px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none;">📞</a>
-                        </div>
-                        <div class="contact-item">
-                            <div class="contact-info">
-                                <h4>Carrollton Police</h4>
-                                <p>330-627-2858</p>
-                            </div>
-                            <a href="tel:3306272858" style="background-color: #28a745; color: white; border: none; border-radius: 50%; width: 44px; height: 44px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none;">📞</a>
+                        <div class="modal-body">
+                            <form id="contact-form">
+                                <input type="hidden" id="contact-id">
+                                
+                                <div class="form-group">
+                                    <label for="contact-name">Name*</label>
+                                    <input type="text" id="contact-name" required placeholder="Contact name">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="contact-phone">Phone Number*</label>
+                                    <input type="tel" id="contact-phone" required placeholder="Phone number">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="contact-category">Category*</label>
+                                    <select id="contact-category" required>
+                                        <option value="police">🚔 Police</option>
+                                        <option value="fire">🚒 Fire Department</option>
+                                        <option value="ambulance">🚑 Ambulance</option>
+                                        <option value="maintenance">🔧 Maintenance</option>
+                                        <option value="security">🛡️ Security</option>
+                                        <option value="management">👔 Management</option>
+                                        <option value="suppliers">📦 Suppliers</option>
+                                        <option value="other">📞 Other</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="contact-organization">Organization</label>
+                                    <input type="text" id="contact-organization" placeholder="Company or organization">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="contact-notes">Notes</label>
+                                    <textarea id="contact-notes" rows="3" placeholder="Additional notes"></textarea>
+                                </div>
+                                
+                                <div class="form-group checkbox-group">
+                                    <input type="checkbox" id="contact-primary">
+                                    <label for="contact-primary">Primary contact for this category</label>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button type="submit" class="primary-button">Save Contact</button>
+                                    <button type="button" class="secondary-button cancel-btn">Cancel</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
-                    
+                </div>
+                
+                <!-- Contact Details Modal -->
+                <div id="contact-details-modal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 id="contact-details-title">Contact Details</h3>
+                            <button class="close-modal">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div id="contact-details-content">
+                                <!-- Contact details will be loaded here -->
+                            </div>
+                            <div class="contact-actions">
+                                <button id="call-contact" class="primary-button">
+                                    <span class="button-icon">📞</span>
+                                    Call
+                                </button>
+                                <button id="edit-contact" class="secondary-button">
+                                    <span class="button-icon">✏️</span>
+                                    Edit
+                                </button>
+                                <button id="delete-contact" class="danger-button">
+                                    <span class="button-icon">🗑️</span>
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -475,29 +545,7 @@
                 </div>
             </section>
 
-            <!-- Links List Section -->
-            <section id="links-list" class="content-section">
-                <div class="section-header">
-                    <h2>Links List</h2>
-                    <button id="refresh-links-list" class="secondary-button">
-                        <span class="button-icon">🔄</span>
-                        Refresh
-                    </button>
-                </div>
-                
-                <div class="links-container">
-                    <div class="links-grid" id="linksGrid">
-                        <div class="empty-state">Loading links...</div>
-                    </div>
-                    
-                    <div class="links-actions">
-                        <a href="links.html" class="primary-button">
-                            <span class="button-icon">✏️</span>
-                            Manage Links
-                        </a>
-                    </div>
-                </div>
-            </section>
+
         </main>
 
                 <!-- Settings Modal -->
@@ -837,103 +885,12 @@
     </script>
 
     <!-- Temporarily disabled complex app initialization -->
-    <script type="module" src="js/app.js?v=1.0.14"></script>
+    <script type="module" src="js/shared-menu.js?v=1.0.0"></script>
+<script type="module" src="js/app.js?v=1.0.14"></script>
     <!-- <script src="js/simple-dropdown-fix.js"></script> -->
     <script src="js/links-manager.js"></script>
     
-    <!-- Links List Script -->
-    <script>
-        // Load links from server for the links-list section
-        function loadLinksList() {
-            const linksGrid = document.getElementById('linksGrid');
-            if (!linksGrid) return;
-            
-            fetch('http://localhost:3001/api/links')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const links = data.links || [];
-                        renderLinksList(links);
-                    } else {
-                        showLinksNotification('Error loading links', 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showLinksNotification('Error loading links from server', 'error');
-                    linksGrid.innerHTML = '<div class="empty-state">Failed to load links. Please try refreshing.</div>';
-                });
-        }
-        
-        // Render links in grid format
-        function renderLinksList(links) {
-            const linksGrid = document.getElementById('linksGrid');
-            if (!linksGrid) return;
-            
-            if (links.length === 0) {
-                linksGrid.innerHTML = '<div class="empty-state">No links available. Click "Manage Links" to add some.</div>';
-                return;
-            }
-            
-            // Sort links alphabetically by title
-            const sortedLinks = [...links].sort((a, b) => 
-                a.title.toLowerCase().localeCompare(b.title.toLowerCase())
-            );
-            
-            const html = sortedLinks.map(link => `
-                <div class="link-card">
-                    <a href="${escapeHtmlLinks(link.url)}" target="_blank" class="link-title">${escapeHtmlLinks(link.title)}</a>
-                    <div class="link-url">${escapeHtmlLinks(link.url)}</div>
-                </div>
-            `).join('');
-            
-            linksGrid.innerHTML = html;
-        }
-        
-        // Helper function to escape HTML
-        function escapeHtmlLinks(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-        
-        // Show notification
-        function showLinksNotification(message, type = 'info') {
-            const container = document.getElementById('notification-container');
-            if (!container) return;
-            
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
-            
-            container.appendChild(notification);
-            
-            // Remove notification after 3 seconds
-            setTimeout(() => {
-                notification.style.opacity = '0';
-                setTimeout(() => {
-                    container.removeChild(notification);
-                }, 300);
-            }, 3000);
-        }
-        
-        // Setup refresh button for links list
-        document.addEventListener('DOMContentLoaded', () => {
-            const refreshBtn = document.getElementById('refresh-links-list');
-            if (refreshBtn) {
-                refreshBtn.addEventListener('click', () => {
-                    refreshBtn.classList.add('rotating');
-                    loadLinksList();
-                    setTimeout(() => {
-                        refreshBtn.classList.remove('rotating');
-                    }, 1000);
-                });
-            }
-            
-            // Load links list
-            loadLinksList();
-        });
-    </script>
+
     
     <!-- QR Code Detection Library -->
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>

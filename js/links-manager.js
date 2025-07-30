@@ -6,7 +6,10 @@ class LinksManager {
     constructor() {
         this.links = [];
         this.editingId = null;
-        this.baseUrl = 'http://localhost:3001'; // Base URL for API endpoints
+        // Use current origin for API endpoints or fallback to localhost:3001
+        // Always use the same hostname (localhost or 127.0.0.1) that the page is loaded from
+        // Ensure we have a valid base URL that works with both localhost and 127.0.0.1
+        this.baseUrl = `${window.location.protocol}//${window.location.hostname === '127.0.0.1' ? '127.0.0.1' : 'localhost'}:3001`;
         this.init();
     }
 
@@ -168,22 +171,82 @@ class LinksManager {
         }
     }
 
-    loadLinks() {
+    loadLinks(retryCount = 0) {
+        // Show loading indicator
+        const linksList = document.getElementById('linksList');
+        if (linksList) {
+            linksList.innerHTML = '<div class="loading-indicator">Loading links...</div>';
+        }
+        
+        // Maximum number of retries
+        const MAX_RETRIES = 3;
+        
         fetch(`${this.baseUrl}/api/links`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
                 this.links = data.links || [];
+                
+                // Cache the links in localStorage for offline use
+                try {
+                    localStorage.setItem('cached_links', JSON.stringify(this.links));
+                } catch (cacheError) {
+                    console.warn('Failed to cache links:', cacheError);
+                }
+                
                 this.renderLinks();
+                
+                // Clear any error notifications if successful
+                const errorNotification = document.querySelector('.notification.error');
+                if (errorNotification) {
+                    errorNotification.remove();
+                }
             } else {
                 console.error('Error loading links:', data.error);
                 this.showNotification('Error loading links', 'error');
+                this.renderFallbackLinks();
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            this.showNotification('Error loading links from server', 'error');
+            
+            if (retryCount < MAX_RETRIES) {
+                // Retry with exponential backoff
+                const delay = Math.pow(2, retryCount) * 1000;
+                console.log(`Retrying in ${delay}ms... (Attempt ${retryCount + 1}/${MAX_RETRIES})`);
+                
+                setTimeout(() => {
+                    this.loadLinks(retryCount + 1);
+                }, delay);
+            } else {
+                this.showNotification('Error connecting to server. Using cached data if available.', 'error');
+                this.renderFallbackLinks();
+            }
         });
+    }
+    
+    // Render fallback links from localStorage if available
+    renderFallbackLinks() {
+        try {
+            const cachedLinks = localStorage.getItem('cached_links');
+            if (cachedLinks) {
+                this.links = JSON.parse(cachedLinks);
+                this.renderLinks();
+                console.log('Using cached links from localStorage');
+            } else {
+                // No cached data available
+                const linksList = document.getElementById('linksList');
+                if (linksList) {
+                    linksList.innerHTML = '<div class="empty-state">Unable to load links. Please check your connection and try again.</div>';
+                }
+            }
+        } catch (error) {
+            console.error('Error loading cached links:', error);
+            const linksList = document.getElementById('linksList');
+            if (linksList) {
+                linksList.innerHTML = '<div class="empty-state">Unable to load links. Please check your connection and try again.</div>';
+            }
+        }
     }
 
     renderLinks() {
